@@ -72,6 +72,12 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<VideoPlayerViewModel>();
+            services.AddTransient<VideoPlayerPage>();
+            services.AddTransient<SearchDetailViewModel>();
+            services.AddTransient<SearchDetailPage>();
+            services.AddTransient<SearchViewModel>();
+            services.AddTransient<SearchPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
             services.AddTransient<MainViewModel>();
