@@ -33,19 +33,14 @@ public sealed partial class SearchDetailPage : Page
         base.OnNavigatingFrom(e);
         if (e.NavigationMode == NavigationMode.Back)
         {
-            var navigationService = App.GetService<INavigationService>();
-
-            if (ViewModel.Item != null)
-            {
-                navigationService.SetListDataItemForNextConnectedAnimation(ViewModel.Item);
-            }
+            
         }
     }
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem != null)
         {
-            
+            ViewModel.OpenPlayer((Chapter)e.ClickedItem);
         }
          
     }
