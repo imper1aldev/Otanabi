@@ -67,8 +67,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private void OnItemClick(Anime? clickedItem)
     {
         if (clickedItem != null)
-        {
-            _navigationService.SetListDataItemForNextConnectedAnimation(clickedItem);
+        { 
             _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem.url);
         }
     }

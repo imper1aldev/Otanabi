@@ -26,9 +26,7 @@
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
-
-        <ScrollViewer
-            IsTabStop="True">
+ 
             <Grid
                         x:Name="itemHero"  
                         Margin="{StaticResource SmallRightMargin}"
@@ -38,17 +36,17 @@
                         RelativePanel.AlignTopWithPanel="True"
                         RelativePanel.AlignLeftWithPanel="True">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*" ></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="*"  ></RowDefinition>
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0">
                     <Grid x:Name="portrait">
 
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
@@ -57,10 +55,10 @@
                         </Grid.ColumnDefinitions>
 
                         <Image Name="ImageExControl"
-                                  Grid.Row="0"
+                                  Grid.Row="0" Height="250"  Width="Auto"
                                 Source="{x:Bind ViewModel.Item.cover, Mode=OneWay}" />
 
-                        <StackPanel Grid.Row="1" Grid.Column="1" >
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">
                             <TextBlock  x:Name="title"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
                                 Text="{x:Bind ViewModel.Item.title, Mode=OneWay}" />
                             <TextBlock  Margin="{StaticResource XXSmallTopMargin}"  Style="{ThemeResource TitleTextBlockStyle}" Text="Description" />
@@ -71,7 +69,7 @@
                     </Grid>
                 </StackPanel>
 
-                <ListView Grid.Row="3" Height="400" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Item.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
+                <ListView Grid.Row="3" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Item.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
 
                     <ListView.ItemTemplate >
                         <DataTemplate x:DataType="models:Chapter">
@@ -81,9 +79,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
 
-
                 </ListView>
-            </Grid>
-        </ScrollViewer>
+            </Grid> 
     </Grid>
 </Page>
