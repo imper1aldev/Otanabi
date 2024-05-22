@@ -4,6 +4,8 @@ using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
 using AnimeWatcher.Helpers;
 
+using CommunityToolkit.WinUI.UI.Animations;
+
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -123,4 +125,6 @@ public class NavigationService : INavigationService
             Navigated?.Invoke(sender, e);
         }
     }
+
+    public void SetListDataItemForNextConnectedAnimation(object item) => Frame.SetListDataItemForNextConnectedAnimation(item);
 }
