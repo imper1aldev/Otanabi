@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "AnimeWatcher (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "AnimeWatcher (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
