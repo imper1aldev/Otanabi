@@ -7,6 +7,7 @@ using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 using System.Xml.Linq;
+using System;
 
 namespace AnimeWatcher.Core.Services;
 public class SearchAnimeService
@@ -57,13 +58,34 @@ public class SearchAnimeService
         var coverTmp = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img").First().GetAttributeValue("src");
         anime.cover = string.Concat(originUrl, coverTmp);
         anime.description = node.CssSelect("div.Wrapper > div > div > div.Container > div > main > section").First().CssSelect("div.Description > p").First().InnerText;
+        
+        var tempType= node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
+        switch (tempType)
+        {   
+            case "OVA":
+                anime.type=AnimeType.OVA;
+                break;
+            case"Anime" :
+                anime.type=AnimeType.TV;
+                break;
+            case"Película":
+                anime.type=AnimeType.MOVIE;
+                break;
+            case"Especial":
+                anime.type=AnimeType.SPECIAL;
+                break;
+            default: 
+                anime.type=AnimeType.TV;
+                break;
+        }
+        
+        anime.status = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > p > span").First().InnerText;
 
-
-        var identifier = GetUriIdentify(node.InnerText);
+        var identifier = GetUriIdentify(node.InnerText , anime.status);
         anime.Chapters = GetChaptersByregex(node.InnerText, identifier);
         return anime;
     }
-    private string[] GetUriIdentify(string text)
+    private string[] GetUriIdentify(string text ,string aStatus)
     {
         var pattern = @"anime_info = (\[.*])";
         var identifier = "";
@@ -94,7 +116,13 @@ public class SearchAnimeService
             }
 
             identifier = dataList[0];
-            chapUri = dataList.GetRange(dataList.Count-2 , 1)[0];
+            if(aStatus=="En emision" ) {
+                chapUri = dataList.GetRange(dataList.Count-2 , 1)[0];
+            }else
+            {
+                chapUri = dataList.GetRange(dataList.Count-1 , 1)[0];
+            }
+
         }
 
         return new string[] { identifier, chapUri, chapName };

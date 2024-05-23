@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnimeWatcher.Core.Models;
+public enum AnimeType { OVA, TV, MOVIE ,SPECIAL }
 public class Anime
 {
     public int id
@@ -27,7 +28,14 @@ public class Anime
     {
         get; set;
     }
-    public string description { get; set; }
+    public AnimeType type
+    {
+        get; set;
+    }
+    public string description
+    {
+        get; set;
+    }
     public int providerId
     {
         get; set;
@@ -36,6 +44,12 @@ public class Anime
     {
         get; set;
     }
-    public string status { get;set; }
-    public ICollection<Chapter> Chapters { get; set; }
+    public string status
+    {
+        get; set;
+    }
+    public ICollection<Chapter> Chapters
+    {
+        get; set;
+    }
 }
