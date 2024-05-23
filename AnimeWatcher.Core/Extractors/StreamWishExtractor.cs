@@ -16,10 +16,7 @@ public class StreamWishExtractor : IExtractor
         {
             HtmlWeb oWeb = new HtmlWeb();
             HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
-            var body = doc.DocumentNode.SelectSingleNode("/html");
-
-
-            Debug.WriteLine(body.InnerText);
+            var body = doc.DocumentNode.SelectSingleNode("/html"); 
             var pattern = @"file:""(https?://[^""]+)""";
             var match = Regex.Match(body.InnerText, pattern);
             if (match.Success)

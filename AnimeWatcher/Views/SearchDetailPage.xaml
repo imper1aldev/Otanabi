@@ -109,7 +109,7 @@
                             <TextBlock.FontSize>15</TextBlock.FontSize>
                             <Run Text="Episode #" /> <Run Text="{Binding Path=chapter}"/>
                         </TextBlock>
-                            <TextBlock Text="{Binding Path=url}" />
+                            <!--  <TextBlock Text="{Binding Path=url}" />-->
                         </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
