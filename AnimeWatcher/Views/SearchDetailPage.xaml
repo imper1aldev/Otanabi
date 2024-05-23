@@ -4,82 +4,131 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls" 
     xmlns:models="using:AnimeWatcher.Core.Models"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentArea">
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <!--641 is the default CompactModeThresholdWidth in NavigationView -->
-                        <AdaptiveTrigger MinWindowWidth="641" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="propertiesGroup1.(RelativePanel.RightOf)" Value="itemHero" />
-                        <Setter Target="propertiesGroup1.(RelativePanel.Below)" Value="title" />
-                        <Setter Target="propertiesGroup2.(RelativePanel.RightOf)" Value="propertiesGroup1" />
-                        <Setter Target="propertiesGroup2.(RelativePanel.Below)" Value="title" />
-                        <Setter Target="propertiesGroup1.Width" Value="200" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
+    <Grid x:Name="ContentArea"  
+          Margin="20,20,20,10" 
+          >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" ></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*" ></RowDefinition>
+        </Grid.RowDefinitions>
  
-            <Grid
-                        x:Name="itemHero"  
-                        Margin="{StaticResource SmallRightMargin}"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        RelativePanel.AlignTopWithPanel="True"
-                        RelativePanel.AlignLeftWithPanel="True">
+        <StackPanel Grid.Row="0" Grid.Column="0" >
+            <Grid x:Name="portrait" Padding="15,15,15,15">
+                <Grid.Background>
+                    <ImageBrush ImageSource="{x:Bind ViewModel.Item.cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
+                        <ImageBrush.RelativeTransform  >
+                            <CompositeTransform CenterX="0.5" CenterY="0.5" TranslateX="0" TranslateY="1.9"/>
+                        </ImageBrush.RelativeTransform>
+                    </ImageBrush>
+                </Grid.Background>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" ></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="*"  ></RowDefinition>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0">
-                    <Grid x:Name="portrait">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="260"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-
-                        <Image Name="ImageExControl"
+                <Image Name="ImageExControl" HorizontalAlignment="Left" 
                                   Grid.Row="0" Height="250"  Width="Auto"
                                 Source="{x:Bind ViewModel.Item.cover, Mode=OneWay}" />
 
-                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,0">
-                            <TextBlock  x:Name="title"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,0,0,0">
+                    <TextBlock  x:Name="title"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
                                 Text="{x:Bind ViewModel.Item.title, Mode=OneWay}" />
-                            <TextBlock  Margin="{StaticResource XXSmallTopMargin}"  Style="{ThemeResource TitleTextBlockStyle}" Text="Description" />
-                            <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.description, Mode=OneWay}" />
-                        </StackPanel>
-
-
-                    </Grid>
+                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.description, Mode=OneWay}" Padding="0,25"/>
                 </StackPanel>
 
-                <ListView Grid.Row="3" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Item.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
 
-                    <ListView.ItemTemplate >
-                        <DataTemplate x:DataType="models:Chapter">
-                            <StackPanel >
-                                <TextBlock Text="{Binding Path=name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
+            </Grid>
+            <Grid x:Name="actionButtons" Margin="0,15,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <CommandBar Grid.Column="0" Width="Auto" Height="Auto" HorizontalAlignment="Left" DefaultLabelPosition="Right">
+                    <CommandBar.PrimaryCommands>
+                        <AppBarButton  Label="Add to library" >
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE728;"/>
+                            </AppBarButton.Icon>
 
-                </ListView>
-            </Grid> 
+                        </AppBarButton>
+                        <AppBarSeparator Margin="10,0,10,0"/>
+                        <AppBarButton Icon="Like" Label="Like" />
+                        <AppBarButton Icon="Dislike" Label="Dislike"/>
+
+                        <AppBarSeparator Margin="10,0,10,0"/>
+                        <AppBarButton Label="Go to Web">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xEC27;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+                        <AppBarSeparator Margin="10,0,10,0"/>
+                        <AppBarButton Label="Order" Command="{x:Bind ViewModel.OrderChapterListCommand}">
+                            <AppBarButton.Icon>
+                                <FontIcon Glyph="&#xE74A;" />
+                            </AppBarButton.Icon>
+                        </AppBarButton>
+
+                    </CommandBar.PrimaryCommands>
+                </CommandBar>
+                <RatingControl AutomationProperties.Name="RatingControl with placeholder" IsEnabled="False" 
+                                   PlaceholderValue="3.25" HorizontalAlignment="Right" Grid.Column="1"/>
+            </Grid>
+
+        </StackPanel>
+
+        <Grid x:Name="ChaptersData" Grid.Row="3" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="250"/>
+            </Grid.ColumnDefinitions>
+            <AutoSuggestBox PlaceholderText="Search..."   
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="Auto"                     
+                QueryIcon="Find" Grid.Column="1"  Margin="0,0,0,0" Height="35" VerticalAlignment="Top"/>
+            
+            <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Item.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
+
+            <ListView.ItemTemplate >
+                <DataTemplate x:DataType="models:Chapter">
+                    <StackPanel Padding="0,15,0,15">
+                        <!--<TextBlock Text="{Binding Path=name}" />-->
+                        <TextBlock  VerticalAlignment="Center">
+                            <TextBlock.FontSize>15</TextBlock.FontSize>
+                            <Run Text="Episode #" /> <Run Text="{Binding Path=chapter}"/>
+                        </TextBlock>
+                        <!--<TextBlock Text="{Binding Path=url}" />-->
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        </Grid>
+        
+        
+        <TeachingTip 
+            x:Name="ToggleThemeTeachingTip2" 
+            IsOpen="{x:Bind ViewModel.ErrorActive , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+	        Title="Error Detected"
+	        Subtitle="{x:Bind ViewModel.ErrorMessage,Mode=OneWay}"
+	        PreferredPlacement="Auto"
+	        PlacementMargin="20"
+	        IsLightDismissEnabled="True"
+	        CloseButtonContent="Got it!">
+        </TeachingTip>
     </Grid>
+
+
+
 </Page>

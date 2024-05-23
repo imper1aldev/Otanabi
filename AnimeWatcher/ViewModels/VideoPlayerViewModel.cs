@@ -44,10 +44,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
 
     }
-    VideoPlayerViewModel()
-    {
-        Dispose();
-    }
     //getters and setters
     private LibVLC LibVLC
     {
@@ -90,7 +86,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             VideoUrl= url;
         }
      }
-    public void OnNavigatedFrom(){ }
+    public void OnNavigatedFrom(){
+        
+        Dispose();
+        }
 
     //end getters and setters
 

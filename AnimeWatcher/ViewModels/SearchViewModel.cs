@@ -9,22 +9,32 @@ using AnimeWatcher.Core.Services;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace AnimeWatcher.ViewModels;
 
 public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
-     private readonly INavigationService _navigationService; 
+    private readonly INavigationService _navigationService;
     private readonly SearchAnimeService _seachAnimeService = new();
 
     public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
+
+    [ObservableProperty]
+    private Visibility loadingResults = Visibility.Collapsed;
+
+    [ObservableProperty]
+    private Visibility visibleResults = Visibility.Collapsed;
+
+    [ObservableProperty]
+    private Visibility noResults = Visibility.Collapsed;
 
     public SearchViewModel(
         INavigationService navigationService
         )
     {
-        _navigationService = navigationService; 
+        _navigationService = navigationService;
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -43,20 +53,36 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
+        LoadingResults = Visibility.Visible;
+        NoResults = Visibility.Collapsed;
+        VisibleResults = Visibility.Collapsed;
         Source.Clear();
         var queryText = args.QueryText.ToString();
         await SearchManga(queryText);
 
+        LoadingResults = Visibility.Collapsed;
     }
 
-    public async Task<Boolean> SearchManga(string query)
+    public async Task SearchManga(string query)
     {
+
+
         var data = await _seachAnimeService.SearchAnimeAsync(query);
-        foreach (var item in data)
+        if (data.Count() == 0)
         {
-            Source.Add(item);
+            NoResults = Visibility.Visible;
         }
-        return true;
+        else
+        {
+            foreach (var item in data)
+            {
+                Source.Add(item);
+
+            }
+             VisibleResults = Visibility.Visible;
+
+        }
+
     }
 
     public void OnNavigatedFrom()
@@ -67,7 +93,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private void OnItemClick(Anime? clickedItem)
     {
         if (clickedItem != null)
-        { 
+        {
             _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem.url);
         }
     }

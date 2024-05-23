@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnimeWatcher.Core.Models;
-public class videoSource
+public class VideoSource
 {
     public string server
     {

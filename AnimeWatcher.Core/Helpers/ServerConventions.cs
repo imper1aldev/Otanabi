@@ -1,0 +1,39 @@
+﻿using AnimeWatcher.Core.Models;
+
+namespace AnimeWatcher.Core.Helpers;
+public class ServerConventions
+{
+    internal List<Convention> Conventions = new()
+    {
+        new Convention
+        {
+             Name = "Okru",
+            possibleNames = new string[] { "ok-ru", "okru", "OKRU" }
+        },new Convention
+        {
+             Name = "Streamwish",
+            possibleNames = new string[] { "sw", "SW", "OKRU", "streamwish" }
+        },
+        new Convention
+        {
+            Name= "YourUpload",
+            possibleNames = new string[] { "yu","YourUpload","yourUpload","yourupload" }
+        }
+    };
+
+
+    public string GetServerName(string serverName)
+    {
+        var convention = "";
+        try
+        {
+            convention = Conventions.First(e => e.possibleNames.Contains(serverName)).Name;
+        } catch (Exception)
+        {
+
+        }
+        return convention;
+    }
+
+
+}

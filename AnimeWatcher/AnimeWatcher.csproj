@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="styles\ControlBackground.xaml" />
+    <None Remove="Styles\NavigationViewStyles.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +45,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Styles\NavigationViewStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Styles\ControlBackground.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

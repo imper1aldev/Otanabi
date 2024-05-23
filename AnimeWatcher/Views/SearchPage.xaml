@@ -9,43 +9,71 @@
     xmlns:models="using:AnimeWatcher.Core.Models"
     mc:Ignorable="d">
 
-    <Grid >
+    <Grid x:Name="ContentArea" Margin="20,20,20,10" >
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <AutoSuggestBox PlaceholderText="Search..."
-                        
+        <AutoSuggestBox PlaceholderText="Search..." Height="50"
+        VerticalContentAlignment="Center" HorizontalContentAlignment="Center"                     
         QueryIcon="Find"
         Grid.Row="0"
-        QuerySubmitted="{x:Bind ViewModel.OnAutoComplete}" Margin="0,0,0,40" />
+        QuerySubmitted="{x:Bind ViewModel.OnAutoComplete}" Margin="0,5,0,25" />
 
-        <controls:AdaptiveGridView
+        <ProgressRing IsActive="True" Visibility="{x:Bind ViewModel.LoadingResults,Mode=OneWay}" Background="LightGray" Grid.Row="2"  />
+        <TextBlock Text="No resultados mi papá" Visibility="{x:Bind ViewModel.NoResults,Mode=OneWay}"
+                   Grid.Row="2" VerticalAlignment="Center"
+                   HorizontalAlignment="Center" FontSize="38"></TextBlock>
+        <controls:AdaptiveGridView Visibility="{x:Bind ViewModel.VisibleResults,Mode=OneWay}"
             Grid.Row="2"
             animations:Connected.ListItemElementName="itemThumbnail"
             animations:Connected.ListItemKey="animationKeyContentGrid"
-            DesiredWidth="163"
+            DesiredWidth="180"
             ItemHeight="240"
             IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
             ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}" 
             SelectionMode="None"
-            StretchContentForSingleRow="False">
+            StretchContentForSingleRow="False"> 
+            <animations:Implicit.ShowAnimations>
+                <animations:TranslationAnimation From="0, -10, 0"
+                                                     To="0"
+                                                     Duration="0:0:1" />
+                <animations:OpacityAnimation From="0"
+                                                 To="1.0"
+                                                 Duration="0:0:1" />
+            </animations:Implicit.ShowAnimations>
+
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation To="0.0"
+                                                 Duration="0:0:1" />
+                <animations:ScalarAnimation Target="Translation.Y"
+                                                To="10"
+                                                Duration="0:0:1">
+                    <animations:ScalarKeyFrame Key="0.1"
+                                                   Value="30" />
+                    <animations:ScalarKeyFrame Key="0.5"
+                                                   Value="0.0" />
+                </animations:ScalarAnimation>
+            </animations:Implicit.HideAnimations>
+
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Anime" >
                     <Grid 
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
-                        <Grid  HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Grid  HorizontalAlignment="Center" VerticalAlignment="Center" >
                             <ToolTipService.ToolTip>
                                 <ToolTip Content="{x:Bind title}" HorizontalOffset="20"/>
                             </ToolTipService.ToolTip>
 
-                            <Image Source="{x:Bind cover}" Height="238" Width="163">
+                            <Image Source="{x:Bind cover}" Stretch="UniformToFill" Width="180" >
                             </Image>
-                            <Border Background="#3b4348" VerticalAlignment="Bottom" >
-                                <TextBlock Text="{x:Bind title}" Foreground="WhiteSmoke"></TextBlock>
+                            <Border Background="#3b4348" VerticalAlignment="Bottom" Opacity="0.9" Padding="5,2,5,2">
+                                <TextBlock Text="{x:Bind title}" Foreground="WhiteSmoke" 
+                                           Padding="0,3,0,3" FontSize="13"
+                                           TextAlignment="Center" TextWrapping="Wrap"></TextBlock>
                             </Border>
 
                         </Grid>

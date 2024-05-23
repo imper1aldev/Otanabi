@@ -24,8 +24,7 @@ public sealed partial class SearchDetailPage : Page
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        base.OnNavigatedTo(e);
-        this.RegisterElementForConnectedAnimation("animationKeyContentGrid", itemHero);
+        base.OnNavigatedTo(e); 
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)

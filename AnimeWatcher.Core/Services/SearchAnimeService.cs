@@ -2,13 +2,16 @@
 using System.Text.RegularExpressions;
 using System.Web;
 using AnimeWatcher.Core.Models;
+using AnimeWatcher.Core.Helpers;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
+using System.Xml.Linq;
 
 namespace AnimeWatcher.Core.Services;
 public class SearchAnimeService
 {
+    internal ServerConventions _serverConventions = new();
     internal readonly string originUrl = "https://www3.animeflv.net";
 
     public async Task<ICollection<Anime>> SearchAnimeAsync(string searchTerm)
@@ -71,11 +74,27 @@ public class SearchAnimeService
         if (match.Success)
         {
             var special = match.Groups[1].Value;
+            /*
             special = special.Replace("[", "").Replace("]", "").Replace(@"""", "");
             var data = special.Split(new string[] { "," }, StringSplitOptions.None);
-            identifier = data[0];
-            chapUri = data[2];
-            chapName = data[1];
+            */
+            var data = match.Groups[1].Value.Trim('[', ']').Split(',');
+            List<string> dataList = new List<string>();
+
+            foreach (var value in data)
+            {
+                // Remove quotes and trim extra whitespaces
+                var trimmedValue = value.Trim('"');
+                dataList.Add(trimmedValue);
+            }
+
+            foreach (var item in dataList.GetRange(1, dataList.Count - 3))
+            {
+                chapName += item;
+            }
+
+            identifier = dataList[0];
+            chapUri = dataList.GetRange(dataList.Count-2 , 1)[0];
         }
 
         return new string[] { identifier, chapUri, chapName };
@@ -100,6 +119,7 @@ public class SearchAnimeService
                 int[] intArray=Array.ConvertAll(numbers,int.Parse);
                 */
                 chapter.url = string.Concat("/ver/", chapIdentifier[1], "-", chaptherOrder);
+                chapter.chapter=chaptherOrder;
                 chapter.animeId = int.Parse(chapIdentifier[0]);
                 chapter.name = string.Concat(chapIdentifier[2], " ", chaptherOrder);
 
@@ -109,10 +129,10 @@ public class SearchAnimeService
         return chapters.ToArray();
     }
 
-    private videoSource[] getSorcesRegex(string text)
+    private VideoSource[] getSorcesRegex(string text)
     {
         var pattern = @"var videos = \{""SUB"":(.*?)\};";
-        var sources = new List<videoSource>();
+        var sources = new List<VideoSource>();
         var match = Regex.Match(text, pattern);
         if (match.Success)
         {
@@ -121,23 +141,30 @@ public class SearchAnimeService
 
             foreach (var vsource in prefJson["SUB"])
             {
-                var vSouce = new videoSource();
+                var serverName = "";
+                //(string)vsource["server"]
+                serverName = _serverConventions.GetServerName((string)vsource["server"]);
 
-                vSouce.server = (string)vsource["server"];
+                if (string.IsNullOrEmpty(serverName))
+                {
+                    continue;
+                }
+
+                var vSouce = new VideoSource();
+                vSouce.server = serverName;
                 vSouce.code = (string)vsource["code"];
                 vSouce.url = (string)vsource["url"];
                 vSouce.ads = (int)vsource["ads"];
                 vSouce.title = (string)vsource["title"];
                 vSouce.allow_mobile = (bool)vsource["allow_mobile"];
-
-
                 sources.Add(vSouce);
+
             }
         }
         return sources.ToArray();
     }
 
-    public async Task<videoSource[]> GetVideoSources(string requestUrl)
+    public async Task<VideoSource[]> GetVideoSources(string requestUrl)
     {
 
         var url = string.Concat(originUrl, requestUrl);
@@ -150,29 +177,6 @@ public class SearchAnimeService
         return sources;
 
     }
-    public async Task<string> GetStreamOKURO(string url)
-    {
-        // var url = "https://ok.ru/videoembed/947875089023";
-        var streaminUrl = "";
-        HtmlWeb oWeb = new HtmlWeb();
-        HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
 
-
-        var values = doc.DocumentNode.SelectSingleNode("/html/body/div[2]/div").GetAttributeValue("data-options").Replace("&quot;", "\"");
-        Debug.WriteLine(values);
-        dynamic contourManifest = JObject.Parse(values);
-        var metadata = (string)contourManifest.flashvars["metadata"];
-        var meta2 = JObject.Parse(metadata);
-        var videos = meta2["videos"];
-        foreach (var video in videos)
-        {
-            if ((string)video["name"] == "hd")
-            {
-                streaminUrl = (string)video["url"];
-            }
-        }
-
-        return streaminUrl;
-    }
 
 }
