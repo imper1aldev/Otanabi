@@ -7,6 +7,7 @@ using AnimeWatcher.Core.Services;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
 
 namespace AnimeWatcher.ViewModels;
 
@@ -20,9 +21,12 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private Anime? item;
 
     [ObservableProperty]
-    private string orderIcon="&#xE74B;";
+    private Chapter[]? chapters;
 
-    private Boolean orderedList=false;
+    [ObservableProperty]
+    private string orderIcon = "\uE74A";
+
+    private Boolean orderedList = false;
 
     [ObservableProperty]
     public Boolean errorActive = false;
@@ -37,6 +41,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
 
     public async void OnNavigatedTo(object parameter)
     {
+        GC.Collect();
         if (parameter is string url)
         {
             var data = await _searchAnimeService.GetAnimeDetailsAsync(url);
@@ -54,18 +59,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     {
         try
         {
-            /*
-            var videoSources = await _searchAnimeService.GetVideoSources(chapter.url);
-            var chosedSource = videoSources.First(vs => vs.server == "okru");
-            if (chosedSource == null)
-                return;
-
-            var videoUrl = await _searchAnimeService.GetStreamOKURO(chosedSource.checkedUrl);
-            _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, videoUrl);
-            */
 
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.url);
-            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources,"YourUpload");
+            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources, "YourUpload");
             if (string.IsNullOrEmpty(videoUrl))
             {
                 throw new Exception(ErrorMessage = "Can't extract the video URL");
@@ -82,9 +78,8 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [RelayCommand]
     private void OrderChapterList()
     {
-        orderedList=!orderedList;
-        var simil=(bool order)=>order?"&#xE74B;":"&#xE74A;";
-        OrderIcon= simil(orderedList);
+        orderedList = !orderedList;
+        OrderIcon = orderedList ? "\uE74A" : "\uE74B";
 
     }
 }

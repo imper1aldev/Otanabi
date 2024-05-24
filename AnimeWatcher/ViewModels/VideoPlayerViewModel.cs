@@ -45,13 +45,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     }
     //getters and setters
-    private LibVLC LibVLC
+    private LibVLC? LibVLC
     {
         get => libVLC;
         set => libVLC = value;
     }
 
-    public MediaPlayer Player
+    public MediaPlayer? Player
     {
         get => mediaPlayer;
         set => SetProperty(ref mediaPlayer, value);

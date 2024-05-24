@@ -32,11 +32,29 @@ public class SearchAnimeService
             var image = nodo.SelectSingleNode(".//div/figure/img");
             var title = nodo.SelectSingleNode(".//h3");
             var link = innerNodes.GetAttributeValue("href");
-
+            
             anime.url = link;
             anime.title = title.InnerText;
             anime.cover = image.GetAttributeValue("src");
-
+            var tempType = nodo.SelectSingleNode(".//a/div/span").InnerText;
+            switch (tempType)
+        {   
+            case "OVA":
+                anime.type=AnimeType.OVA;
+                break;
+            case"Anime" :
+                anime.type=AnimeType.TV;
+                break;
+            case"Película":
+                anime.type=AnimeType.MOVIE;
+                break;
+            case"Especial":
+                anime.type=AnimeType.SPECIAL;
+                break;
+            default: 
+                anime.type=AnimeType.TV;
+                break;
+        }
             animeList.Add(anime);
         }
         return animeList;

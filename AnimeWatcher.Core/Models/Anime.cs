@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnimeWatcher.Core.Models;
-public enum AnimeType { OVA, TV, MOVIE ,SPECIAL }
+public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,PAGGER }
 public class Anime
 {
     public int id
@@ -51,5 +51,26 @@ public class Anime
     public ICollection<Chapter> Chapters
     {
         get; set;
+    }
+    public string typeStr=>GetTypeByEnum(type);
+
+    private string GetTypeByEnum(AnimeType animeType)
+    {
+        switch (animeType)
+        {
+            case AnimeType.OVA:
+                return "OVA";
+            case AnimeType.TV:
+                return "Serie";
+            case AnimeType.MOVIE:
+                return "Movie";
+            case AnimeType.SPECIAL:
+                return "Special";
+            case AnimeType.PAGGER:
+                return "";
+            default:
+
+                return "";
+        }
     }
 }

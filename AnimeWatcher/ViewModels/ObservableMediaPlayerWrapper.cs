@@ -62,7 +62,19 @@ public class ObservableMediaPlayerWrapper : ObservableObject
 
     public long TimeLong
     {
-        get => _player.Time;
+        get
+        {
+            try
+            {
+                return _player.Time;
+            } catch (Exception)
+            {
+                Debug.WriteLine("Error time log");
+                return -1;
+            }
+
+        }
+
         set => SetProperty(_player.Time, value, _player, (u, n) => u.Time = n);
     }
 

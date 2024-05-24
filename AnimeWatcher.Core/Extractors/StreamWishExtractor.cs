@@ -26,7 +26,7 @@ public class StreamWishExtractor : IExtractor
 
         } catch (Exception e)
         {
-            throw e;
+            
         }
         return streaminUrl;
     }

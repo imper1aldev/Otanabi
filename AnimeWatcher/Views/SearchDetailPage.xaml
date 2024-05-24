@@ -78,7 +78,7 @@
                         <AppBarSeparator Margin="10,0,10,0"/>
                         <AppBarButton Label="Order" Command="{x:Bind ViewModel.OrderChapterListCommand}">
                             <AppBarButton.Icon>
-                                <FontIcon Glyph="&#xE74A;" />
+                                <FontIcon Glyph="{x:Bind ViewModel.OrderIcon,Mode=OneWay}" />
                             </AppBarButton.Icon>
                         </AppBarButton>
 
@@ -109,7 +109,7 @@
                             <TextBlock.FontSize>15</TextBlock.FontSize>
                             <Run Text="Episode #" /> <Run Text="{Binding Path=chapter}"/>
                         </TextBlock>
-                            <!--  <TextBlock Text="{Binding Path=url}" />-->
+                             <TextBlock Text="{Binding Path=url}" />
                         </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

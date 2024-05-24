@@ -30,7 +30,7 @@ public class YourUploadExtractor:IExtractor
 
         } catch (Exception e)
         {
-            throw e;
+            
         }
         return streaminUrl;
     }
