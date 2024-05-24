@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 namespace AnimeWatcher.Core.Models;
 public class History
 {
-    public int id { get; set; }
-    public DateTime watched_date {get;set; }
-    public int seconds_watched {get;set; }
+    #nullable enable
+    public int Id { get; set; }
+    #nullable enable
+    public DateTime WatchedDate {get;set; }
+    #nullable enable
+    public int? SecondsWatched {get;set; }
 
 }

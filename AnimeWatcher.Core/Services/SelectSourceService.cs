@@ -1,11 +1,10 @@
-﻿using AnimeWatcher.Core.Models;
-using AnimeWatcher.Core.Extractors;
+﻿using AnimeWatcher.Core.Models; 
 namespace AnimeWatcher.Core.Services;
 public class SelectSourceService
 {
-    internal OkruExtractor okruExtractor = new();
-    internal StreamWishExtractor streamWishExtractor = new();
-    internal YourUploadExtractor yourUploadExtractor = new();
+    //internal OkruExtractor okruExtractor = new();
+    //internal StreamWishExtractor streamWishExtractor = new();
+    //internal YourUploadExtractor yourUploadExtractor = new();
     internal static List<T> MoveToFirst<T>(List<T> list, T item)
     {
         List<T> newList = new List<T>(list);
@@ -16,35 +15,35 @@ public class SelectSourceService
         return newList;
     }
 
-    public async Task<string> SelectSourceAsync(VideoSource[] videoSources,string byDefault="")
+    public async Task<string> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
-        /*logic to get the default source here*/
-        /**/
-        var streamUrl="";
 
-        var item = videoSources.FirstOrDefault(e=>e.server == byDefault) ?? videoSources[0];
-        var orderedSources =MoveToFirst(videoSources.ToList(),item);
+        var streamUrl = "";
+
+        /*logic to get the default source here*/
+        var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
+        var orderedSources = MoveToFirst(videoSources.ToList(), item);
 
         foreach (var source in orderedSources)
         {
             var tempUrl="";
-            switch (source.server)
+            //var tempUrl = source.server switch
+            //{
+            //    "Okru" => await okruExtractor.GetStreamAsync(source.checkedUrl),
+            //    "Streamwish" => await streamWishExtractor.GetStreamAsync(source.checkedUrl),
+            //    "YourUpload" => await yourUploadExtractor.GetStreamAsync(source.checkedUrl),
+            //    _ => ""
+            //};
+
+            var videoExtractorType= Type.GetType($"AnimeWatcher.Core.VideoExtractors.{source.Server}Extractor");
+            var videoExtractorInstance = Activator.CreateInstance(videoExtractorType);
+            var method=videoExtractorType.GetMethod("GetStreamAsync");
+            tempUrl = await (Task<string>)method.Invoke(videoExtractorInstance, new object[]{source.CheckedUrl});
+
+
+            if (!string.IsNullOrEmpty(tempUrl))
             {
-                case "Okru":
-                    tempUrl= await okruExtractor.GetStreamAsync(source.checkedUrl);
-                    break;
-                case "Streamwish":
-                    tempUrl= await streamWishExtractor.GetStreamAsync(source.checkedUrl);
-                    break;
-                case "YourUpload": 
-                    tempUrl= await yourUploadExtractor.GetStreamAsync(source.checkedUrl);
-                    break;
-                default:
-                    break;
-            }
-            if (!string.IsNullOrEmpty(tempUrl) )
-            {
-                streamUrl=tempUrl;
+                streamUrl = tempUrl;
                 break;
             }
         }

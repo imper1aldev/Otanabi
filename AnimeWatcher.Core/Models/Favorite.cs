@@ -7,14 +7,12 @@ using System.Threading.Tasks;
 namespace AnimeWatcher.Core.Models;
 public class Favorite
 {
-    public int animeId
-    {
-        get; set;
-    }
-    public string categoryId
-    {
-        get; set;
-    }
+
+    public int AnimeId{ get; set; }
+
+    public Anime Anime { get; set; }
+    #nullable enable
+    public string? CategoryId { get; set; }
 
 
 }

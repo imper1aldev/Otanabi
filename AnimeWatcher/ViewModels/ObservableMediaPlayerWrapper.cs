@@ -67,7 +67,7 @@ public class ObservableMediaPlayerWrapper : ObservableObject
             try
             {
                 return _player.Time;
-            } catch (Exception)
+            } catch ( Exception)
             {
                 Debug.WriteLine("Error time log");
                 return -1;

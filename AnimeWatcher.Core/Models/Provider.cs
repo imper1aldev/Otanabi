@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 namespace AnimeWatcher.Core.Models;
 public class Provider
 {
-    public int id { get; set; }
-    public string name { get; set; }
-    public string url { get; set; }
-    public ICollection<Anime> animes { get; set; }
+    public int? Id { get; set; }
+    #nullable enable
+    public string? Name { get; set; }
+    #nullable enable
+    public string? Url { get; set; }
+    #nullable enable
+    public Anime[]? Animes { get; set; }
 }

@@ -6,7 +6,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls" 
     xmlns:models="using:AnimeWatcher.Core.Models"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+    </Page.Resources>
 
     <Grid x:Name="ContentArea"  
           Margin="20,20,20,10" 
@@ -21,11 +26,11 @@
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*" ></RowDefinition>
         </Grid.RowDefinitions>
- 
+
         <StackPanel Grid.Row="0" Grid.Column="0" >
             <Grid x:Name="portrait" Padding="15,15,15,15">
                 <Grid.Background>
-                    <ImageBrush ImageSource="{x:Bind ViewModel.Item.cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
+                    <ImageBrush ImageSource="{x:Bind ViewModel.Anime.Cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
                         <ImageBrush.RelativeTransform  >
                             <CompositeTransform CenterX="0.5" CenterY="0.5" TranslateX="0" TranslateY="1.9"/>
                         </ImageBrush.RelativeTransform>
@@ -42,12 +47,27 @@
 
                 <Image Name="ImageExControl" HorizontalAlignment="Left" 
                                   Grid.Row="0" Height="250"  Width="Auto"
-                                Source="{x:Bind ViewModel.Item.cover, Mode=OneWay}" />
+                                Source="{x:Bind ViewModel.Anime.Cover, Mode=OneWay}" />
 
                 <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,0,0,0">
-                    <TextBlock  x:Name="title"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
-                                Text="{x:Bind ViewModel.Item.title, Mode=OneWay}" />
-                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Item.description, Mode=OneWay}" Padding="0,25"/>
+                    <TextBlock  x:Name="title" IsTextSelectionEnabled="True"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
+                                Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,15,0,0" >
+                        <TextBlock  
+                            x:Name="type" IsTextSelectionEnabled="True"  Margin="0,0,30,0" Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Anime.TypeStr, Mode=OneWay,
+                            Converter={StaticResource StringFormatConverter}, ConverterParameter='Type: {0}'}" >
+                        </TextBlock>
+
+                        <TextBlock
+                            x:Name="status" IsTextSelectionEnabled="True" Margin="0,0,0,0"   Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.Anime.Status, Mode=OneWay, 
+                                    Converter={StaticResource StringFormatConverter}, ConverterParameter='Status:  {0}'}">
+                        </TextBlock>
+                    </StackPanel>
+
+
+                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}" Padding="0,25"/>
                 </StackPanel>
 
 
@@ -98,25 +118,24 @@
             <AutoSuggestBox PlaceholderText="Search..."   
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="Auto"                     
                 QueryIcon="Find" Grid.Column="1"  Margin="0,0,0,0" Height="35" VerticalAlignment="Top"/>
-            
-            <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Item.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
 
-            <ListView.ItemTemplate >
-                <DataTemplate x:DataType="models:Chapter">
-                    <StackPanel Padding="0,15,0,15">
-                        <!--<TextBlock Text="{Binding Path=name}" />-->
-                        <TextBlock  VerticalAlignment="Center">
-                            <TextBlock.FontSize>15</TextBlock.FontSize>
-                            <Run Text="Episode #" /> <Run Text="{Binding Path=chapter}"/>
-                        </TextBlock>
-                             <TextBlock Text="{Binding Path=url}" />
+            <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Anime.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
+
+                <ListView.ItemTemplate >
+                    <DataTemplate x:DataType="models:Chapter">
+                        <StackPanel Padding="0,15,0,15">
+                            <!--<TextBlock Text="{Binding Path=Name}" />-->
+                            <TextBlock  VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}">
+                                <TextBlock.FontSize>15</TextBlock.FontSize>
+                            </TextBlock>
+                            <!--<TextBlock Text="{Binding Path=Url}" />-->
                         </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
-        
-        
+
+
         <TeachingTip 
             x:Name="ToggleThemeTeachingTip2" 
             IsOpen="{x:Bind ViewModel.ErrorActive , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

@@ -18,7 +18,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private readonly INavigationService _navigationService;
 
     [ObservableProperty]
-    private Anime? item;
+    private Anime anime;
 
     [ObservableProperty]
     private Chapter[]? chapters;
@@ -42,13 +42,16 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     public async void OnNavigatedTo(object parameter)
     {
         GC.Collect();
-        if (parameter is string url)
+
+        if (parameter is Anime anime)
         {
-            var data = await _searchAnimeService.GetAnimeDetailsAsync(url);
-            Item = data;
+            Anime = await _searchAnimeService.GetAnimeDetailsAsync(anime); 
 
         }
     }
+
+
+
 
     public void OnNavigatedFrom()
     {
@@ -57,22 +60,23 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
 
     public async void OpenPlayer(Chapter chapter)
     {
-        try
-        {
+        //try
+        //{
 
-            var videoSources = await _searchAnimeService.GetVideoSources(chapter.url);
-            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources, "YourUpload");
-            if (string.IsNullOrEmpty(videoUrl))
-            {
-                throw new Exception(ErrorMessage = "Can't extract the video URL");
-            }
-            _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, videoUrl);
-        } catch (Exception e)
+        var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, Anime.Provider);
+        var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources, "YourUpload");
+        if (string.IsNullOrEmpty(videoUrl))
         {
-            ErrorMessage = e.Message.ToString();
-            ErrorActive = true;
-            return;
+            throw new Exception(ErrorMessage = "Can't extract the video URL");
         }
+        _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, videoUrl);
+
+        //} catch (Exception e)
+        //{
+        //    ErrorMessage = e.Message.ToString();
+        //    ErrorActive = true;
+        //    return;
+        //}
 
     }
     [RelayCommand]

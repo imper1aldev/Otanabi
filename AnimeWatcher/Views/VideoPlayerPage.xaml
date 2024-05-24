@@ -25,7 +25,7 @@
         <lvs:VideoView x:Name="VideoView"
                        Grid.Row="0"
                        Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
-                       HorizontalAlignment="Stretch"
+                       HorizontalAlignment="Stretch" 
                        VerticalAlignment="Stretch"
                        x:Load="{x:Bind ViewModel.LoadPlayer}"
                        MediaPlayer="{x:Bind ViewModel.Player}">

@@ -108,8 +108,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         LibVLC = new LibVLC(true, eventArgs.SwapChainOptions);
         Player = new MediaPlayer(LibVLC);
-
-        var media = new Media(LibVLC,new Uri(VideoUrl));
+        var mediaOptions = new []{ ":network-caching=3000",":live-caching=3000" };
+        var media = new Media(LibVLC,new Uri(VideoUrl),mediaOptions);
         Player.Play(media);
         Debug.WriteLine("Starting playback of '{0}'", VideoUrl);
 

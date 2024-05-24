@@ -7,12 +7,19 @@ using System.Threading.Tasks;
 namespace AnimeWatcher.Core.Models;
 public class Chapter
 {
-    public int id {get;set;}
-    public int animeId {get;set;}
-    public int chapter {get;set;}
-    public string name {get;set;}
-    public int historyId {get;set;}
-    public string url {get;set; } 
-    public History history {get;set;} 
+    #nullable enable
+    public int? Id {get;set;}
+    #nullable enable
+    public int? AnimeId {get;set;}
+    #nullable enable
+    public int? ChapterNumber {get;set;}
+    #nullable enable
+    public string? Name {get;set;}
+    #nullable enable
+    public int? historyId {get;set;}
+    #nullable enable
+    public string? Url {get;set; }
+    #nullable enable
+    public History? History {get;set;} 
     
 }

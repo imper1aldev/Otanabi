@@ -7,17 +7,17 @@ public class ServerConventions
     {
         new Convention
         {
-             Name = "Okru",
-            possibleNames = new string[] { "ok-ru", "okru", "OKRU" }
+            Name = "Okru",
+            PossibleNames = new string[] { "ok-ru", "okru", "OKRU" }
         },new Convention
         {
              Name = "Streamwish",
-            possibleNames = new string[] { "sw", "SW", "OKRU", "streamwish" }
+            PossibleNames = new string[] { "sw", "SW", "OKRU", "streamwish" }
         },
         new Convention
         {
-            Name= "YourUpload",
-            possibleNames = new string[] { "yu","YourUpload","yourUpload","yourupload" }
+            Name= "Yourupload",
+            PossibleNames = new string[] { "yu","YourUpload","yourUpload","yourupload" }
         }
     };
 
@@ -27,7 +27,7 @@ public class ServerConventions
         var convention = "";
         try
         {
-            convention = Conventions.First(e => e.possibleNames.Contains(serverName)).Name;
+            convention = Conventions.First(e => e.PossibleNames.Contains(serverName)).Name;
         } catch (Exception)
         {
 

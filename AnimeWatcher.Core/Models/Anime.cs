@@ -5,46 +5,46 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnimeWatcher.Core.Models;
-public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,PAGGER }
+public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,OTHER }
 public class Anime
 {
-    public int id
+    public int Id
     {
         get; set;
     }
-    public string remoteID
+    public string RemoteID
     {
         get; set;
     }
-    public string cover
+    public string Cover
     {
         get; set;
     }
-    public string title
+    public string Title
     {
         get; set;
     }
-    public string url
+    public string Url
     {
         get; set;
     }
-    public AnimeType type
+    public AnimeType Type
     {
         get; set;
     }
-    public string description
+    public string Description
     {
         get; set;
     }
-    public int providerId
+    public int ProviderId
     {
         get; set;
     }
-    public Provider provider
+    public Provider Provider
     {
         get; set;
     }
-    public string status
+    public string Status
     {
         get; set;
     }
@@ -52,25 +52,6 @@ public class Anime
     {
         get; set;
     }
-    public string typeStr=>GetTypeByEnum(type);
-
-    private string GetTypeByEnum(AnimeType animeType)
-    {
-        switch (animeType)
-        {
-            case AnimeType.OVA:
-                return "OVA";
-            case AnimeType.TV:
-                return "Serie";
-            case AnimeType.MOVIE:
-                return "Movie";
-            case AnimeType.SPECIAL:
-                return "Special";
-            case AnimeType.PAGGER:
-                return "";
-            default:
-
-                return "";
-        }
-    }
+    public string TypeStr=>Type.ToString();
+     
 }
