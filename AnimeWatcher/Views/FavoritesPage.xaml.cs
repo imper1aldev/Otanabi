@@ -4,16 +4,16 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace AnimeWatcher.Views;
 
-public sealed partial class MainPage : Page
+public sealed partial class FavoritesPage : Page
 {
-    public MainViewModel ViewModel
+    public FavoritesViewModel ViewModel
     {
         get;
     }
 
-    public MainPage()
+    public FavoritesPage()
     {
-        ViewModel = App.GetService<MainViewModel>();
+        ViewModel = App.GetService<FavoritesViewModel>();
         InitializeComponent();
     }
 }

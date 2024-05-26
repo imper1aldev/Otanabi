@@ -5,34 +5,34 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AnimeWatcher.Core.Models;
-public class videoSource
+public class VideoSource
 {
-    public string server
+    public string Server
     {
         get; set;
     }
-    public string url
+    public string Url
     {
         get; set;
     }
-    public string title
+    public string Title
     {
         get; set;
     }
-    public int ads
+    public int Ads
     {
         get; set;
     }
-    public bool allow_mobile
+    public bool Allow_mobile
     {
         get; set;
     }
-    public string code
+    public string Code
     {
         get; set;
     }
 
-    public string checkedUrl => url != null ? url : code;
+    public string CheckedUrl => Url != null ? Url : Code;
 
 
 }

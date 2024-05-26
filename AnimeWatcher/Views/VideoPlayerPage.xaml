@@ -4,9 +4,268 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:lvs="using:LibVLCSharp.Platforms.Windows" 
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:usercontrols="using:AnimeWatcher.UserControls"
+    xmlns:converters="using:AnimeWatcher.Converters"
+    xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
+    
     mc:Ignorable="d">
+    <Page.Resources>
+        <converters:LongToDoubleConverter x:Key="LongToDoubleConverter" />
+        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+    </Page.Resources>
+    <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-    <Grid x:Name="ContentArea">
-        
+        <lvs:VideoView x:Name="VideoView"
+                       Grid.Row="0"
+                       Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Stretch"
+                       x:Load="{x:Bind ViewModel.LoadPlayer}"
+                       MediaPlayer="{x:Bind ViewModel.Player}">
+            <interactivity:Interaction.Behaviors>
+                <interactions:EventTriggerBehavior EventName="Initialized">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.InitializedCommand}" />
+                </interactions:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+            <lvs:VideoView.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Icon="Play" Text="Play" Command="{x:Bind ViewModel.PlayPauseCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <!--  Conflicts with other accelerators  -->
+                            <!--<KeyboardAccelerator Key="Space" />-->
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Icon="Stop" Text="Stop" Command="{x:Bind ViewModel.StopCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <!--  Conflicts with other accelerators  -->
+                            <!--<KeyboardAccelerator Key="S" />-->
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem> 
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Icon="View" Text="View">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <!--<KeyboardAccelerator Key="S" Modifiers="Control" />-->
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="Tools">
+                        <MenuFlyoutItem.Icon>
+                            <FontIcon Glyph="&#xEC7A;" />
+                        </MenuFlyoutItem.Icon>
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <!--<KeyboardAccelerator Key="S" Modifiers="Control" />-->
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem Icon="Cancel" Text="Quit" />
+                </MenuFlyout>
+            </lvs:VideoView.ContextFlyout>
+        </lvs:VideoView>
+
+
+        <Grid x:Name="Controls"
+              Grid.Row="1"
+              VerticalAlignment="Center"
+              Background="{ThemeResource ControlsBackground}"
+              Visibility="{x:Bind ViewModel.ControlsVisibility, Mode=OneWay}">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="{x:Bind ViewModel.MediaPlayerWrapper.TimeString, Mode=OneWay, FallbackValue='--:--:--'}" />
+            <Slider Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    IsEnabled="True"
+                    IsThumbToolTipEnabled="False"
+                    Maximum="{x:Bind ViewModel.MediaPlayerWrapper.TotalTimeLong, Mode=OneWay, Converter={StaticResource LongToDoubleConverter}}"
+                    Minimum="0"
+                    Value="{x:Bind ViewModel.MediaPlayerWrapper.TimeLong, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LongToDoubleConverter}}" />
+
+            <CommandBar Grid.Row="1"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        HorizontalAlignment="Left"
+                        DefaultLabelPosition="Collapsed">
+                <CommandBar.PrimaryCommands>
+                    <usercontrols:AppBarPlaybackStateButton Command="{x:Bind ViewModel.PlayPauseCommand}"
+                                                            IsPlaying="{x:Bind ViewModel.MediaPlayerWrapper.IsPlaying, Mode=OneWay, FallbackValue=false}"
+                                                            Label="Play"
+                                                            Style="{StaticResource DefaultAppBarButtonStyle}">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Space" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </usercontrols:AppBarPlaybackStateButton>
+                    <AppBarSeparator />
+                    <AppBarButton Label="Rewind">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xEB9E;" />
+                        </AppBarButton.Icon>
+                        <interactivity:Interaction.Behaviors>
+                            <interactions:EventTriggerBehavior EventName="Click">
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                            </interactions:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Left">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Left" Modifiers="Control">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Left" Modifiers="Menu">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Left" Modifiers="Shift">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                    
+                    <AppBarButton Command="{x:Bind ViewModel.StopCommand}"
+                                  Icon="Stop"
+                                  Label="Stop">
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" />
+                        </Button.KeyboardAccelerators>
+                    </AppBarButton>
+
+                    <AppBarButton Label="Fast forward">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xEB9D;" />
+                        </AppBarButton.Icon>
+                        <interactivity:Interaction.Behaviors>
+                            <interactions:EventTriggerBehavior EventName="Click">
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
+                            </interactions:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Right">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Right" Modifiers="Control">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Right" Modifiers="Menu">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                            <KeyboardAccelerator Key="Right" Modifiers="Shift">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+
+                    <AppBarSeparator />
+
+                    <usercontrols:AppBarWindowPresenterStateButton Command="{x:Bind ViewModel.FullScreenCommand}"
+                                                                   IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                                                   Label="Toggle FullScreen"
+                                                                   Style="{StaticResource DefaultAppBarButtonStyle}">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </usercontrols:AppBarWindowPresenterStateButton>
+
+
+                </CommandBar.PrimaryCommands>
+            </CommandBar>
+
+            <StackPanel Grid.Row="1"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        Margin="10,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="5">
+                <!--<developerTools:FocusTracker IsActive="True" />-->
+                <Button Width="0"
+                        Height="0"
+                        Command="{x:Bind ViewModel.VolumeUpCommand}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Up" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+                <Button Width="0"
+                        Height="0"
+                        Command="{x:Bind ViewModel.VolumeDownCommand}">
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Down" />
+                    </Button.KeyboardAccelerators>
+                </Button>
+
+                <!--<TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
+                <usercontrols:AppBarVolumeStateButton VerticalAlignment="Center"
+                                                      Command="{x:Bind ViewModel.MuteCommand}"
+                                                      LabelPosition="Collapsed"
+                                                      Style="{StaticResource DefaultAppBarButtonStyle}"
+                                                      Volume="{x:Bind ViewModel.MediaPlayerWrapper.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}">
+
+                    <Button.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="M" />
+                    </Button.KeyboardAccelerators>
+                </usercontrols:AppBarVolumeStateButton>
+                <Slider Width="150"
+                        VerticalAlignment="Center"
+                        Maximum="100"
+                        Minimum="0"
+                        SnapsTo="Ticks"
+                        TickFrequency="5"
+                        TickPlacement="Outside"
+                        Value="{x:Bind ViewModel.MediaPlayerWrapper.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
+            </StackPanel>
+
+
+        </Grid>
+
     </Grid>
 </Page>

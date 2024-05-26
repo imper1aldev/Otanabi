@@ -13,12 +13,12 @@ public class PageService : IPageService
     private readonly Dictionary<string, Type> _pages = new();
 
     public PageService()
-    {
-        Configure<MainViewModel, MainPage>();
+    { 
         Configure<SettingsViewModel, SettingsPage>();
         Configure<SearchViewModel, SearchPage>();
         Configure<SearchDetailViewModel, SearchDetailPage>();
         Configure<VideoPlayerViewModel, VideoPlayerPage>();
+        Configure<FavoritesViewModel, FavoritesPage>();
     }
 
     public Type GetPageType(string key)

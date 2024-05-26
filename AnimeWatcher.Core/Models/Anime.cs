@@ -1,41 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
 
 namespace AnimeWatcher.Core.Models;
+public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,OTHER }
 public class Anime
-{
-    public int id
+{   
+    [PrimaryKey, AutoIncrement]
+    public int Id
     {
         get; set;
     }
-    public string remoteID
+    public string RemoteID
     {
         get; set;
     }
-    public string cover
+    public string Cover
     {
         get; set;
     }
-    public string title
+    public string Title
     {
         get; set;
     }
-    public string url
+    public string Url
     {
         get; set;
     }
-    public string description { get; set; }
-    public int providerId
+    public AnimeType Type
     {
         get; set;
     }
-    public Provider provider
+    public string Description
     {
         get; set;
     }
-    public string status { get;set; }
-    public ICollection<Chapter> Chapters { get; set; }
+    public int ProviderId
+    {
+        get; set;
+    }
+    [Ignore]
+    public Provider Provider
+    {
+        get; set;
+    }
+    public string Status
+    {
+        get; set;
+    }
+    [Ignore]
+    public ICollection<Chapter> Chapters
+    {
+        get; set;
+    }
+
+    public string TypeStr=>Type.ToString();
+     
 }

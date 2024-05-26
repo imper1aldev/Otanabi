@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using SQLite;
 
 namespace AnimeWatcher.Core.Models;
 public class Favorite
 {
-    public int animeId
-    {
-        get; set;
-    }
-    public string categoryId
-    {
-        get; set;
-    }
+    [AutoIncrement,PrimaryKey]
+    public int Id { get; set; }
+    public int AnimeId{ get; set; }
+    [Ignore]
+    public Anime Anime { get; set; }
+    #nullable enable
+    public string? CategoryId { get; set; }
 
 
 }

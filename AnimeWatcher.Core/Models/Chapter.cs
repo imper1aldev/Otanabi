@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
 
 namespace AnimeWatcher.Core.Models;
 public class Chapter
 {
-    public int id {get;set;}
-    public int animeId {get;set;}
-    public int chapter {get;set;}
-    public string name {get;set;}
-    public int historyId {get;set;}
-    public string url {get;set; } 
-    public History history {get;set;} 
+    [AutoIncrement,PrimaryKey]
+    #nullable enable
+    public int? Id {get;set;} 
+    public int? AnimeId {get;set;}
+    #nullable enable
+    public int? ChapterNumber {get;set;}
+    #nullable enable
+    public string? Name {get;set;}
+    #nullable enable
+    public int? historyId {get;set;}
+    #nullable enable
+    public string? Url {get;set; }
+    #nullable enable
+    [Ignore]
+    public History? History {get;set;} 
     
 }
