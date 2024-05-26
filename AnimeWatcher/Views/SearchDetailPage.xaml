@@ -30,10 +30,10 @@
         <StackPanel Grid.Row="0" Grid.Column="0" >
             <Grid x:Name="portrait" Padding="15,15,15,15">
                 <Grid.Background>
-                    <ImageBrush ImageSource="{x:Bind ViewModel.Anime.Cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
-                        <ImageBrush.RelativeTransform  >
+                    <ImageBrush ImageSource="{x:Bind ViewModel.SelectedAnime.Cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
+                        <!--<ImageBrush.RelativeTransform  >
                             <CompositeTransform CenterX="0.5" CenterY="0.5" TranslateX="0" TranslateY="1.9"/>
-                        </ImageBrush.RelativeTransform>
+                        </ImageBrush.RelativeTransform> -->
                     </ImageBrush>
                 </Grid.Background>
                 <Grid.RowDefinitions>
@@ -47,27 +47,33 @@
 
                 <Image Name="ImageExControl" HorizontalAlignment="Left" 
                                   Grid.Row="0" Height="250"  Width="Auto"
-                                Source="{x:Bind ViewModel.Anime.Cover, Mode=OneWay}" />
+                                Source="{x:Bind ViewModel.SelectedAnime.Cover, Mode=OneWay}" />
 
                 <StackPanel Grid.Row="1" Grid.Column="1" Margin="20,0,0,0">
                     <TextBlock  x:Name="title" IsTextSelectionEnabled="True"  Margin="{StaticResource XXSmallTopMargin}"   Style="{ThemeResource TitleTextBlockStyle}"
-                                Text="{x:Bind ViewModel.Anime.Title, Mode=OneWay}" />
+                                Text="{x:Bind ViewModel.SelectedAnime.Title, Mode=OneWay}" />
                     <StackPanel Orientation="Horizontal" Margin="0,15,0,0" >
                         <TextBlock  
                             x:Name="type" IsTextSelectionEnabled="True"  Margin="0,0,30,0" Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.Anime.TypeStr, Mode=OneWay,
+                            Text="{x:Bind ViewModel.SelectedAnime.TypeStr, Mode=OneWay,
                             Converter={StaticResource StringFormatConverter}, ConverterParameter='Type: {0}'}" >
                         </TextBlock>
 
                         <TextBlock
                             x:Name="status" IsTextSelectionEnabled="True" Margin="0,0,0,0"   Style="{ThemeResource SubtitleTextBlockStyle}"
-                            Text="{x:Bind ViewModel.Anime.Status, Mode=OneWay, 
+                            Text="{x:Bind ViewModel.SelectedAnime.Status, Mode=OneWay, 
                                     Converter={StaticResource StringFormatConverter}, ConverterParameter='Status:  {0}'}">
                         </TextBlock>
+                        <TextBlock
+                            x:Name="ProviderName" IsTextSelectionEnabled="True" Margin="0,0,0,0"   Style="{ThemeResource SubtitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.SelectedAnime.Provider.Name, Mode=OneWay, 
+                                    Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider:  {0}'}">
+                        </TextBlock>
+
                     </StackPanel>
 
 
-                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.Anime.Description, Mode=OneWay}" Padding="0,25"/>
+                    <TextBlock Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.SelectedAnime.Description, Mode=OneWay}" Padding="0,25"/>
                 </StackPanel>
 
 
@@ -79,7 +85,7 @@
                 </Grid.ColumnDefinitions>
                 <CommandBar Grid.Column="0" Width="Auto" Height="Auto" HorizontalAlignment="Left" DefaultLabelPosition="Right">
                     <CommandBar.PrimaryCommands>
-                        <AppBarButton  Label="Add to library" >
+                        <AppBarButton  Label="Add to library" Command="{x:Bind ViewModel.FavoriteFunCommand}" >
                             <AppBarButton.Icon>
                                 <FontIcon Glyph="&#xE728;"/>
                             </AppBarButton.Icon>
@@ -119,7 +125,8 @@
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="Auto"                     
                 QueryIcon="Find" Grid.Column="1"  Margin="0,0,0,0" Height="35" VerticalAlignment="Top"/>
 
-            <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.Anime.Chapters, Mode=OneWay}" ItemClick="ListView_ItemClick">
+            <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" 
+                      ItemsSource="{x:Bind ViewModel.ChapterList, Mode=OneWay}" ItemClick="ListView_ItemClick">
 
                 <ListView.ItemTemplate >
                     <DataTemplate x:DataType="models:Chapter">

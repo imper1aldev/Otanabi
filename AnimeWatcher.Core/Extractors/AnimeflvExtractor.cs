@@ -6,11 +6,12 @@ using Newtonsoft.Json.Linq;
 using System.Web;
 using ScrapySharp.Extensions;
 using AnimeWatcher.Core.Contracts.Extractors;
+using System.Xml.Linq;
 namespace AnimeWatcher.Core.Extractors;
-public class AnimeflvExtractor:IExtractor
+public class AnimeflvExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
-    internal readonly string sourceName= "AnimeFLV";
+    internal readonly string sourceName = "AnimeFLV";
     internal readonly string originUrl = "https://www3.animeflv.net";
     public string GetSourceName()
     {
@@ -20,16 +21,17 @@ public class AnimeflvExtractor:IExtractor
     {
         return originUrl;
     }
-    public Provider GenProvider(){
-        return new Provider{Name=sourceName,Url=originUrl};
+    public Provider GenProvider()
+    {
+        return new Provider { Name = sourceName, Url = originUrl };
     }
 
 
-    public async Task<Anime[]> SearchAnimeAsync(string searchTerm,int page)
+    public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
     {
-       var animeList = new List<Anime>();
+        var animeList = new List<Anime>();
 
-        var url = string.Concat(originUrl, "/browse?q=", HttpUtility.UrlEncode(searchTerm),$"&page={page}");
+        var url = string.Concat(originUrl, "/browse?q=", HttpUtility.UrlEncode(searchTerm), $"&page={page}");
 
         HtmlWeb oWeb = new HtmlWeb();
         HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
@@ -37,35 +39,13 @@ public class AnimeflvExtractor:IExtractor
         foreach (var nodo in doc.DocumentNode.CssSelect(".Anime"))
         {
             Anime anime = new();
+             
+            anime.Title = nodo.SelectSingleNode(".//h3").InnerText;
+            anime.Url = nodo.Descendants("a").First().GetAttributeValue("href");
+            anime.Cover =nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src");
+            anime.Provider = GenProvider();
+            anime.Type = getAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
-            var innerNodes = nodo.Descendants("a").First();
-            var image = nodo.SelectSingleNode(".//div/figure/img");
-            var title = nodo.SelectSingleNode(".//h3");
-            var link = innerNodes.GetAttributeValue("href");
-            
-            anime.Url = link;
-            anime.Title = title.InnerText;
-            anime.Cover = image.GetAttributeValue("src");
-            anime.Provider=GenProvider();
-            var tempType = nodo.SelectSingleNode(".//a/div/span").InnerText;
-            switch (tempType)
-        {   
-            case "OVA":
-                anime.Type=AnimeType.OVA;
-                break;
-            case"Anime" :
-                anime.Type=AnimeType.TV;
-                break;
-            case"Película":
-                anime.Type=AnimeType.MOVIE;
-                break;
-            case"Especial":
-                anime.Type=AnimeType.SPECIAL;
-                break;
-            default: 
-                anime.Type=AnimeType.OTHER;
-                break;
-        }
             animeList.Add(anime);
         }
         return animeList.ToArray();
@@ -87,34 +67,17 @@ public class AnimeflvExtractor:IExtractor
         var coverTmp = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img").First().GetAttributeValue("src");
         anime.Cover = string.Concat(originUrl, coverTmp);
         anime.Description = node.CssSelect("div.Wrapper > div > div > div.Container > div > main > section").First().CssSelect("div.Description > p").First().InnerText;
-        anime.Provider=GenProvider();
-        var tempType= node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
-        switch (tempType)
-        {   
-            case "OVA":
-                anime.Type=AnimeType.OVA;
-                break;
-            case"Anime" :
-                anime.Type=AnimeType.TV;
-                break;
-            case"Película":
-                anime.Type=AnimeType.MOVIE;
-                break;
-            case"Especial":
-                anime.Type=AnimeType.SPECIAL;
-                break;
-            default: 
-                anime.Type=AnimeType.TV;
-                break;
-        }
-        
+        anime.Provider = GenProvider();
+        var tempType = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
+        anime.Type = getAnimeTypeByStr(tempType);
+
         anime.Status = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > p > span").First().InnerText;
 
-        var identifier = GetUriIdentify(node.InnerText , anime.Status);
+        var identifier = GetUriIdentify(node.InnerText, anime.Status);
         anime.Chapters = GetChaptersByregex(node.InnerText, identifier);
         return anime;
     }
-    private string[] GetUriIdentify(string text ,string aStatus)
+    private string[] GetUriIdentify(string text, string aStatus)
     {
         var pattern = @"anime_info = (\[.*])";
         var identifier = "";
@@ -145,11 +108,13 @@ public class AnimeflvExtractor:IExtractor
             }
 
             identifier = dataList[0];
-            if(aStatus=="En emision" ) {
-                chapUri = dataList.GetRange(dataList.Count-2 , 1)[0];
-            }else
+            if (aStatus == "En emision")
             {
-                chapUri = dataList.GetRange(dataList.Count-1 , 1)[0];
+                chapUri = dataList.GetRange(dataList.Count - 2, 1)[0];
+            }
+            else
+            {
+                chapUri = dataList.GetRange(dataList.Count - 1, 1)[0];
             }
 
         }
@@ -176,7 +141,7 @@ public class AnimeflvExtractor:IExtractor
                 int[] intArray=Array.ConvertAll(numbers,int.Parse);
                 */
                 chapter.Url = string.Concat("/ver/", chapIdentifier[1], "-", chaptherOrder);
-                chapter.ChapterNumber=chaptherOrder;
+                chapter.ChapterNumber = chaptherOrder;
                 chapter.AnimeId = int.Parse(chapIdentifier[0]);
                 chapter.Name = string.Concat(chapIdentifier[2], " ", chaptherOrder);
 
@@ -197,7 +162,7 @@ public class AnimeflvExtractor:IExtractor
             var prefJson = JObject.Parse(prefab);
 
             foreach (var vsource in prefJson["SUB"])
-            {  
+            {
                 var serverName = _serverConventions.GetServerName((string)vsource["server"]);
 
                 if (string.IsNullOrEmpty(serverName))
@@ -233,5 +198,21 @@ public class AnimeflvExtractor:IExtractor
 
     }
 
+    private AnimeType getAnimeTypeByStr(string strType)
+    {
+        switch (strType)
+        {
+            case "OVA":
+                return AnimeType.OVA;
+            case "Anime":
+                return AnimeType.TV;
+            case "Película":
+                return AnimeType.MOVIE;
+            case "Especial":
+                return AnimeType.SPECIAL;
+            default:
+                return AnimeType.TV;
+        }
+    }
 
 }

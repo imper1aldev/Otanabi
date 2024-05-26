@@ -2,6 +2,7 @@
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Core.Contracts.Services;
 using AnimeWatcher.Core.Services;
+using AnimeWatcher.Core.Database;
 using AnimeWatcher.Helpers;
 using AnimeWatcher.Models;
 using AnimeWatcher.Notifications;
@@ -73,6 +74,8 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<FavoritesViewModel>();
+            services.AddTransient<FavoritesPage>();
             services.AddTransient<VideoPlayerViewModel>();
             services.AddTransient<VideoPlayerPage>();
             services.AddTransient<SearchDetailViewModel>();
@@ -81,8 +84,6 @@ public partial class App : Application
             services.AddTransient<SearchPage>();
             services.AddTransient<SettingsViewModel>();
             services.AddTransient<SettingsPage>();
-            services.AddTransient<MainViewModel>();
-            services.AddTransient<MainPage>();
             services.AddTransient<ShellPage>();
             services.AddTransient<ShellViewModel>();
 
@@ -105,7 +106,8 @@ public partial class App : Application
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
-
+        //init database
+        new DatabaseService();
 
         await App.GetService<IActivationService>().ActivateAsync(args);
     }

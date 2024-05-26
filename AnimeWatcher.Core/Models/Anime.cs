@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
 
 namespace AnimeWatcher.Core.Models;
 public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,OTHER }
 public class Anime
-{
+{   
+    [PrimaryKey, AutoIncrement]
     public int Id
     {
         get; set;
@@ -40,6 +37,7 @@ public class Anime
     {
         get; set;
     }
+    [Ignore]
     public Provider Provider
     {
         get; set;
@@ -48,10 +46,12 @@ public class Anime
     {
         get; set;
     }
+    [Ignore]
     public ICollection<Chapter> Chapters
     {
         get; set;
     }
+
     public string TypeStr=>Type.ToString();
      
 }

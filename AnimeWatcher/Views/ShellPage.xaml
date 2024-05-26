@@ -54,16 +54,19 @@
                                            PaneDisplayMode="{x:Bind ViewModel.PaneDisplayMode, Mode=OneWay}"
                                            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Shell_Main" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.MainViewModel" Content="Favorites">
+
+                <NavigationViewItem x:Uid="Shell_Favorites" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.FavoritesViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE728;" />
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                
                 <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.SearchViewModel" Content="Search">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF6FA;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                
             </NavigationView.MenuItems>
 
             <i:Interaction.Behaviors>

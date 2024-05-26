@@ -49,7 +49,6 @@ public class SearchAnimeService
         var instance = rexflex.Item2;
         var videoSources = await (Task<VideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
 
-
         return videoSources.ToArray();
     }
 
