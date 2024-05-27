@@ -107,8 +107,8 @@ public partial class App : Application
     {
         base.OnLaunched(args);
         //init database
-        new DatabaseService();
-
+        var db=new DatabaseHandler();
+        await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
     }
 }

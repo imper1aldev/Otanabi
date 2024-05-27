@@ -6,6 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:AnimeWatcher.Helpers"
     xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
@@ -13,6 +15,22 @@
     <Grid>
         <StackPanel
             x:Name="ContentArea">
+
+            <controls:SettingsCard x:Name="settingsCard"
+                               Description="This is a default card, with the Header, HeaderIcon, Description and Content set."
+                               Header="This is the Header"
+                               HeaderIcon="{ui:FontIcon Glyph=&#xE799;}" >
+                <ComboBox SelectedIndex="0">
+                    <ComboBoxItem>Option 1</ComboBoxItem>
+                    <ComboBoxItem>Option 2</ComboBoxItem>
+                    <ComboBoxItem>Option 3</ComboBoxItem>
+                </ComboBox>
+            </controls:SettingsCard>
+
+
+
+
+
             <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
             <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
                 <TextBlock x:Uid="Settings_Theme" />

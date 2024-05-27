@@ -43,21 +43,20 @@
         <usercontrols:CustomNavigationView x:Name="NavigationViewControl"
                                            Canvas.ZIndex="0"
                                            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-                                           Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
                                            IsBackButtonVisible="Auto"
                                            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
                                            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                            IsPaneToggleButtonVisible="True"
                                            IsSettingsVisible="True"
                                            IsTitleBarAutoPaddingEnabled="True"
-                                           OpenPaneLength="180"
+                                           OpenPaneLength="180" 
                                            PaneDisplayMode="{x:Bind ViewModel.PaneDisplayMode, Mode=OneWay}"
                                            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
 
                 <NavigationViewItem x:Uid="Shell_Favorites" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.FavoritesViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE728;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 

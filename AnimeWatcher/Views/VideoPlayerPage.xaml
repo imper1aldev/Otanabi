@@ -88,25 +88,26 @@
             <TextBlock Grid.Column="0"
                        Margin="10,0,0,0"
                        VerticalAlignment="Center"
-                       Text="{x:Bind ViewModel.MediaPlayerWrapper.TimeString, Mode=OneWay, FallbackValue='--:--:--'}" />
+                       Text="{x:Bind ViewModel.TimeString, Mode=OneWay, FallbackValue='--:--:--'}" />
+            
             <Slider Grid.Row="0"
                     Grid.Column="1"
                     Margin="10,0"
                     VerticalAlignment="Center"
                     IsEnabled="True"
                     IsThumbToolTipEnabled="False"
-                    Maximum="{x:Bind ViewModel.MediaPlayerWrapper.TotalTimeLong, Mode=OneWay, Converter={StaticResource LongToDoubleConverter}}"
+                    Maximum="{x:Bind ViewModel.TotalTimeLong, Mode=OneWay, Converter={StaticResource LongToDoubleConverter}}"
                     Minimum="0"
-                    Value="{x:Bind ViewModel.MediaPlayerWrapper.TimeLong, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LongToDoubleConverter}}" />
-
+                    Value="{x:Bind ViewModel.TimeLong, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LongToDoubleConverter}}" />
+ 
             <CommandBar Grid.Row="1"
-                        Grid.Column="0"
+                        Grid.Column="0" 
                         Grid.ColumnSpan="3"
                         HorizontalAlignment="Left"
                         DefaultLabelPosition="Collapsed">
                 <CommandBar.PrimaryCommands>
                     <usercontrols:AppBarPlaybackStateButton Command="{x:Bind ViewModel.PlayPauseCommand}"
-                                                            IsPlaying="{x:Bind ViewModel.MediaPlayerWrapper.IsPlaying, Mode=OneWay, FallbackValue=false}"
+                                                            IsPlaying="{x:Bind ViewModel.IsPlaying, Mode=OneWay, FallbackValue=false}"
                                                             Label="Play"
                                                             Style="{StaticResource DefaultAppBarButtonStyle}">
                         <AppBarButton.KeyboardAccelerators>
@@ -227,7 +228,6 @@
                         VerticalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="5">
-                <!--<developerTools:FocusTracker IsActive="True" />-->
                 <Button Width="0"
                         Height="0"
                         Command="{x:Bind ViewModel.VolumeUpCommand}">
@@ -243,12 +243,11 @@
                     </Button.KeyboardAccelerators>
                 </Button>
 
-                <!--<TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.FilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
                 <usercontrols:AppBarVolumeStateButton VerticalAlignment="Center"
                                                       Command="{x:Bind ViewModel.MuteCommand}"
                                                       LabelPosition="Collapsed"
                                                       Style="{StaticResource DefaultAppBarButtonStyle}"
-                                                      Volume="{x:Bind ViewModel.MediaPlayerWrapper.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}">
+                                                      Volume="{x:Bind ViewModel.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}">
 
                     <Button.KeyboardAccelerators>
                         <KeyboardAccelerator Key="M" />
@@ -261,9 +260,8 @@
                         SnapsTo="Ticks"
                         TickFrequency="5"
                         TickPlacement="Outside"
-                        Value="{x:Bind ViewModel.MediaPlayerWrapper.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
+                        Value="{x:Bind ViewModel.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
             </StackPanel>
-
 
         </Grid>
 
