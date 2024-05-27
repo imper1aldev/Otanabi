@@ -16,7 +16,7 @@
             <RowDefinition Height="auto"></RowDefinition>
             <RowDefinition/>
         </Grid.RowDefinitions>
-
+        
         <Grid x:Name="SearchGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="50"></RowDefinition>
@@ -72,7 +72,6 @@
                                                  To="1.0"
                                                  Duration="0:0:1" />
             </animations:Implicit.ShowAnimations>
-
             <animations:Implicit.HideAnimations>
                 <animations:OpacityAnimation To="0.0"
                                                  Duration="0:0:1" />
@@ -85,20 +84,8 @@
                                                    Value="0.0" />
                 </animations:ScalarAnimation>
             </animations:Implicit.HideAnimations>
-
-
             <controls:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Anime" >
-                    <!--<StackPanel>
-                        <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind title }" HorizontalOffset="20"/>
-                        </ToolTipService.ToolTip>
-                        <Image Source="{x:Bind cover}" Stretch="UniformToFill"  />
-                        <TextBlock Text="OVA" />
-                        <TextBlock Text="{x:Bind title}" Foreground="WhiteSmoke" VerticalAlignment="Center"
-                            Padding="0,3,0,3" FontSize="13" 
-                        TextAlignment="Center" TextWrapping="Wrap"/>
-                    </StackPanel>-->
                     <Grid  MaxHeight="300" Height="300"
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
@@ -109,30 +96,14 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="50"/>
                         </Grid.RowDefinitions>
-                        <Image Source="{x:Bind Cover}" Stretch="UniformToFill" Grid.Row="0" />
+                        <Image Source="{x:Bind Cover}" Stretch="UniformToFill" Grid.Row="0" CacheMode="BitmapCache" />
                         <Border Background="#4cc2ff"   CornerRadius="8" Margin="5,0,0,5" Width="80" VerticalAlignment="Bottom" HorizontalAlignment="Left">
                             <TextBlock Text="{x:Bind TypeStr}" Foreground="Black" HorizontalAlignment="Center"/>
                         </Border>
-
-
-
-                        <TextBlock Text="{x:Bind Title}" Foreground="WhiteSmoke" VerticalAlignment="Center"
+                        <TextBlock Text="{x:Bind Title}"  VerticalAlignment="Center"
                            Padding="0,3,0,3" FontSize="13" Grid.Row="1"
                            TextAlignment="Center" TextWrapping="Wrap"/>
                     </Grid>
-                    <!--<Grid  MaxHeight="300" Height="300"
-                        x:Name="itemThumbnail"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
-                        
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="50"/>
-                        </Grid.RowDefinitions>
-                        <Image Source="{x:Bind cover}" Stretch="UniformToFill" Grid.Row="0" />
-                        <TextBlock Text="{x:Bind title}" Foreground="WhiteSmoke" VerticalAlignment="Center"
-                           Padding="0,3,0,3" FontSize="13" Grid.Row="1"
-                           TextAlignment="Center" TextWrapping="Wrap"/>
-                    </Grid>-->
                 </DataTemplate>
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>

@@ -11,6 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using SharpDX.Direct3D11;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AnimeWatcher.ViewModels;
@@ -55,20 +56,20 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         Source.Clear();
-        GetProviders();
-
+        await GetProviders();
+        await LoadMainAnimePage();
     }
-    private async void GetProviders()
+    private async Task GetProviders()
     {
         var provs = _searchAnimeService.GetProviders();
         foreach (var item in provs)
         {
             Providers.Add(item);
-
         }
         SelectedProvider = provs[0];
-        await SearchManga("");
+        await Task.CompletedTask;
     }
+
 
 
     public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -77,36 +78,53 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         NoResults = Visibility.Collapsed;
         VisibleResults = Visibility.Collapsed;
         Source.Clear();
-
-
         var queryText = args.QueryText.ToString();
         currQuery = queryText;
         currPage = 1;
+        if (currQuery == "")
+        {
+            await LoadMainAnimePage();
+        }
+        else
+        {
+            await SearchManga(queryText);
+        }
 
-        await SearchManga(queryText);
 
         LoadingResults = Visibility.Collapsed;
+
     }
-
-    public async Task SearchManga(string query)
+    public async Task LoadMainAnimePage()
     {
-        LoadingMoreResultsBol=false;
-        var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider);
-        if (data.Count() == 0 )
+        LoadingMoreResultsBol = false;
+        var data = await _searchAnimeService.MainPageAsync(SelectedProvider, currPage);
+        if (data.Count() == 0)
         {
-                        
-            NoResults = currPage==1? Visibility.Visible:Visibility.Collapsed;
-
+            NoResults = currPage == 1 ? Visibility.Visible : Visibility.Collapsed;
             return;
         }
         foreach (var item in data)
         {
             Source.Add(item);
-
         }
         VisibleResults = Visibility.Visible;
-        LoadingMoreResultsBol=true;
-
+        LoadingMoreResultsBol = true;
+    }
+    public async Task SearchManga(string query)
+    {
+        LoadingMoreResultsBol = false;
+        var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider);
+        if (data.Count() == 0)
+        {
+            NoResults = currPage == 1 ? Visibility.Visible : Visibility.Collapsed;
+            return;
+        }
+        foreach (var item in data)
+        {
+            Source.Add(item);
+        }
+        VisibleResults = Visibility.Visible;
+        LoadingMoreResultsBol = true;
     }
 
     public void OnNavigatedFrom()
@@ -124,10 +142,18 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async void LoadMore()
     {
-        LoadingMoreResults = Visibility.Visible; 
+        LoadingMoreResults = Visibility.Visible;
         currPage++;
-        await SearchManga(currQuery);
-         
+        if (currQuery == "")
+        {
+            await LoadMainAnimePage();
+        }
+        else
+        {
+            await SearchManga(currQuery);
+        }
+
+
         LoadingMoreResults = Visibility.Collapsed;
     }
 }
