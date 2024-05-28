@@ -1,13 +1,19 @@
 ﻿using System.Diagnostics;
+using System.Threading;
+using System.Timers;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
+using AnimeWatcher.Core.Models;
+using AnimeWatcher.Core.Services;
 using AnimeWatcher.Models.Enums;
 using AnimeWatcher.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
@@ -20,6 +26,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
     private readonly IWindowPresenterService _windowPresenterService;
+
+    private Chapter selectecChapter;
+    private History selectedHistory;
+    private static System.Timers.Timer MainTimerForSave;
+    private DatabaseService dbService = new();
 
     private LibVLC libVLC;
     private MediaPlayer mediaPlayer;
@@ -40,9 +51,28 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService = windowPresenterService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        //each 3 seconds it will save the current play time
+        MainTimerForSave = new System.Timers.Timer(3000);
+        MainTimerForSave.Elapsed += SaveProgressByTime;
+        MainTimerForSave.AutoReset = true;
+        MainTimerForSave.Enabled = true;
+    }
+    private async void SaveProgressByTime(Object source, ElapsedEventArgs e)
+    {
+        if (selectedHistory != null)
+        {
+            try
+            {
+                await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
+            } catch (Exception)
+            {
 
+            }
+
+        }
 
     }
+
     //getters and setters
     private LibVLC? LibVLC
     {
@@ -81,10 +111,21 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void OnNavigatedTo(object parameter)
     {
 
-        if (parameter is string url)
+        dynamic param = parameter as dynamic;
+
+        VideoUrl = param.Url;
+        if (param.History is History hs && param.Chapter is Chapter ch)
         {
-            VideoUrl = url;
+            selectedHistory = hs;
+            selectecChapter = ch;
         }
+
+
+
+        //if (parameter is string url)
+        //{
+        //    VideoUrl = url;
+        //}
     }
     public void OnNavigatedFrom()
     {
@@ -114,20 +155,28 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //var media = new Media(LibVLC, new Uri(VideoUrl), mediaOptions);
         //Player.Play(media);
         //Debug.WriteLine("Starting playback of '{0}'", VideoUrl);
-        await LoadMediaAsync(LibVLC, Player, VideoUrl);
+        await LoadMediaAsync(LibVLC, Player, VideoUrl,selectedHistory);
 
         AttachPlayerEvents(Player);
         await Task.CompletedTask;
         //MediaPlayerWrapper = new ObservableMediaPlayerWrapper(Player, _dispatcherQueue);
     }
-    private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url)
+    private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url,History lcHistory)
     {
         await Task.Run(() =>
         {
 
-            var mediaOptions = new[] { ":network-caching=3000", ":live-caching=3000" };
+            var mediaOptions = new[] { ":network-caching=30000", ":live-caching=30000" };
             var media = new Media(lib, new Uri(url), mediaOptions);
             Pp.Play(media);
+
+            /*Recover for last seen*/
+            if (lcHistory!= null && lcHistory.SecondsWatched>0)
+            {
+                Pp.Time=lcHistory.SecondsWatched;
+            }
+            /* */
+
             Debug.WriteLine("Starting playback of '{0}'", url);
         });
     }
@@ -174,11 +223,21 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     public void Dispose()
     {
-        var mediaPlayer = Player;
-        Player = null;
-        mediaPlayer?.Dispose();
-        LibVLC?.Dispose();
-        LibVLC = null;
+        MainTimerForSave.Stop();
+        MainTimerForSave.Dispose();
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+
+            var mediaPlayer = Player;
+            Player = null;
+            mediaPlayer?.Dispose();
+            LibVLC?.Dispose();
+            LibVLC = null;
+
+            GC.Collect();
+        });
+
+
     }
 
 
@@ -338,42 +397,23 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private void AttachPlayerEvents(MediaPlayer _player)
     {
-        //_player.TimeChanged += (sender, time) => _dispatcherQueue.TryEnqueue(() =>
-        //{
-        //    OnPropertyChanged(nameof(TimeLong));
-        //    OnPropertyChanged(nameof(TimeString));
-        //});
-        _player.TimeChanged += (sender, time) =>
+        _player.TimeChanged += (sender, time) => _dispatcherQueue.TryEnqueue(() =>
         {
-            try
-            {
-                _dispatcherQueue.TryEnqueue(() =>{
-                    OnPropertyChanged(nameof(TimeLong));
-                    OnPropertyChanged(nameof(TimeString));
-                });
-            } catch (AccessViolationException ex)
-            {
-                 
-            }
-        };
-
-
-
+            OnPropertyChanged(nameof(TimeLong));
+            OnPropertyChanged(nameof(TimeString));
+        });
         _player.VolumeChanged += (sender, volumeArgs) => _dispatcherQueue.TryEnqueue(() =>
         {
             OnPropertyChanged(nameof(Volume));
         });
-
         _player.Playing += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
         {
             OnPropertyChanged(nameof(IsPlaying));
         });
-
         _player.Paused += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
         {
             OnPropertyChanged(nameof(IsPlaying));
         });
-
         _player.Stopped += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
         {
             OnPropertyChanged(nameof(IsPlaying));

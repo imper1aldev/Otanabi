@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Dynamic;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
 using AnimeWatcher.Core.Contracts.Services;
@@ -21,7 +22,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private readonly INavigationService _navigationService;
 
     public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
-     
+    public ObservableCollection<FavoriteList> FavLists { get; } = new ObservableCollection<FavoriteList>();
 
     [ObservableProperty]
     private bool isLoadingVideo = false;
@@ -33,8 +34,12 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     public string favText = "";
 
     [ObservableProperty]
+    public List<FavoriteList> favoritelistsSelected;
+
+
+    [ObservableProperty]
     private Anime selectedAnime;
-    
+
     [ObservableProperty]
     private Chapter[]? chapters;
 
@@ -62,9 +67,16 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
 
     public async void OnNavigatedTo(object parameter)
     {
-         
+
         GC.Collect();
         IsLoadingFav = true;
+        var favoriteLists = await _databaseService.GetFavoriteLists();
+        foreach (var fav in favoriteLists)
+        {
+            FavLists.Add(fav);
+        }
+
+
         if (parameter is Anime anime)
         {
             SelectedAnime = await _searchAnimeService.GetAnimeDetailsAsync(anime);
@@ -93,11 +105,17 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         {
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
             var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources, "YourUpload");
+            var history = await _databaseService.GetOrCreateHistoryByCap(chapter.Id); 
+            dynamic data= new ExpandoObject();
+            data.History=history;
+            data.Url=videoUrl;
+            data.Chapter=chapter;
+
             if (string.IsNullOrEmpty(videoUrl))
             {
                 throw new Exception(ErrorMessage = "Can't extract the video URL");
             }
-            _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, videoUrl);
+            _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         } catch (Exception e)
         {
@@ -153,7 +171,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
         FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
     }
-     
+
 
     public static void ReverseObservableCollection<T>(ObservableCollection<T> collection)
     {
@@ -163,5 +181,29 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             collection[i] = collection[j];
             collection[j] = temp;
         }
+    }
+    [RelayCommand]
+    private async void ChangeFavLists(object param)
+    {
+        var idList = new List<int>();
+
+        if (param is ListBox box)
+        {
+            foreach (var item in box.SelectedItems)
+            {
+
+                if (item is FavoriteList lt)
+                {
+                    idList.Add(lt.Id);
+                }
+
+            }
+        }
+        if (idList.Count > 0)
+        {
+            await _databaseService.UpdateAnimeList(SelectedAnime.Id, idList);
+
+        }
+
     }
 }

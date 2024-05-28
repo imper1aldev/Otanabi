@@ -5,7 +5,7 @@ using AnimeWatcher.Core.Services;
 using AnimeWatcher.ViewModels;
 
 using CommunityToolkit.WinUI.UI.Animations;
-
+using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
@@ -14,8 +14,8 @@ namespace AnimeWatcher.Views;
 public sealed partial class SearchDetailPage : Page
 {
     private int AnimeId;
-    private FavoriteList[] favoriteLists;
-    private FavoriteList selectedFList;
+    private List<FavoriteList> favoriteLists;
+    private List<FavoriteList> selectedFList = new List<FavoriteList>();
     DatabaseService dbService = new();
     public SearchDetailViewModel ViewModel
     {
@@ -32,42 +32,34 @@ public sealed partial class SearchDetailPage : Page
     protected async override void OnNavigatedTo(NavigationEventArgs e)
     {
 
-        favoriteLists = await dbService.GetFavoriteLists();
-        foreach (var item in favoriteLists)
-        {
-            FavoriteCombo.Items.Add(item);
-        }
         if (e.Parameter is Anime anime)
         {
             AnimeId = anime.Id;
-            await LoadAnimeFavList();
+            // await LoadAnimeFavList();
         }
         base.OnNavigatedTo(e);
     }
     private async Task LoadAnimeFavList()
     {
-        selectedFList = await dbService.GetFavoriteListByAnime(AnimeId);
 
-        if (selectedFList != null)
+        var sFList1 = await dbService.GetFavoriteListByAnime(AnimeId);
+        var tmpLit = new List<FavoriteList>();
+
+        foreach (var item in sFList1)
         {
-            var index = 0;
-            foreach (FavoriteList item in FavoriteCombo.Items)
+            foreach (var item1 in favListbox.Items)
             {
-                if (selectedFList == null)
-                    break;
-
-                if (item.Id == selectedFList.Id)
+                if(item1 is FavoriteList ls && ls.Id==item.Id)
                 {
-                    FavoriteCombo.SelectedIndex = index;
+                    favListbox.SelectedItems.Add(item1);
                 }
-                index++;
-            }
-        }
-        else
-        {
-            //FavoriteCombo.SelectedIndex = 0;
+            } 
         }
     }
+
+
+
+
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
@@ -85,29 +77,13 @@ public sealed partial class SearchDetailPage : Page
 
     }
 
-    private async void FavoriteCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (selectedFList == null)
-        {
-            return;
-        }
-        if (sender is ComboBox cb && cb.SelectedItem is FavoriteList fl && fl.Id != selectedFList.Id)
-        {
-            await dbService.UpdateAnimeList(AnimeId, fl.Id);
-        }
-
-    }
-
     private async void FavoriteCombo_IsEnabledChanged(object sender, Microsoft.UI.Xaml.DependencyPropertyChangedEventArgs e)
     {
         if (animetxtid.Tag is int aid)
         {
             AnimeId = aid;
         }
-
-
-
-        if (sender is ComboBox cb && cb.IsEnabled)
+        if (sender is Button cb && cb.IsEnabled)
         {
             await LoadAnimeFavList();
         }

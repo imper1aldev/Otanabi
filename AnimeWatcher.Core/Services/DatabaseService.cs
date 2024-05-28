@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Security.Cryptography;
 using System.Xml.Linq;
 using AnimeWatcher.Core.Database;
 using AnimeWatcher.Core.Models;
@@ -64,8 +65,37 @@ public class DatabaseService
             await DB._db.InsertAsync(anime);
             aOnDb = await GetAnimeByProv(anime);
         }
+        anime.Chapters.ToList().ForEach(c => c.AnimeId = aOnDb.Id);
+
+        var chapOnDb = await GetChaptersByAnime(aOnDb.Id);
+        if (chapOnDb.Count == 0)
+        {
+            await DB._db.InsertAllAsync(anime.Chapters);
+            chapOnDb = await GetChaptersByAnime(aOnDb.Id);
+            aOnDb.Chapters = chapOnDb.ToArray();
+        }
+        else
+        {
+            aOnDb.Chapters = chapOnDb.ToArray();
+        }
+        // inthernet says to compare 2 list is necessary to use Except var list3=list1.Except(list2).ToList();
+        // other way using linq var result = customlist.Where(p => !otherlist.Any(l => p.someproperty == l.someproperty));
+
+
         return aOnDb;
     }
+    private async Task<List<Chapter>> GetChaptersByAnime(int animeId)
+    {
+        var chapOnDb = await DB._db.Table<Chapter>().Where(c => c.AnimeId == animeId).ToListAsync(); 
+        foreach(var c in chapOnDb)
+        {
+            c.History = await GetHistoryByCap(c.Id);
+        }
+
+        return chapOnDb;
+    }
+
+
     private async Task<Anime> GetAnimeByProv(Anime anime)
     {
         var exist = await DB._db.Table<Anime>().Where(a => a.RemoteID == anime.RemoteID && a.ProviderId == anime.ProviderId).ToListAsync();
@@ -88,18 +118,54 @@ public class DatabaseService
         return data.ToArray();
     }
 
-    public async Task<FavoriteList> GetFavoriteListByAnime(int animeId)
+    public async Task<List<FavoriteList>> GetFavoriteListByAnime(int animeId)
     {
-        var data = await DB._db.QueryAsync<FavoriteList>("select fl.* from AnimexFavorite as af inner join FavoriteList as fl on af.FavoriteListId=fl.Id  where af.AnimeId=?", animeId);
+        var data = await DB._db.QueryAsync<FavoriteList>("select fl.* from AnimexFavorite as af inner join FavoriteList as fl" +
+            " on af.FavoriteListId=fl.Id  where af.AnimeId=?", animeId);
         if (data.Count > 0)
         {
-            return data[0];
+            return data;
         }
         return null;
     }
-    public async Task UpdateAnimeList(int animeId,int fListId)
+    public async Task UpdateAnimeList(int animeId, List<int> lists)
     {
-        await DB._db.ExecuteAsync("update AnimexFavorite set FavoriteListId=? where AnimeId=?", fListId ,animeId);
+
+        await DB._db.ExecuteAsync("delete from AnimexFavorite " +
+            "where AnimeId=?", animeId);
+        foreach (var item in lists)
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = animeId, FavoriteListId = item };
+            await DB._db.InsertAsync(favxanime);
+        }
     }
 
+    private async Task<History> GetHistoryByCap(int chapterId)
+    {
+        var history = await DB._db.Table<History>()
+                .Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
+
+        return history;
+    }
+
+    public async Task<History> GetOrCreateHistoryByCap(int chapterId)
+    {
+        var history = await GetHistoryByCap(chapterId);
+        if (history != null)
+        {
+            await DB._db.ExecuteAsync("update History set WatchedDate=? where Id=?", DateTime.Now, history.Id);
+            history = await GetHistoryByCap(chapterId);
+            return history;
+        }
+        var hisCl = new History() { ChapterId = chapterId, WatchedDate = DateTime.Now, SecondsWatched = 0 };
+        await DB._db.InsertAsync(hisCl);
+
+        history = await GetHistoryByCap(chapterId);
+
+        return history;
+    }
+    public async Task UpdateProgress(int historyId,long progress)
+    {
+        await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?",progress,historyId);
+    }
 }
