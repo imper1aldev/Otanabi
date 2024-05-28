@@ -63,7 +63,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             try
             {
-                await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
+                if (Player != null)
+                {
+                    await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
+                }
+
+
             } catch (Exception)
             {
 
@@ -155,13 +160,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //var media = new Media(LibVLC, new Uri(VideoUrl), mediaOptions);
         //Player.Play(media);
         //Debug.WriteLine("Starting playback of '{0}'", VideoUrl);
-        await LoadMediaAsync(LibVLC, Player, VideoUrl,selectedHistory);
+        await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
 
         AttachPlayerEvents(Player);
         await Task.CompletedTask;
         //MediaPlayerWrapper = new ObservableMediaPlayerWrapper(Player, _dispatcherQueue);
     }
-    private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url,History lcHistory)
+    private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url, History lcHistory)
     {
         await Task.Run(() =>
         {
@@ -171,9 +176,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Pp.Play(media);
 
             /*Recover for last seen*/
-            if (lcHistory!= null && lcHistory.SecondsWatched>0)
+            if (lcHistory != null && lcHistory.SecondsWatched > 0)
             {
-                Pp.Time=lcHistory.SecondsWatched;
+                Pp.Time = lcHistory.SecondsWatched;
             }
             /* */
 

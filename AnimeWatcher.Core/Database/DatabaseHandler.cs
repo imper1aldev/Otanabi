@@ -42,20 +42,39 @@ public class DatabaseHandler
                 new() { Id = 5, Name = "Favorite List 5" }
             };
 
-            var countFavOrder=0;
+            var countFavOrder = 0;
             foreach (var fav in indatlistFav)
             {
                 countFavOrder++;
-                 _db.ExecuteAsync("insert into FavoriteList (Id,Name,Placement) values (?,?,?);",fav.Id,fav.Name,countFavOrder).Wait();
+                _db.ExecuteAsync("insert into FavoriteList (Id,Name,Placement) values (?,?,?);", fav.Id, fav.Name, countFavOrder).Wait();
             }
 
 
 
 
-            await _db.InsertAllAsync(_classReflectionHelper.GetProviders());
+            // await _db.InsertAllAsync(_classReflectionHelper.GetProviders());
 
 
         }
+        var provDLL = _classReflectionHelper.GetProviders();
+        var provDB = await _db.Table<Provider>().ToArrayAsync();
+
+        var onDBsize = provDB.Length;
+        var onLocalSize = provDLL.Length;
+
+        if (onDBsize != onLocalSize)
+        {
+            foreach (var provider in provDLL)
+            {
+                var pDB = await _db.Table<Provider>().Where(p=>p.Id==provider.Id ).FirstOrDefaultAsync();
+                if(pDB == null)
+                {
+                    await _db.InsertAsync(provider);
+                }
+            }
+        }
+
+
 
 
     }
