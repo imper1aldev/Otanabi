@@ -12,7 +12,7 @@ public class ServerConventions
         },new Convention
         {
              Name = "Streamwish",
-            PossibleNames = new string[] { "sw", "SW", "OKRU", "streamwish" }
+            PossibleNames = new string[] { "sw", "SW", "Streamwish", "streamwish" }
         },
         new Convention
         {

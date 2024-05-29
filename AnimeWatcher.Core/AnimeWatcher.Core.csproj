@@ -8,7 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="RestSharp" Version="111.1.0" />
+    <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="111.1.0" />
     <PackageReference Include="ScrapySharp" Version="3.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>

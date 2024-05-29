@@ -13,6 +13,7 @@ using AnimeWatcher.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using AnimeWatcher.Core.Flare;
 
 namespace AnimeWatcher;
 
@@ -108,7 +109,10 @@ public partial class App : Application
         base.OnLaunched(args);
         //init database
         var db=new DatabaseHandler();
+        var flareapp= new FlareSolverr();
+        
         await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
+        await flareapp.CheckFlareInstallation();
     }
 }

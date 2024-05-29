@@ -28,7 +28,7 @@
             </controls:SettingsCard>
 
 
-
+            <Button Content="this button just run code in backend!" Command="{x:Bind ViewModel.TestsCommand}"/>
 
 
             <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
