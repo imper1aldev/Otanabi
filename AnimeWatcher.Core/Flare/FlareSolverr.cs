@@ -13,6 +13,7 @@ public class FlareSolverr
     internal string repo_user = "FlareSolverr";
     internal string workingFolder = "flareSolverr";
     internal string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0";
+    internal bool enableInternalFlare=false;
 
     private static readonly HttpClient client = new();
 
@@ -163,9 +164,17 @@ public class FlareSolverr
 
     private async Task LaunchService()
     {
+
+        if (!enableInternalFlare)
+        {
+            return;
+        }
+
+
         var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         var flareFolder = Path.Combine(currDir, workingFolder);
         var flareFile = Path.Combine(flareFolder, "flaresolverr.exe");
+
 
 
         var pname = Process.GetProcessesByName("flaresolverr");

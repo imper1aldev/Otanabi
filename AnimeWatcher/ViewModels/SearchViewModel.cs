@@ -20,43 +20,45 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
     private readonly SearchAnimeService _searchAnimeService = new();
+    private readonly ILocalSettingsService _localSettingsService;
 
     private string currQuery = string.Empty;
     private int currPage = 1;
     public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
 
     [ObservableProperty]
-    private Visibility loadingResults = Visibility.Collapsed;
+    private bool isLoading = false;
 
     [ObservableProperty]
-    private Visibility loadingMoreResults = Visibility.Collapsed;
-
-    [ObservableProperty]
-    private bool loadingMoreResultsBol = false;
-
+    private bool noResults = false;
 
     [ObservableProperty]
     private Provider selectedProvider = new();
 
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
-    [ObservableProperty]
-    private Visibility visibleResults = Visibility.Collapsed;
-
-    [ObservableProperty]
-    private Visibility noResults = Visibility.Collapsed;
 
     public SearchViewModel(
-        INavigationService navigationService
+        INavigationService navigationService, ILocalSettingsService localSettingsService
         )
     {
         _navigationService = navigationService;
+        _localSettingsService = localSettingsService;
     }
 
     public async void OnNavigatedTo(object parameter)
     {
         Source.Clear();
         await GetProviders();
+        var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
+
+        if (provdef != 0)
+        {
+            var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
+            if (tmp != null)
+                SelectedProvider = tmp;
+        }
+        await Task.CompletedTask;
         await LoadMainAnimePage();
     }
     private async Task GetProviders()
@@ -74,57 +76,49 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-        LoadingResults = Visibility.Visible;
-        NoResults = Visibility.Collapsed;
-        VisibleResults = Visibility.Collapsed;
+
         Source.Clear();
         var queryText = args.QueryText.ToString();
         currQuery = queryText;
         currPage = 1;
         if (currQuery == "")
-        {
             await LoadMainAnimePage();
-        }
         else
-        {
             await SearchManga(queryText);
-        }
-
-
-        LoadingResults = Visibility.Collapsed;
-
     }
     public async Task LoadMainAnimePage()
     {
-        LoadingMoreResultsBol = false;
+        IsLoading = true;
+        NoResults = false;
         var data = await _searchAnimeService.MainPageAsync(SelectedProvider, currPage);
         if (data.Count() == 0)
         {
-            NoResults = currPage == 1 ? Visibility.Visible : Visibility.Collapsed;
+            NoResults = true;
+            IsLoading = false;
             return;
         }
         foreach (var item in data)
         {
             Source.Add(item);
         }
-        VisibleResults = Visibility.Visible;
-        LoadingMoreResultsBol = true;
+        IsLoading = false;
     }
     public async Task SearchManga(string query)
     {
-        LoadingMoreResultsBol = false;
+        NoResults = false;
+        IsLoading = true;
         var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider);
         if (data.Count() == 0)
         {
-            NoResults = currPage == 1 ? Visibility.Visible : Visibility.Collapsed;
+            NoResults = true;
+            IsLoading = false;
             return;
         }
         foreach (var item in data)
         {
             Source.Add(item);
         }
-        VisibleResults = Visibility.Visible;
-        LoadingMoreResultsBol = true;
+        IsLoading = false;
     }
 
     public void OnNavigatedFrom()
@@ -140,20 +134,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
     }
     [RelayCommand]
-    private async void LoadMore()
+    private async Task LoadMore()
     {
-        LoadingMoreResults = Visibility.Visible;
         currPage++;
         if (currQuery == "")
-        {
             await LoadMainAnimePage();
-        }
         else
-        {
             await SearchManga(currQuery);
-        }
 
-
-        LoadingMoreResults = Visibility.Collapsed;
     }
 }
