@@ -1,11 +1,9 @@
-﻿using System.Reflection;
-using AnimeWatcher.Core.Models;
+﻿using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Helpers;
 namespace AnimeWatcher.Core.Services;
 public class SearchAnimeService
 {
-    private readonly ClassReflectionHelper _classReflectionHelper = new();
-    private readonly DatabaseService DBservice=new();
+    private readonly ClassReflectionHelper _classReflectionHelper = new();  
 
     public Provider[] GetProviders()
     {
@@ -38,9 +36,12 @@ public class SearchAnimeService
         var instance = rexflex.Item2;
         var animesDet = await (Task<Anime>)method.Invoke(instance, new object[] { animeReq.Url });
 
+        /*
         var tmp = await DBservice.CreateMinimalAnime(animesDet);
         animesDet.Id=tmp.Id;
         animesDet.Chapters = tmp.Chapters;
+        */
+
         return animesDet;
     }
     public async Task<VideoSource[]> GetVideoSources(string requestUrl, Provider provider)

@@ -108,7 +108,7 @@ public class JkanimeExtractor : IExtractor
         for (var i = 1; i <= lastchap; i++)
         {
             var chapter = new Chapter();
-            chapter.Url = string.Concat(requestUrl, "/", i, "/");
+            chapter.Url = string.Concat(requestUrl, i, "/");
             chapter.ChapterNumber = i;
             chapter.Name = string.Concat(requestUrl.Replace("/", ""), " ", i);
             chapters.Add(chapter);

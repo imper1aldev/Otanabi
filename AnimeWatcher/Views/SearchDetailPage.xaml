@@ -17,12 +17,9 @@
         <converters:EmptyObjectToObjectConverter x:Key="EmptyObjectToObjectConverter"
                                                  EmptyValue="Collapsed"
                                                  NotEmptyValue="Visible" />
-
     </Page.Resources>
 
-    <Grid x:Name="ContentArea"  
-          Margin="20,20,20,10" 
-          >
+    <Grid x:Name="ContentArea"  Margin="20,20,20,10"  >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -33,16 +30,16 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Grid.Column="0"
-                    
-                    >
+        <StackPanel Grid.Row="0" Grid.Column="0" >
+            <ProgressBar IsIndeterminate="True"
+                         Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, 
+                            Converter={StaticResource BoolToVisibilityConverter},
+                            ConverterParameter=False}" />
+
             <Grid x:Name="portrait" Padding="15,15,15,15">
                 <Grid.Background>
-                    <ImageBrush  ImageSource="{x:Bind ViewModel.SelectedAnime.Cover,Mode=OneWay}" Stretch="UniformToFill" Opacity="0.1" >
-                        <!--<ImageBrush.RelativeTransform  >
-                            <CompositeTransform CenterX="0.5" CenterY="0.5" TranslateX="0" TranslateY="1.9"/>
-                        </ImageBrush.RelativeTransform> -->
-                    </ImageBrush>
+                    <ImageBrush  ImageSource="{x:Bind ViewModel.SelectedAnime.Cover,Mode=OneWay}"
+                                 Stretch="UniformToFill" Opacity="0.1" />
                 </Grid.Background>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -95,7 +92,7 @@
             <Grid x:Name="actionButtons" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <CommandBar Grid.Column="0" Width="Auto" Height="Auto" HorizontalAlignment="Left" DefaultLabelPosition="Right">
                     <CommandBar.PrimaryCommands>
@@ -107,21 +104,6 @@
 
                         </AppBarButton>
                         <AppBarSeparator Margin="10,0,10,0"/>
-                        <!--<AppBarElementContainer VerticalContentAlignment="Center">
-                            <ComboBox x:Name="FavoriteCombo" 
-                                      SelectedItem="{Binding selectedFList}"
-                                      IsEnabled="{x:Bind ViewModel.IsFavorite,Mode=OneWay}" 
-                                      IsEnabledChanged="FavoriteCombo_IsEnabledChanged" 
-                                      SelectionChanged="FavoriteCombo_SelectionChanged" 
-                                       PlaceholderText="Change Favorite List" 
-                                       Width="200">
-                                <ComboBox.ItemTemplate >
-                                    <DataTemplate x:DataType="models:FavoriteList">
-                                        <TextBlock Text="{x:Bind Name}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </AppBarElementContainer>--> 
                         <AppBarElementContainer VerticalContentAlignment="Center">
                             <Button Content="Change Favorite List" 
                                     IsEnabled="{x:Bind ViewModel.IsFavorite,Mode=OneWay}" 
@@ -142,7 +124,7 @@
                                                                                   CommandParameter="{Binding ElementName=favListbox}"/>
                                                     </core:EventTriggerBehavior>
                                                 </interactivity:Interaction.Behaviors>
- 
+
                                             </ListBox>
                                         </StackPanel>
                                     </Flyout>
@@ -167,8 +149,21 @@
 
                     </CommandBar.PrimaryCommands>
                 </CommandBar>
-                <RatingControl AutomationProperties.Name="RatingControl with placeholder" IsEnabled="False" 
-                       PlaceholderValue="3.25" HorizontalAlignment="Right" Grid.Column="1"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
+                    <Button HorizontalAlignment="Right" Margin="0,0,10,0" IsEnabled="{x:Bind ViewModel.ForceLoad,Mode=OneWay}"
+                            Command="{x:Bind ViewModel.ForceUpsertCommand}"
+                            >
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Glyph="&#xE9F3;" Margin="0,0,10,0"/>
+                            <TextBlock Text="Force update"/>
+                        </StackPanel>
+
+                    </Button>
+                    <RatingControl AutomationProperties.Name="RatingControl with placeholder" IsEnabled="False" 
+                       PlaceholderValue="3.25" HorizontalAlignment="Right"/>
+                </StackPanel>
+
+
             </Grid>
         </StackPanel>
         <StackPanel x:Name="LoadingVideo" Orientation="Horizontal" Grid.Row="2" Width="Auto"  
@@ -203,14 +198,11 @@
                             </TextBlock>
                             <StackPanel Orientation="Horizontal" Visibility="{x:Bind History, Mode=OneWay,Converter={StaticResource EmptyObjectToObjectConverter} }">
                                 <TextBlock Text="Last seen :" Margin="0,0,10,0"/>
-                                
                                 <TextBlock Text="{Binding Path=History.WatchedDate}" />
                                 <TextBlock Text="Time watched :" Margin="10,0,10,0"/>
                                 <TextBlock Text="{Binding Path=History.TimeString}" />
-
-
                             </StackPanel>
-                            
+
                             <!--<TextBlock Text="{Binding Path=Url}" />-->
                         </StackPanel>
                     </DataTemplate>

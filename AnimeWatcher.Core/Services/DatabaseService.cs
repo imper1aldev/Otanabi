@@ -7,7 +7,8 @@ using AnimeWatcher.Core.Models;
 namespace AnimeWatcher.Core.Services;
 public class DatabaseService
 {
-    public readonly DatabaseHandler DB = new();
+    public readonly DatabaseHandler DB = DatabaseHandler.GetInstance();
+    private readonly SearchAnimeService _searchAnimeService = new();
 
     public DatabaseService()
     {
@@ -56,54 +57,112 @@ public class DatabaseService
         }
 
     }
-    public async Task<Anime> CreateMinimalAnime(Anime anime)
+
+    public async Task<Anime> GetAnimeOnDB(Anime request)
     {
-
-        var aOnDb = await GetAnimeByProv(anime);
-        if (aOnDb == null)
+        if (request.Url == null)
+            return null;
+        var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
+        var chapters = new List<Chapter>();
+        if (animeDB != null)
+            chapters = await GetChaptersByAnime(animeDB.Id);
+        if (chapters.Count > 0)
+            animeDB.Chapters = chapters.ToArray();
+        return animeDB;
+    }
+    public async Task<Anime> SaveAnime(Anime request)
+    { 
+        request.LastUpdate = DateTime.Now;
+        await DB._db.InsertAsync(request);
+        var anime = await GetAnimeByProv(request.Url, request.ProviderId);
+        return anime;
+    }
+    public async Task<Anime> UpsertAnime(Anime request,bool forceUpdate=false)
+    {
+        //
+        var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
+        if (animeDB != null && forceUpdate==false)
         {
-            await DB._db.InsertAsync(anime);
-            aOnDb = await GetAnimeByProv(anime);
+            var lastUpdate=animeDB.LastUpdate;
+
+            var diffOfDates=DateTime.Now - lastUpdate;
+
+            if (diffOfDates.Days < 2)
+            {
+                return null;
+            }
+
         }
-        anime.Chapters.ToList().ForEach(c => c.AnimeId = aOnDb.Id);
 
-        var chapOnDb = await GetChaptersByAnime(aOnDb.Id);
-        if (chapOnDb.Count == 0)
+
+
+        var animeSource = await _searchAnimeService.GetAnimeDetailsAsync(request);
+        
+
+        if (animeDB == null)
+        { 
+            animeDB = await SaveAnime(animeSource);
+            animeSource.Id = animeDB.Id;
+        }
+        // update animedata
+        else
         {
-            await DB._db.InsertAllAsync(anime.Chapters);
-            chapOnDb = await GetChaptersByAnime(aOnDb.Id);
-            aOnDb.Chapters = chapOnDb.ToArray();
+            animeSource.Id = animeDB.Id;
+            animeSource.LastUpdate= DateTime.Now;
+            await DB._db.UpdateAsync(animeSource);
+            animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
+        }
+
+
+        var chapsSource = new List<Chapter>();
+        foreach (var chap in animeSource.Chapters.ToList())
+        {
+            chap.AnimeId = animeDB.Id;
+            chapsSource.Add(chap);
+        }
+
+        var chapsDB = await GetChaptersByAnime(animeDB.Id);
+        if (chapsDB.Count == 0)
+        {
+            await DB._db.InsertAllAsync(chapsSource);
+            chapsDB = await GetChaptersByAnime(animeDB.Id);
         }
         else
         {
-            aOnDb.Chapters = chapOnDb.ToArray();
+            var chapstoadd = chapsSource.Where(c1 => !chapsDB.Any(c2 => c1.ChapterNumber == c2.ChapterNumber));
+            await DB._db.InsertAllAsync(chapstoadd);
+            chapsDB = await GetChaptersByAnime(animeDB.Id);
         }
-        // inthernet says to compare 2 list is necessary to use Except var list3=list1.Except(list2).ToList();
-        // other way using linq var result = customlist.Where(p => !otherlist.Any(l => p.someproperty == l.someproperty));
+        /**/
+        animeDB.Chapters = chapsDB.ToArray();
 
-
-        return aOnDb;
+        return animeDB;
     }
+
     private async Task<List<Chapter>> GetChaptersByAnime(int animeId)
     {
-        var chapOnDb = await DB._db.Table<Chapter>().Where(c => c.AnimeId == animeId).ToListAsync(); 
-        foreach(var c in chapOnDb)
+        var chapOnDb = await DB._db.Table<Chapter>().Where(c => c.AnimeId == animeId).ToListAsync();
+        foreach (var c in chapOnDb)
         {
             c.History = await GetHistoryByCap(c.Id);
         }
 
         return chapOnDb;
     }
-
-
-    private async Task<Anime> GetAnimeByProv(Anime anime)
+    private async Task<Anime> GetAnimeByProv(string Url, int ProviderId)
     {
-        var exist = await DB._db.Table<Anime>().Where(a => a.RemoteID == anime.RemoteID && a.ProviderId == anime.ProviderId).ToListAsync();
-        if (exist.Count == 0)
-        {
+        if (Url == null)
             return null;
+
+        var exist = await DB._db.Table<Anime>().Where(a => a.Url == Url
+        && a.ProviderId == ProviderId).FirstOrDefaultAsync();
+
+        if (exist != null)
+        {
+            exist.Provider = await DB._db.Table<Provider>().Where(p => p.Id == ProviderId).FirstOrDefaultAsync();
+            exist.ProviderId = exist.Provider.Id;
         }
-        return exist[0];
+        return exist;
     }
 
     public async Task<Anime[]> GetFavAnimeByList(int favId)
@@ -164,8 +223,8 @@ public class DatabaseService
 
         return history;
     }
-    public async Task UpdateProgress(int historyId,long progress)
+    public async Task UpdateProgress(int historyId, long progress)
     {
-        await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?",progress,historyId);
+        await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?", progress, historyId);
     }
 }

@@ -14,6 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
 using AnimeWatcher.Core.Flare;
+using System.ComponentModel;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AnimeWatcher;
 
@@ -40,15 +42,18 @@ public partial class App : Application
 
         return service;
     }
-
+    private readonly DispatcherQueue _dispatcherQueue;
     public static WindowEx MainWindow { get; } = new MainWindow();
 
-    public static UIElement? AppTitlebar { get; set; }
+    public static UIElement? AppTitlebar
+    {
+        get; set;
+    }
 
     public App()
     {
         InitializeComponent();
-
+         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         Host = Microsoft.Extensions.Hosting.Host.
         CreateDefaultBuilder().
         UseContentRoot(AppContext.BaseDirectory).
@@ -108,11 +113,20 @@ public partial class App : Application
     {
         base.OnLaunched(args);
         //init database
-        var db=new DatabaseHandler();
-        var flareapp= new FlareSolverr();
-        
+        var db = new DatabaseHandler();
+        var flareapp = new FlareSolverr();
+
         await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
-        await flareapp.CheckFlareInstallation();
+
+
+        var bw = new BackgroundWorker();
+        bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
+        {
+            await flareapp.CheckFlareInstallation();
+        });
+        bw.RunWorkerAsync();
+
+
     }
 }

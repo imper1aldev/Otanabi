@@ -47,7 +47,7 @@
                             <!--  Conflicts with other accelerators  -->
                             <!--<KeyboardAccelerator Key="S" />-->
                         </MenuFlyoutItem.KeyboardAccelerators>
-                    </MenuFlyoutItem> 
+                    </MenuFlyoutItem>
                     <MenuFlyoutSeparator />
                     <MenuFlyoutItem Icon="View" Text="View">
                         <MenuFlyoutItem.KeyboardAccelerators>
@@ -89,7 +89,7 @@
                        Margin="10,0,0,0"
                        VerticalAlignment="Center"
                        Text="{x:Bind ViewModel.TimeString, Mode=OneWay, FallbackValue='--:--:--'}" />
-            
+
             <Slider Grid.Row="0"
                     Grid.Column="1"
                     Margin="10,0"
@@ -99,7 +99,7 @@
                     Maximum="{x:Bind ViewModel.TotalTimeLong, Mode=OneWay, Converter={StaticResource LongToDoubleConverter}}"
                     Minimum="0"
                     Value="{x:Bind ViewModel.TimeLong, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource LongToDoubleConverter}}" />
- 
+
             <CommandBar Grid.Row="1"
                         Grid.Column="0" 
                         Grid.ColumnSpan="3"
@@ -155,7 +155,7 @@
                             </KeyboardAccelerator>
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
-                    
+
                     <AppBarButton Command="{x:Bind ViewModel.StopCommand}"
                                   Icon="Stop"
                                   Label="Stop">
@@ -163,7 +163,6 @@
                             <KeyboardAccelerator Key="S" />
                         </Button.KeyboardAccelerators>
                     </AppBarButton>
-
                     <AppBarButton Label="Fast forward">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xEB9D;" />
@@ -204,9 +203,21 @@
                             </KeyboardAccelerator>
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
-
                     <AppBarSeparator />
-
+                    <AppBarButton Content="Skip intro"></AppBarButton>
+                    <AppBarSeparator />
+                    <AppBarElementContainer VerticalContentAlignment="Center" >
+                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock Text="Speed :" VerticalAlignment="Center"/>
+                            <ComboBox>
+                                <ComboBoxItem>x1</ComboBoxItem>
+                                <ComboBoxItem>x1.25</ComboBoxItem>
+                                <ComboBoxItem>x1.5</ComboBoxItem>
+                                <ComboBoxItem>x1.75</ComboBoxItem>
+                                <ComboBoxItem>x2</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                    </AppBarElementContainer>
                     <usercontrols:AppBarWindowPresenterStateButton Command="{x:Bind ViewModel.FullScreenCommand}"
                                                                    IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                                                    Label="Toggle FullScreen"
@@ -215,8 +226,6 @@
                             <KeyboardAccelerator Key="F" />
                         </AppBarButton.KeyboardAccelerators>
                     </usercontrols:AppBarWindowPresenterStateButton>
-
-
                 </CommandBar.PrimaryCommands>
             </CommandBar>
 
