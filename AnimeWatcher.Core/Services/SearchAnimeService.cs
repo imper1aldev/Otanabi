@@ -36,12 +36,6 @@ public class SearchAnimeService
         var instance = rexflex.Item2;
         var animesDet = await (Task<Anime>)method.Invoke(instance, new object[] { animeReq.Url });
 
-        /*
-        var tmp = await DBservice.CreateMinimalAnime(animesDet);
-        animesDet.Id=tmp.Id;
-        animesDet.Chapters = tmp.Chapters;
-        */
-
         return animesDet;
     }
     public async Task<VideoSource[]> GetVideoSources(string requestUrl, Provider provider)

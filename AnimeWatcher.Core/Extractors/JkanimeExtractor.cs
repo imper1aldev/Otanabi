@@ -6,6 +6,10 @@ using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Flare;
 using System.Diagnostics;
 using Newtonsoft.Json.Linq;
+using FlareSolverrSharp;
+using ScrapySharp.Network;
+using System.Globalization;
+using System.Text;
 namespace AnimeWatcher.Core.Extractors;
 public class JkanimeExtractor : IExtractor
 {
@@ -13,9 +17,12 @@ public class JkanimeExtractor : IExtractor
     internal readonly int extractorId = 2;
     internal readonly string sourceName = "Jkanime";
     internal readonly string originUrl = "https://jkanime.net/";
+    internal readonly bool Secured = true;
+    internal readonly string Type = "ANIME";
+
     public string GetSourceName() => sourceName;
     public string GetUrl() => originUrl;
-    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl };
+    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Secured = Secured };
 
     private readonly FlareService flareService = new();
 
@@ -25,10 +32,11 @@ public class JkanimeExtractor : IExtractor
     {
         var animeList = new List<Anime>();
         var mainPUrl = string.Concat(originUrl, "directorio/", page);
-        var solved = await flareService.GetRequest(mainPUrl);
-        var oWeb = new HtmlDocument();
-        oWeb.LoadHtml(solved.response);
-        var doc = oWeb.DocumentNode.CssSelect("body").First();
+
+        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
+        WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
+
+        var doc = webPage.Html.CssSelect("body").First();
         var removeDomain = (string e) => e.Replace(originUrl, "");
 
         foreach (var nodo in doc.CssSelect(".custom_item2"))
@@ -52,10 +60,12 @@ public class JkanimeExtractor : IExtractor
         var animeList = new List<Anime>();
         var tmp = searchTerm == "" ? "" : searchTerm.Replace(" ", "_") + "/";
         var mainPUrl = string.Concat(originUrl, "buscar/", tmp, page);
-        var solved = await flareService.GetRequest(mainPUrl);
-        var oWeb = new HtmlDocument();
-        oWeb.LoadHtml(solved.response);
-        var doc = oWeb.DocumentNode.CssSelect("body").First();
+        var browser = new ScrapingBrowser();
+        WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
+
+
+        var doc = webPage.Html.CssSelect("body").First();
+
         var removeDomain = (string e) => e.Replace(originUrl, "");
 
         foreach (var nodo in doc.CssSelect(".anime__page__content .row .col-md-6"))
@@ -80,11 +90,12 @@ public class JkanimeExtractor : IExtractor
     public async Task<Anime> GetAnimeDetailsAsync(string requestUrl)
     {
         var mainPUrl = string.Concat(originUrl, requestUrl);
-        var solved = await flareService.GetRequest(mainPUrl);
-        var oWeb = new HtmlDocument();
-        oWeb.LoadHtml(solved.response);
-        var doc = oWeb.DocumentNode.CssSelect("body").First();
-        var removeDomain = (string e) => e.Replace(originUrl, "");
+        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
+        WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
+
+
+        var doc = webPage.Html.CssSelect("body").First();
+
         var anime = new Anime();
         anime.Url = requestUrl;
         anime.Title = doc.CssSelect(".anime__details__title h3").First().InnerText;
@@ -99,10 +110,15 @@ public class JkanimeExtractor : IExtractor
 
         anime.RemoteID = requestUrl.Replace("/", "");
 
-        var lastEpisode = doc.CssSelect("a#uep").First().GetAttributeValue("href");
+        //do some magic things
+        var lastlink = doc.CssSelect("a.numbers").Last().InnerText;
+        var ttr = lastlink.Split(" - ");
+        var lastEpisode = ttr[1];
+
+        //var lastEpisode = doc.CssSelect("a#uep").First().GetAttributeValue("href");
         var lastchap = 1;
         if (!string.IsNullOrEmpty(lastEpisode))
-            lastchap = int.Parse(lastEpisode.Replace(originUrl, "").Replace(requestUrl, "").Replace("/", ""));
+            lastchap = int.Parse(lastEpisode);
 
         var chapters = new List<Chapter>();
         for (var i = 1; i <= lastchap; i++)
@@ -114,7 +130,6 @@ public class JkanimeExtractor : IExtractor
             chapters.Add(chapter);
         }
         anime.Chapters = chapters.ToArray();
-
         await Task.CompletedTask;
         return anime;
     }
@@ -123,10 +138,10 @@ public class JkanimeExtractor : IExtractor
     {
         var videoSource = new List<VideoSource>();
         var mainPUrl = string.Concat(originUrl, requestUrl);
-        var solved = await flareService.GetRequest(mainPUrl);
-        var oWeb = new HtmlDocument();
-        oWeb.LoadHtml(solved.response);
-        var doc = oWeb.DocumentNode.CssSelect("body").First().InnerHtml;
+
+        var browser = new ScrapingBrowser();
+        WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
+        var doc = webPage.Html.CssSelect("body").First().InnerHtml;
 
         var match = doc.SubstringBetween("var servers = ", ";");
 

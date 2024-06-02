@@ -84,5 +84,18 @@ public class FlareService
         return content.solution;
     }
 
+    public async Task<object> GetCookiesData(string url)
+    {
+        var flaverSession= await GetOrCreateSession();
+        var request = sameRequester(new
+        {
+            cmd = "request.get",
+            flaverSession.session,
+            url,
+        });
+
+        var response = await _client.PostAsync(request);
+        return response.Content;
+    }
 
 }

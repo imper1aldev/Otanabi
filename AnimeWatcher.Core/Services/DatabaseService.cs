@@ -71,21 +71,21 @@ public class DatabaseService
         return animeDB;
     }
     public async Task<Anime> SaveAnime(Anime request)
-    { 
+    {
         request.LastUpdate = DateTime.Now;
         await DB._db.InsertAsync(request);
         var anime = await GetAnimeByProv(request.Url, request.ProviderId);
         return anime;
     }
-    public async Task<Anime> UpsertAnime(Anime request,bool forceUpdate=false)
+    public async Task<Anime> UpsertAnime(Anime request, bool forceUpdate = false)
     {
         //
         var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-        if (animeDB != null && forceUpdate==false)
+        if (animeDB != null && forceUpdate == false)
         {
-            var lastUpdate=animeDB.LastUpdate;
+            var lastUpdate = animeDB.LastUpdate;
 
-            var diffOfDates=DateTime.Now - lastUpdate;
+            var diffOfDates = DateTime.Now - lastUpdate;
 
             if (diffOfDates.Days < 2)
             {
@@ -93,14 +93,9 @@ public class DatabaseService
             }
 
         }
-
-
-
         var animeSource = await _searchAnimeService.GetAnimeDetailsAsync(request);
-        
-
         if (animeDB == null)
-        { 
+        {
             animeDB = await SaveAnime(animeSource);
             animeSource.Id = animeDB.Id;
         }
@@ -108,7 +103,7 @@ public class DatabaseService
         else
         {
             animeSource.Id = animeDB.Id;
-            animeSource.LastUpdate= DateTime.Now;
+            animeSource.LastUpdate = DateTime.Now;
             await DB._db.UpdateAsync(animeSource);
             animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
         }

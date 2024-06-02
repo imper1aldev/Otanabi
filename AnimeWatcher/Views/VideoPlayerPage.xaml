@@ -9,18 +9,48 @@
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:usercontrols="using:AnimeWatcher.UserControls"
     xmlns:converters="using:AnimeWatcher.Converters"
-    xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
-    
+    xmlns:converters1="using:CommunityToolkit.WinUI.Converters" 
     mc:Ignorable="d">
     <Page.Resources>
         <converters:LongToDoubleConverter x:Key="LongToDoubleConverter" />
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
     </Page.Resources>
     <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+
+        <interactivity:Interaction.Behaviors>
+            <interactions:EventTriggerBehavior EventName="PointerWheelChanged">
+                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ScrollChangedCommand}" />
+            </interactions:EventTriggerBehavior>
+        </interactivity:Interaction.Behaviors>
+
+
+        <Grid x:Name="TopInfo"
+              Canvas.ZIndex="2"
+              Grid.Row="0"
+              Height="48"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Top" 
+              Background="{ThemeResource ControlsBackground}"
+              Visibility="{x:Bind ViewModel.ControlsVisibility, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       HorizontalAlignment="Center"
+                       Margin="10,0"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource CaptionTextBlockStyle}"
+                       Text="{x:Bind ViewModel.ChapterName,Mode=OneWay}" />
+        </Grid>
+
+
 
         <lvs:VideoView x:Name="VideoView"
                        Grid.Row="0"
@@ -33,6 +63,11 @@
                 <interactions:EventTriggerBehavior EventName="Initialized">
                     <interactions:InvokeCommandAction Command="{x:Bind ViewModel.InitializedCommand}" />
                 </interactions:EventTriggerBehavior>
+                <interactions:EventTriggerBehavior EventName="PointerMoved">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}" />
+                </interactions:EventTriggerBehavior>
+                
+                
             </interactivity:Interaction.Behaviors>
             <lvs:VideoView.ContextFlyout>
                 <MenuFlyout>
@@ -73,7 +108,8 @@
               Grid.Row="1"
               VerticalAlignment="Center"
               Background="{ThemeResource ControlsBackground}"
-              Visibility="{x:Bind ViewModel.ControlsVisibility, Mode=OneWay}">
+              Visibility="{x:Bind ViewModel.ControlsVisibility, 
+              Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -204,17 +240,22 @@
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
                     <AppBarSeparator />
-                    <AppBarButton Content="Skip intro"></AppBarButton>
+                    <AppBarButton Content="Skip intro" Command="{x:Bind ViewModel.SkipIntroCommand}"></AppBarButton>
                     <AppBarSeparator />
                     <AppBarElementContainer VerticalContentAlignment="Center" >
                         <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
                             <TextBlock Text="Speed :" VerticalAlignment="Center"/>
-                            <ComboBox>
-                                <ComboBoxItem>x1</ComboBoxItem>
-                                <ComboBoxItem>x1.25</ComboBoxItem>
-                                <ComboBoxItem>x1.5</ComboBoxItem>
-                                <ComboBoxItem>x1.75</ComboBoxItem>
-                                <ComboBoxItem>x2</ComboBoxItem>
+                            <ComboBox x:Name="cbSpeed" SelectedIndex="0">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ChangeSpeedCommand}" CommandParameter="{Binding ElementName=cbSpeed }"/>
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                                <ComboBoxItem Tag="1">x1</ComboBoxItem>
+                                <ComboBoxItem Tag="1.25">x1.25</ComboBoxItem>
+                                <ComboBoxItem Tag="1.5">x1.5</ComboBoxItem>
+                                <ComboBoxItem Tag="1.75">x1.75</ComboBoxItem>
+                                <ComboBoxItem Tag="2">x2</ComboBoxItem>
                             </ComboBox>
                         </StackPanel>
                     </AppBarElementContainer>

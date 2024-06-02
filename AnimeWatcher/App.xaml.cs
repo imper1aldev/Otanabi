@@ -114,19 +114,19 @@ public partial class App : Application
         base.OnLaunched(args);
         //init database
         var db = new DatabaseHandler();
-        var flareapp = new FlareSolverr();
+        //var flareapp = new FlareSolverr();
 
         await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
 
-
+        /*
         var bw = new BackgroundWorker();
         bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
         {
             await flareapp.CheckFlareInstallation();
         });
         bw.RunWorkerAsync();
-
+        */
 
     }
 }

@@ -182,7 +182,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             data.History = history;
             data.Url = videoUrl;
             data.Chapter = chapter;
-
+            data.ChapterName=$"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
             if (string.IsNullOrEmpty(videoUrl))
             {
                 throw new Exception(ErrorMessage = "Can't extract the video URL");
