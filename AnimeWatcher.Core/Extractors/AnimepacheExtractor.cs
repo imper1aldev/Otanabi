@@ -179,6 +179,7 @@ public class AnimepacheExtractor : IExtractor
             chapter.Url = string.Concat(animeId, "-", (string)item["episode"], "-", page);
             chapter.ChapterNumber = (int)item["episode"];
             chapter.Name = string.Concat("Ep #", (string)item["episode"]);
+            chapter.Extraval = (string)item["session"];
             chapters.Add(chapter);
         }
         return chapters.ToArray();
@@ -187,7 +188,7 @@ public class AnimepacheExtractor : IExtractor
     private async Task<string> GetSessionId(string animeId)
     {
         //current pathern
-        
+
         var ss = $"/a/{animeId}";
         var mainPUrl = string.Concat(originUrl, ss);
         var data = await interceptorDDOS(mainPUrl);
@@ -197,25 +198,26 @@ public class AnimepacheExtractor : IExtractor
         await Task.CompletedTask;
         return session_id;
     }
-     
+
 
     public async Task<VideoSource[]> GetVideoSources(string requestUrl)
-    { 
+    {
         //current pathern        
         //animeId-episode-page
         var videoSources = new List<VideoSource>();
-        var animeId=requestUrl.Split("-")[0];
+        var animeId = requestUrl.Split("-")[0];
         var page = requestUrl.Split("-")[2];
         var episode = requestUrl.Split("-")[1];
-        var sessionId=await GetSessionId(animeId);
+        var sessionId = await GetSessionId(animeId);
 
-
-
-        var chaps= await GetChapters(int.Parse(page),sessionId,animeId);
-
-        var detail = chaps.Where(c=>c.ChapterNumber==int.Parse(episode)).FirstOrDefault();
-
-        //TODO : detail contains the sessionId,and the chapter session id
+        var chaps = await GetChapters(int.Parse(page), sessionId, animeId);
+        var detail = chaps.Where(c => c.ChapterNumber == int.Parse(episode)).FirstOrDefault();
+        var mainPUrl = string.Concat(originUrl, "/play/", sessionId,"/", detail.Extraval);
+        var data = await interceptorDDOS(mainPUrl);
+        var pache= data.Html.CssSelect("div#pickDownload>a").Last().GetAttributeValue("href");
+        Debug.WriteLine(pache);
+            
+            //TODO : detail contains the sessionId,and the chapter session id
         // next , scrape the data to get the url from pahe , and then all the logic to get the video from kwik
 
 

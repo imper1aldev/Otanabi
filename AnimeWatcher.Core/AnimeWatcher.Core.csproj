@@ -9,6 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="FlareSolverrSharp" Version="3.0.7" />
+    <PackageReference Include="JsUnpacker" Version="1.0.0" />
+    <PackageReference Include="Juro" Version="1.3.10" />
+    <PackageReference Include="Juro.Core" Version="1.3.10" />
+    <PackageReference Include="Juro.Extractors" Version="1.3.10" />
+    <PackageReference Include="Juro.Providers" Version="1.3.10" />
+    <PackageReference Include="Juro.Providers.Adult" Version="1.3.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RestSharp" Version="111.1.0" />
