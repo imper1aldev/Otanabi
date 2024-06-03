@@ -176,7 +176,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         try
         {
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
-            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources, "YourUpload");
+            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             var history = await _Db.GetOrCreateHistoryByCap(chapter.Id);
             dynamic data = new ExpandoObject();
             data.History = history;

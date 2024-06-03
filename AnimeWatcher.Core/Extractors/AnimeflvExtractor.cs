@@ -15,7 +15,7 @@ public class AnimeflvExtractor : IExtractor
     internal readonly int extractorId = 1;
     internal readonly string sourceName = "AnimeFLV";
     internal readonly string originUrl = "https://www3.animeflv.net";
-    internal readonly bool Secured = false;
+    internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
     public string GetSourceName()
     {
@@ -27,7 +27,7 @@ public class AnimeflvExtractor : IExtractor
     }
     public Provider GenProvider()
     {
-        return new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Secured = Secured };
+        return new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
     }
     public async Task<Anime[]> MainPageAsync(int page = 1)
     {
@@ -83,8 +83,8 @@ public class AnimeflvExtractor : IExtractor
 
         anime.Status = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > p > span").First().InnerText;
 
-        var identifier = GetUriIdentify(node.InnerText, anime.Status);
-        anime.Chapters = GetChaptersByregex(node.InnerText, identifier);
+        var identifier = GetUriIdentify(node.InnerHtml, anime.Status);
+        anime.Chapters = GetChaptersByregex(node.InnerHtml, identifier);
         anime.RemoteID = identifier[0];
         return anime;
     }
@@ -215,7 +215,7 @@ public class AnimeflvExtractor : IExtractor
         HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
 
-        var sources = getSorcesRegex(node.InnerText);
+        var sources = getSorcesRegex(node.InnerHtml);
 
         return sources;
 

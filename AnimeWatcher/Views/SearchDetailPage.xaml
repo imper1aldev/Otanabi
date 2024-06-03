@@ -134,12 +134,12 @@
                         <!--<AppBarButton Icon="Like" Label="Like" />
                         <AppBarButton Icon="Dislike" Label="Dislike"/>-->
 
-                        <AppBarSeparator Margin="10,0,10,0"/>
-                        <AppBarButton Label="Go to Web">
+                        <!--<AppBarSeparator Margin="10,0,10,0"/>-->
+                        <!--<AppBarButton Label="Go to Web">
                             <AppBarButton.Icon>
                                 <FontIcon Glyph="&#xEC27;" />
                             </AppBarButton.Icon>
-                        </AppBarButton>
+                        </AppBarButton>-->
                         <AppBarSeparator Margin="10,0,10,0"/>
                         <AppBarButton Label="Order" Command="{x:Bind ViewModel.OrderChapterListCommand}">
                             <AppBarButton.Icon>
@@ -159,8 +159,8 @@
                         </StackPanel>
 
                     </Button>
-                    <RatingControl AutomationProperties.Name="RatingControl with placeholder" IsEnabled="False" 
-                       PlaceholderValue="3.25" HorizontalAlignment="Right"/>
+                    <!--<RatingControl AutomationProperties.Name="RatingControl with placeholder" IsEnabled="False" 
+                       PlaceholderValue="3.25" HorizontalAlignment="Right"/>-->
                 </StackPanel>
 
 

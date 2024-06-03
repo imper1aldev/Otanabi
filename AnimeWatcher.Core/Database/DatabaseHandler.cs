@@ -53,48 +53,25 @@ public sealed class DatabaseHandler
     }
 
     public async Task initData()
-    { 
+    {
 
         var provDLL = _classReflectionHelper.GetProviders();
         var provDB = await _db.Table<Provider>().ToArrayAsync();
-
         var onDBsize = provDB.Length;
         var onLocalSize = provDLL.Length;
 
-        if (onDBsize != onLocalSize)
+        var providersToAdd = provDLL.Where(c1 => !provDB.Any(c2 => c1.Id == c2.Id));
+        if (providersToAdd.Count() > 0)
         {
-            foreach (var provider in provDLL)
-            {
-                var pDB = await _db.Table<Provider>().Where(p => p.Id == provider.Id).FirstOrDefaultAsync();
-                if (pDB == null)
-                {
-                    await _db.InsertAsync(provider);
-                }
-            }
+            await _db.InsertAllAsync(providersToAdd);
         }
-
 
         var runinit = await _db.Table<FavoriteList>().Where(f => f.Id == 1).ToListAsync();
-
         if (runinit.Count == 0)
         {
-            var indatlistFav = new List<FavoriteList>()
-            {
-                new() { Id = 1, Name = "Favorite List" },
-                new() { Id = 2, Name = "Favorite List 2" },
-                new() { Id = 3, Name = "Favorite List 3" },
-                new() { Id = 4, Name = "Favorite List 4" },
-                new() { Id = 5, Name = "Favorite List 5" }
-            };
-
-            var countFavOrder = 0;
-            foreach (var fav in indatlistFav)
-            {
-                countFavOrder++;
-                await _db.ExecuteAsync("insert into FavoriteList (Id,Name,Placement) values (?,?,?);", fav.Id, fav.Name, countFavOrder);
-            }
-            // await _db.InsertAllAsync(_classReflectionHelper.GetProviders());
+            var indatlistFav = new FavoriteList{ Id = 1, Name = "Favorite List",Placement=0 }; 
+            await _db.InsertAsync(indatlistFav);
         }
-        
+
     }
 }

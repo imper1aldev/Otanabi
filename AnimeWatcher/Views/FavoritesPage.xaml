@@ -9,39 +9,62 @@
     xmlns:models="using:AnimeWatcher.Core.Models"
     mc:Ignorable="d">
 
-    <Grid x:Name="ContentArea" Margin="20,20,20,10">
+    <Grid x:Name="ContentArea" Margin="20,20,20,10"  >
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-        
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <SelectorBar x:Name="FavoriteListBar" SelectionChanged="FavoriteListBar_SelectionChanged">
-            </SelectorBar>
-            <Button  HorizontalAlignment="Right" Margin="15,0,0,0" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer HorizontalAlignment="Left" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" Grid.Column="0"
+>                   
+                    <SelectorBar  x:Name="FavoriteListBar"   
+                         SelectionChanged="FavoriteListBar_SelectionChanged" />
+                </ScrollViewer>
+            <Button  HorizontalAlignment="Right" Margin="15,0,0,0" Grid.Column="1" >
                 <FontIcon Glyph="&#xE713;" />
                 <Button.Flyout>
-                    <Flyout>
-                        <StackPanel>
-                            <TextBlock Style="{ThemeResource BaseTextBlockStyle}" Text="All items will be removed. Do you want to continue?" Margin="0,0,0,12" />
-                            <Button  Content="Yes, empty my cart" />
+                    <Flyout x:Name="FavEditFlyout">
+                        <StackPanel Width="Auto">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="10">
+                                <TextBlock Text="Add new List" VerticalAlignment="Center"  />
+                                <TextBox x:Name="txtNew" VerticalAlignment="Center" Width="200"/>
+                                <Button  Content="Add" Click="Button_add_fav_Click" Style="{StaticResource AccentButtonStyle}"/>
+                            </StackPanel>
+                            <Border BorderThickness="2" BorderBrush="#14FFFFFF" Background="#FFFFFFFF" Margin="0,30,0,0" >
+                            </Border>
+                            <StackPanel Orientation="Vertical" VerticalAlignment="Center" Spacing="10" Margin="0,30,0,0">
+                                <StackPanel Orientation="Vertical" Width="Auto" Spacing="10">
+                                    <ComboBox x:Name="FavCombob"></ComboBox>
+                                    <TextBox x:Name="FavTxtUpdate"/>
+                                    <Grid>
+                                        <Button Click="Button_update_fav_Click" Content="Update" HorizontalAlignment="Left" Style="{StaticResource AccentButtonStyle}"/>
+                                        <Button Click="Button_delete_fav_Click" Content="Delete" HorizontalAlignment="Right" Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"/>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Flyout>
                 </Button.Flyout>
             </Button>
-        </StackPanel>
 
-        <controls:AdaptiveGridView Margin="0,20,0,0"
-    Grid.Row="1"
-    animations:Connected.ListItemElementName="itemThumbnail"
-    animations:Connected.ListItemKey="animationKeyContentGrid"
-    DesiredWidth="180" 
-    IsItemClickEnabled="True"
-    ItemClickCommand="{x:Bind ViewModel.AnimeClickCommand}"
-    ItemsSource="{x:Bind ViewModel.FavoriteAnimes,Mode=OneWay}" 
-    SelectionMode="None"
-    StretchContentForSingleRow="False">
+
+        </Grid>
+        <controls:AdaptiveGridView Margin="0,20,0,0"  Grid.Row="1"
+            animations:Connected.ListItemElementName="itemThumbnail"
+            animations:Connected.ListItemKey="animationKeyContentGrid"
+            DesiredWidth="180"  IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.AnimeClickCommand}"
+            ItemsSource="{x:Bind ViewModel.FavoriteAnimes,Mode=OneWay}" 
+            SelectionMode="None" StretchContentForSingleRow="False">
             <animations:Implicit.ShowAnimations>
                 <animations:TranslationAnimation From="0, -10, 0"
                                              To="0"

@@ -4,7 +4,6 @@ using System.Windows.Input;
 
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
-using AnimeWatcher.Core.Flare;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.Helpers;
@@ -140,14 +139,5 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     }
 
-
-
-    /*Tests segment var declarations and other stuff related */
-    private readonly FlareService _falareService = new();
-
-    [RelayCommand]
-    private async Task Tests()
-    {
-        await _falareService.GetRequest("https://jkanime.net/");
-    }
+     
 }
