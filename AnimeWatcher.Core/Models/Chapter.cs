@@ -3,20 +3,15 @@
 namespace AnimeWatcher.Core.Models;
 public class Chapter
 {
-    [AutoIncrement,PrimaryKey]
-    #nullable enable
-    public int? Id {get;set;} 
-    public int? AnimeId {get;set;}
-    #nullable enable
-    public int? ChapterNumber {get;set;}
-    #nullable enable
-    public string? Name {get;set;}
-    #nullable enable
-    public int? historyId {get;set;}
-    #nullable enable
-    public string? Url {get;set; }
-    #nullable enable
+    [AutoIncrement,PrimaryKey]    
+    public int Id {get;set;} 
+    public int AnimeId {get;set;}
+    public int ChapterNumber {get;set;}
+    public string Name {get;set;}
+    public string Url {get;set; }
+    public string Extraval {get;set;}
     [Ignore]
-    public History? History {get;set;} 
+    public History History {get;set;}
+    
     
 }

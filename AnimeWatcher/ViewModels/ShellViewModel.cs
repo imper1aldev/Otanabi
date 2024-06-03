@@ -79,6 +79,17 @@ public partial class ShellViewModel : ObservableRecipient
     {
         IsBackEnabled = NavigationService.CanGoBack;
 
+        if (e.SourcePageType == typeof(VideoPlayerPage))
+        {
+            PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+        }
+        else
+        {
+            PaneDisplayMode = NavigationViewPaneDisplayMode.Auto;
+        }
+
+
+
         if (e.SourcePageType == typeof(SettingsPage))
         {
             Selected = NavigationViewService.SettingsItem;

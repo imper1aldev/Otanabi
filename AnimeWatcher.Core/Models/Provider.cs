@@ -5,11 +5,12 @@ public class Provider
 {
     [AutoIncrement,PrimaryKey]
     public int Id { get; set; }
-    #nullable enable
-    public string? Name { get; set; }
-    #nullable enable
-    public string? Url { get; set; }
-    #nullable enable
+    public string Name { get; set; }
+    public string Url { get; set; }
+
+    public bool Secured{get; set; }
+    public string Type { get; set; }
+
     [Ignore]
     public Anime[]? Animes { get; set; }
 }

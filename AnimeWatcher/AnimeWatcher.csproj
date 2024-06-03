@@ -1,74 +1,77 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-	  <TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
-	  <TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
-    <RootNamespace>AnimeWatcher</RootNamespace>
-    <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-	<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-	  <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-  </PropertyGroup>
-	
-  <ItemGroup>
-    <None Remove="styles\ControlBackground.xaml" />
-    <None Remove="Styles\NavigationViewStyles.xaml" />
-  </ItemGroup>
+	<Import Project="RemoveLanguageFolders.targets" />
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
+		<TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
+		<RootNamespace>AnimeWatcher</RootNamespace>
+		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<Platforms>x86;x64;arm64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWinUI>true</UseWinUI>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<ExcludedLanguages>en-us;en;en-GB;es-ES;es-MX</ExcludedLanguages>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Manifest Include="$(ApplicationManifest)" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="styles\ControlBackground.xaml" />
+		<None Remove="Styles\NavigationViewStyles.xaml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="LibVLCSharp" Version="3.8.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.18" />
-    <PackageReference Include="WinUIEx" Version="2.3.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<Manifest Include="$(ApplicationManifest)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.0.240109" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
+		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+		<PackageReference Include="LibVLCSharp" Version="3.8.5" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240227000" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
+		<PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.18" />
+		<PackageReference Include="WinUIEx" Version="2.3.2" />
+	</ItemGroup>
 	<PropertyGroup>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+		<NeutralLanguage>en-US</NeutralLanguage>
 	</PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AnimeWatcher.Core\AnimeWatcher.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Page Update="Styles\NavigationViewStyles.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\ControlBackground.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AnimeWatcher.Core\AnimeWatcher.Core.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Update="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<Page Update="Styles\NavigationViewStyles.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<Page Update="Styles\ControlBackground.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
-  </ItemGroup>
-  
-  <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
-  </PropertyGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="RD /S /Q &quot;$(TargetDir)cs\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)da\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)de\&quot; &#xD;&#xA;RD /S /Q &quot;$(TargetDir)fa\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fi\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fr\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)it\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ko\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)mk\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)nl\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pl\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pt\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ru\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sv\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)tr\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)zh-CN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)zh-TW\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)vi-VN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)af-ZA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)uz-Latn-UZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ur-PK\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)uk-UA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ug-CN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)tt-RU\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)tr-TR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)th-TH\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)te-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ta-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sv-SE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sr-Latn-RS\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sr-Cyrl-RS\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sr-Cyrl-BA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)am-ET\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)as-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)az-Latn-AZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)bg-BG\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)bn-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)am-ET\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ar-SA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)as-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)az-Latn-AZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)bg-BG\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)bn-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)bs-Latn-BA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ca-ES\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ca-Es-VALENCIA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)cs-CZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)cy-GB\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)da-DK\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)de-DE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)el-GR\&quot;  &#xD;&#xA;RD /S /Q &quot;$(TargetDir)et-EE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)eu-ES\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fa-IR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fi-FI\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fil-PH\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fr-CA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)fr-FR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ga-IE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)gd-gb\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)gl-ES\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)gu-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)he-IL\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)hi-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)hr-HR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)hu-HU\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)hy-AM\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)id-ID\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)is-IS\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)it-IT\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ja-JP\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ka-GE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)kk-KZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)km-KH\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)kn-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ko-KR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)kok-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)lb-LU\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)lo-LA\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)lt-LT\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)lv-LV\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)mi-NZ\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)mk-MK\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ml-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)mr-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ms-MY\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)mt-MT\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)nb-NO\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ne-NP\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)nl-NL\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)nn-NO\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)or-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pa-IN\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pl-PL\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pt-BR\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)pt-PT\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)quz-PE\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ro-RO\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)ru-RU\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sk-SK\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sl-SI\&quot;&#xD;&#xA;RD /S /Q &quot;$(TargetDir)sq-AL\&quot;" />
-  </Target>
+	<ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<ProjectCapability Include="Msix" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Views\Embeddeds\" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
+		<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	</PropertyGroup>
 </Project>

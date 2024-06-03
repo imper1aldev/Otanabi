@@ -25,7 +25,7 @@ public sealed partial class FavoritesPage : Page
 
     private async Task loadFavoriteList()
     {
-
+        FavoriteListBar.Items.Clear();
         var fList = await dbeService.GetFavoriteLists();
         var counter = 0;
         foreach (var f in fList)

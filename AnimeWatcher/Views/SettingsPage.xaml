@@ -8,78 +8,66 @@
     xmlns:xaml="using:Microsoft.UI.Xaml"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
     </Page.Resources>
-    <Grid>
+    <Grid Margin="20,20,20,10" >
         <StackPanel
             x:Name="ContentArea">
 
+            <controls:SettingsCard Description="Select which app theme to display" Header="App theme">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE790;" />
+                </controls:SettingsCard.HeaderIcon>
+                <ComboBox x:Name="themeMode"  Height="50" Width="180"  
+                          SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex,Mode=OneWay}"
+                          >
+                    <interactivity:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                            <core:InvokeCommandAction Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                                                      CommandParameter="{Binding ElementName=themeMode}"/>
+                        </core:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                    <ComboBoxItem>Light</ComboBoxItem>
+                    <ComboBoxItem>Dark</ComboBoxItem>
+                    <ComboBoxItem>Default</ComboBoxItem>
+                </ComboBox>
+            </controls:SettingsCard>
+
+
+
             <controls:SettingsCard x:Name="settingsCard"
-                               Description="This is a default card, with the Header, HeaderIcon, Description and Content set."
-                               Header="This is the Header"
-                               HeaderIcon="{ui:FontIcon Glyph=&#xE799;}" >
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem>Option 1</ComboBoxItem>
-                    <ComboBoxItem>Option 2</ComboBoxItem>
-                    <ComboBoxItem>Option 3</ComboBoxItem>
+                               Header="Default Provider"
+                               Description="This only applies to Search and las Chapter Updates"
+                               HeaderIcon="{ui:FontIcon Glyph=&#xF6FA;}" >
+                <ComboBox ItemsSource="{x:Bind ViewModel.Providers,Mode=OneWay}" 
+                            SelectedItem="{x:Bind ViewModel.SelectedProvider,Mode=TwoWay}"                            
+                            DisplayMemberPath="Name" Height="50" Width="180" 
+                            HorizontalAlignment="Right" >
+                    <interactivity:Interaction.Behaviors>
+                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                            <core:InvokeCommandAction Command="{x:Bind ViewModel.ChangedProviderCommand}"/>
+                        </core:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
                 </ComboBox>
             </controls:SettingsCard>
 
 
 
 
-
-            <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
-            <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
-                <TextBlock x:Uid="Settings_Theme" />
-
-                <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                    <RadioButton
-                        x:Uid="Settings_Theme_Light"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Light</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Dark"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Default"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Default</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                </StackPanel>
-            </StackPanel>
-
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
 
             <StackPanel Margin="{StaticResource XSmallTopMargin}">
                 <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
 
-                <TextBlock
-                    x:Uid="Settings_AboutDescription"
-                    Margin="{StaticResource XSmallTopMargin}"
-                    Style="{ThemeResource BodyTextBlockStyle}" />
-                <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
             </StackPanel>
+            <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                <Button Content="this button just run code in backend!" Command="{x:Bind ViewModel.TestsCommand}"/>
+            </StackPanel>
+
         </StackPanel>
     </Grid>
 </Page>

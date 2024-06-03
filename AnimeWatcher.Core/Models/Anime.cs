@@ -46,6 +46,8 @@ public class Anime
     {
         get; set;
     }
+    public DateTime LastUpdate {get;set;}
+
     [Ignore]
     public ICollection<Chapter> Chapters
     {

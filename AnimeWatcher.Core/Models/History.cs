@@ -9,11 +9,10 @@ namespace AnimeWatcher.Core.Models;
 public class History
 {
     [AutoIncrement,PrimaryKey]
-    #nullable enable
     public int Id { get; set; }
-    #nullable enable
     public DateTime WatchedDate {get;set; }
-    #nullable enable
-    public int? SecondsWatched {get;set; }
-
+    public long SecondsWatched {get;set; }
+    public int ChapterId{get;set; }
+    [Ignore]
+    public string TimeString => TimeSpan.FromMilliseconds(SecondsWatched).ToString(@"hh\:mm\:ss");
 }

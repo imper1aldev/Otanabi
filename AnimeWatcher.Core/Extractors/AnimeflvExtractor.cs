@@ -7,13 +7,16 @@ using System.Web;
 using ScrapySharp.Extensions;
 using AnimeWatcher.Core.Contracts.Extractors;
 using System.Xml.Linq;
+using System.Diagnostics;
 namespace AnimeWatcher.Core.Extractors;
 public class AnimeflvExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
-    internal readonly int extractorId=1;
+    internal readonly int extractorId = 1;
     internal readonly string sourceName = "AnimeFLV";
     internal readonly string originUrl = "https://www3.animeflv.net";
+    internal readonly bool Secured = false;
+    internal readonly string Type = "ANIME";
     public string GetSourceName()
     {
         return sourceName;
@@ -24,11 +27,12 @@ public class AnimeflvExtractor : IExtractor
     }
     public Provider GenProvider()
     {
-        return new Provider { Id= extractorId,Name = sourceName, Url = originUrl };
+        return new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Secured = Secured };
     }
-    public async Task<Anime[]> MainPageAsync(int page = 1) {
-        var animeList = await SearchAnimeAsync("",page);
-        return animeList.ToArray();           
+    public async Task<Anime[]> MainPageAsync(int page = 1)
+    {
+        var animeList = await SearchAnimeAsync("", page);
+        return animeList.ToArray();
     }
 
     public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
@@ -43,12 +47,12 @@ public class AnimeflvExtractor : IExtractor
         foreach (var nodo in doc.DocumentNode.CssSelect(".Anime"))
         {
             Anime anime = new();
-             
+
             anime.Title = nodo.SelectSingleNode(".//h3").InnerText;
             anime.Url = nodo.Descendants("a").First().GetAttributeValue("href");
-            anime.Cover =nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src");
+            anime.Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src");
             anime.Provider = GenProvider();
-            anime.ProviderId=anime.Provider.Id;
+            anime.ProviderId = anime.Provider.Id;
             anime.Type = getAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
             animeList.Add(anime);
@@ -66,14 +70,14 @@ public class AnimeflvExtractor : IExtractor
         HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
 
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
-        anime.Url=requestUrl;
+        anime.Url = requestUrl;
 
         anime.Title = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > h1").First().InnerText;
         var coverTmp = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img").First().GetAttributeValue("src");
         anime.Cover = string.Concat(originUrl, coverTmp);
         anime.Description = node.CssSelect("div.Wrapper > div > div > div.Container > div > main > section").First().CssSelect("div.Description > p").First().InnerText;
         anime.Provider = GenProvider();
-        anime.ProviderId= anime.Provider.Id;    
+        anime.ProviderId = anime.Provider.Id;
         var tempType = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
         anime.Type = getAnimeTypeByStr(tempType);
 
@@ -155,31 +159,49 @@ public class AnimeflvExtractor : IExtractor
     private VideoSource[] getSorcesRegex(string text)
     {
         var pattern = @"var videos = \{""SUB"":(.*?)\};";
+        var latPattern = @"var videos = \{""LAT"":(.*?)\};";
         var sources = new List<VideoSource>();
         var match = Regex.Match(text, pattern);
-        if (match.Success)
+        var validator = false;
+
+        var dubbed = "SUB";
+        if (!match.Success)
+        {
+            match = Regex.Match(text, latPattern);
+            validator = match.Success;
+            dubbed = "LAT";
+        }
+        else
+        {
+            validator = true;
+        }
+
+
+        if (validator)
         {
             var prefab = match.Groups[0].Value.Replace("var videos =", "").Replace(";", "");
             var prefJson = JObject.Parse(prefab);
 
-            foreach (var vsource in prefJson["SUB"])
+            foreach (var type in prefJson)
             {
-                var serverName = _serverConventions.GetServerName((string)vsource["server"]);
-
-                if (string.IsNullOrEmpty(serverName))
+                foreach (var vsource in prefJson[type.Key])
                 {
-                    continue;
+                    var serverName = _serverConventions.GetServerName((string)vsource["server"]);
+
+                    if (string.IsNullOrEmpty(serverName))
+                    {
+                        continue;
+                    }
+
+                    var vSouce = new VideoSource();
+                    vSouce.Server = serverName;
+                    vSouce.Code = (string)vsource["code"];
+                    vSouce.Url = (string)vsource["url"];
+                    vSouce.Ads = (int)vsource["ads"];
+                    vSouce.Title = (string)vsource["title"];
+                    vSouce.Allow_mobile = (bool)vsource["allow_mobile"];
+                    sources.Add(vSouce);
                 }
-
-                var vSouce = new VideoSource();
-                vSouce.Server = serverName;
-                vSouce.Code = (string)vsource["code"];
-                vSouce.Url = (string)vsource["url"];
-                vSouce.Ads = (int)vsource["ads"];
-                vSouce.Title = (string)vsource["title"];
-                vSouce.Allow_mobile = (bool)vsource["allow_mobile"];
-                sources.Add(vSouce);
-
             }
         }
         return sources.ToArray();
@@ -216,5 +238,5 @@ public class AnimeflvExtractor : IExtractor
         }
     }
 
-    
+
 }
