@@ -1,20 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Dynamic;
-using System.Net;
-using System.Runtime.InteropServices.JavaScript;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Web;
-using System.Xml.Linq;
 using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
-using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
-using ScrapySharp.Exceptions;
-using ScrapySharp.Extensions;
-using ScrapySharp.Network;
-
+using Juro.Clients;
+using Juro.Core.Models.Videos;
+using Juro.Providers.Anime;
 namespace AnimeWatcher.Core.Extractors;
 public class AnimepacheExtractor : IExtractor
 {
@@ -22,74 +12,56 @@ public class AnimepacheExtractor : IExtractor
     internal readonly int extractorId = 3;
     internal readonly string sourceName = "Animepache";
     internal readonly string originUrl = "https://animepahe.com";
-    internal readonly bool Secured = true;
+    internal readonly bool Persistent = false;
     internal readonly string Type = "ANIME";
 
     public string GetSourceName() => sourceName;
     public string GetUrl() => originUrl;
-    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Secured = Secured };
+    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
-    private async Task<WebPage> interceptorDDOS(string mainPUrl)
-    {
-        WebPage returnedPage = null;
-        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
-        try
-        {
-            returnedPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
-            return returnedPage;
-        } catch (WebException)
-        {
-            var wellknow = await browser.NavigateToPageAsync(new Uri("https://check.ddos-guard.net/check.js"));
-            var wellknowResponse = wellknow.Content.SubstringBetween("'", "'");
-            var setcok = wellknow.RawResponse.Headers.Where(t => t.Key == "Set-Cookie").FirstOrDefault();
-            var coval = setcok.Value;
-            browser.Headers.Add("set-cookie", setcok.Value.ToString());
-            var tested = await browser.NavigateToPageAsync(new Uri(originUrl + wellknowResponse));
-            var data = tested.Content;
-            var tested2 = await browser.NavigateToPageAsync(new Uri(mainPUrl));
-            return tested2;
-        }
-    }
+
 
     public async Task<Anime[]> MainPageAsync(int page = 1)
     {
         var animeList = new List<Anime>();
-        var mainPUrl = string.Concat(originUrl, "/api?m=airing&page=", page);
-        var data = await interceptorDDOS(mainPUrl);
-        var jdata = JObject.Parse(data);
-        foreach (var vsource in jdata["data"])
+        //var client = new AnimeClient();
+        var provider = new AnimePahe();
+
+        var animes = await provider.GetAiringAsync(page);
+        foreach (var item in animes)
         {
-            Anime anime = new();
-            anime.Title = (string)vsource["anime_title"];
-            anime.Cover = (string)vsource["snapshot"];
-            anime.RemoteID = (string)vsource["anime_id"];
-            anime.Url = $"/a/{anime.RemoteID}";
+            var anime = new Anime();
+            anime.RemoteID = item.Id;
+            anime.Title = item.Title;
+            anime.Cover = item.Image;
+            anime.Url = item.Id;
             anime.Provider = GenProvider();
             anime.ProviderId = anime.Provider.Id;
+
             animeList.Add(anime);
+
         }
+
         await Task.CompletedTask;
         return animeList.ToArray();
     }
     public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
     {
-        var animeList = new List<Anime>();
-        var mainPUrl = string.Concat(originUrl, "/api?m=search&l=8&q=", HttpUtility.UrlEncode(searchTerm), "&page=", page);
-        var data = await interceptorDDOS(mainPUrl);
-        var jdata = JObject.Parse(data);
-        foreach (var vsource in jdata["data"])
+        var animeList = new List<Anime>(); 
+        var provider = new AnimePahe();
+        var animes = await provider.SearchAsync(searchTerm);
+        foreach (var item in animes)
         {
-            Anime anime = new();
-            anime.Title = (string)vsource["title"];
-            anime.Cover = (string)vsource["poster"];
-            anime.RemoteID = (string)vsource["id"];
-            anime.Url = $"/a/{anime.RemoteID}";
-            anime.Type = getAnimeTypeByStr((string)vsource["type"]);
-
+            var anime = new Anime();
+            anime.RemoteID = item.Id;
+            anime.Title = item.Title;
+            anime.Cover = item.Image;
+            anime.Url = item.Id;
             anime.Provider = GenProvider();
             anime.ProviderId = anime.Provider.Id;
             animeList.Add(anime);
         }
+
         await Task.CompletedTask;
         return animeList.ToArray();
     }
@@ -97,132 +69,62 @@ public class AnimepacheExtractor : IExtractor
     public async Task<Anime> GetAnimeDetailsAsync(string requestUrl)
     {
         Anime anime = new();
+        var provider = new AnimePahe();
+        var animeInfo = await provider.GetAnimeInfoAsync(requestUrl);
+        var episodes = await provider.GetEpisodesAsync(requestUrl);
 
-        var mainPUrl = string.Concat(originUrl, requestUrl);
+        anime.Title = animeInfo.Title;
 
-        var data = await interceptorDDOS(mainPUrl);
-        var session_id = data.Content.ToString().SubstringBetween("let id = \"", "\";");
-        session_id = Regex.Unescape(session_id);
-
-
-        var originid = requestUrl.Replace("/a/", "");
-
-        anime.Url = requestUrl;
-        anime.Title = data.Html.CssSelect("div.title-wrapper h1 span").First().InnerText;
-        anime.Cover = data.Html.CssSelect("div.anime-poster a").First().GetAttributeValue("href");
-        anime.Description = data.Html.CssSelect("div.anime-synopsis").First().InnerText;
+        anime.Cover = animeInfo.Image;
+        anime.Description = animeInfo.Summary;
+        anime.RemoteID = animeInfo.Id;
+        anime.Url = animeInfo.Id;
+        anime.Type = getAnimeTypeByStr(animeInfo.Type);
         anime.Provider = GenProvider();
         anime.ProviderId = anime.Provider.Id;
-        anime.Type = getAnimeTypeByStr("");
-        anime.RemoteID = originid;
-
 
         var chapters = new List<Chapter>();
-        var first = await FirstChapterIter(session_id, originid);
-        chapters = first.Item1.ToList();
-        var lastpage = first.Item2;
-
-        if (lastpage > 1)
+        var i = 1;
+        foreach (var ep in episodes)
         {
-            for (var i = 2; i <= lastpage; i++)
-            {
-                var chaps = await GetChapters(i, session_id, originid);
-                chapters.Concat(chaps.ToList());
 
-                //avoid to be target as ddos
-                await Task.Delay(300);
-            }
-
+            var chapter = new Chapter();
+            chapter.Url = ep.Link;
+            chapter.ChapterNumber = i;
+            chapter.Name = ep.Name;
+            chapter.Extraval = ep.Id;
+            chapters.Add(chapter);
+            i++;
         }
-
         anime.Chapters = chapters.ToArray();
+
         await Task.CompletedTask;
         return anime;
     }
-    // for chapter url is necessary to create a coded string to search its session
-    // 1) animeId-episode-page
 
-    private async Task<(Chapter[], int)> FirstChapterIter(string sessionId, string animeId)
+
+    public async Task<Models.VideoSource[]> GetVideoSources(string requestUrl)
     {
+        var videoSources = new List<Models.VideoSource>();
+        var provider = new AnimePahe();
 
-        var mainPUrl = string.Concat(originUrl, "/api?m=release&id=", sessionId, "&sort=episode_desc&page=", 1);
-        var data = await interceptorDDOS(mainPUrl);
-        var jparsed = JObject.Parse(data.Content);
-
-        var last_page = (int)jparsed["last_page"];
-        var chapters = new List<Chapter>();
-        foreach (var item in jparsed["data"])
+        var videoServers = await provider.GetVideoServersAsync(requestUrl);
+        var selected = videoServers.Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720")).FirstOrDefault();
+        if (selected != null)
         {
-            Chapter chapter = new Chapter();
-            chapter.Url = string.Concat(animeId, "-", (string)item["episode"], "-", 1);
-            chapter.ChapterNumber = (int)item["episode"];
-            chapter.Name = string.Concat("Ep #", (string)item["episode"]);
-            chapters.Add(chapter);
+            var videos = await provider.GetVideosAsync(selected);
 
+            foreach (var video in videos)
+            {
+                var vSouce = new Models.VideoSource();
+                vSouce.Server = "Juro";
+                vSouce.Title = "Juro";
+                vSouce.Code = video.VideoUrl;
+                vSouce.Url = video.VideoUrl;
+                videoSources.Add(vSouce);
+            }
         }
-
-
-        return (chapters.ToArray(), last_page);
-    }
-    private async Task<Chapter[]> GetChapters(int page, string sessionId, string animeId)
-    {
-        //https://animepahe.ru/api?m=release&id=121ca70d-ed3f-5534-87c7-a4477b7738b8&sort=episode_desc&page=1
-
-        var mainPUrl = string.Concat(originUrl, "/api?m=release&id=", sessionId, "&sort=episode_desc&page=", page);
-        var data = await interceptorDDOS(mainPUrl);
-        var jparsed = JObject.Parse(data.Content);
-        var chapters = new List<Chapter>();
-
-        foreach (var item in jparsed["data"])
-        {
-            Chapter chapter = new Chapter();
-            chapter.Url = string.Concat(animeId, "-", (string)item["episode"], "-", page);
-            chapter.ChapterNumber = (int)item["episode"];
-            chapter.Name = string.Concat("Ep #", (string)item["episode"]);
-            chapter.Extraval = (string)item["session"];
-            chapters.Add(chapter);
-        }
-        return chapters.ToArray();
-    }
-
-    private async Task<string> GetSessionId(string animeId)
-    {
-        //current pathern
-
-        var ss = $"/a/{animeId}";
-        var mainPUrl = string.Concat(originUrl, ss);
-        var data = await interceptorDDOS(mainPUrl);
-        var session_id = data.Content.ToString().SubstringBetween("let id = \"", "\";");
-        session_id = Regex.Unescape(session_id);
-
-        await Task.CompletedTask;
-        return session_id;
-    }
-
-
-    public async Task<VideoSource[]> GetVideoSources(string requestUrl)
-    {
-        //current pathern        
-        //animeId-episode-page
-        var videoSources = new List<VideoSource>();
-        var animeId = requestUrl.Split("-")[0];
-        var page = requestUrl.Split("-")[2];
-        var episode = requestUrl.Split("-")[1];
-        var sessionId = await GetSessionId(animeId);
-
-        var chaps = await GetChapters(int.Parse(page), sessionId, animeId);
-        var detail = chaps.Where(c => c.ChapterNumber == int.Parse(episode)).FirstOrDefault();
-        var mainPUrl = string.Concat(originUrl, "/play/", sessionId,"/", detail.Extraval);
-        var data = await interceptorDDOS(mainPUrl);
-        var pache= data.Html.CssSelect("div#pickDownload>a").Last().GetAttributeValue("href");
-        Debug.WriteLine(pache);
-            
-            //TODO : detail contains the sessionId,and the chapter session id
-        // next , scrape the data to get the url from pahe , and then all the logic to get the video from kwik
-
-
-
-
+        Debug.WriteLine(videoServers);
 
         await Task.CompletedTask;
         return videoSources.ToArray();

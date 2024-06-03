@@ -11,13 +11,13 @@ public class ServerConventions
             PossibleNames = new string[] { "ok-ru", "okru", "OKRU" }
         },new Convention
         {
-             Name = "Streamwish",
+            Name = "Streamwish",
             PossibleNames = new string[] { "sw", "SW", "Streamwish", "streamwish" }
         },
         new Convention
         {
-            Name= "Yourupload",
-            PossibleNames = new string[] { "yu","YourUpload","yourUpload","yourupload" }
+            Name= "Juro",
+            PossibleNames = new string[] { "juro" }
         }
     };
 

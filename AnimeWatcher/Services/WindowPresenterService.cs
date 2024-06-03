@@ -30,7 +30,7 @@ public class WindowPresenterService : IWindowPresenterService
     {
         if (args.DidPresenterChange)
         {
-            Debug.WriteLine("Presenter changed to {0}", sender.Presenter.Kind);
+            //Debug.WriteLine("Presenter changed to {0}", sender.Presenter.Kind);
             WindowPresenterChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -39,12 +39,12 @@ public class WindowPresenterService : IWindowPresenterService
     {
         if (IsFullScreen)
         {
-            Debug.WriteLine("Exiting fullscreen");
+            //Debug.WriteLine("Exiting fullscreen");
             _appWindow.SetPresenter(AppWindowPresenterKind.Default);
         }
         else
         {
-            Debug.WriteLine("Entering fullscreen");
+            //Debug.WriteLine("Entering fullscreen");
             _appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
         }
     }

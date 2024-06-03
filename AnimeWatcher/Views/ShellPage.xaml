@@ -7,15 +7,11 @@
     xmlns:helpers="using:AnimeWatcher.Helpers"
     xmlns:behaviors="using:AnimeWatcher.Behaviors"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
-    
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
-    
-    xmlns:usercontrols="using:AnimeWatcher.UserControls"
-    
+    xmlns:usercontrols="using:AnimeWatcher.UserControls"    
     
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     
     Loaded="OnLoaded">
 
@@ -33,13 +29,10 @@
               VerticalAlignment="Top"
               Visibility="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="16">
-                <Image Source="/Assets/WindowIcon.ico" HorizontalAlignment="Left" Width="16" Height="16" />
                 <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center"
-                TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="28,0,0,0"/>
+                TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
-
         </Grid>
-
         <usercontrols:CustomNavigationView x:Name="NavigationViewControl"
                                            Canvas.ZIndex="0"
                                            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
@@ -53,13 +46,11 @@
                                            PaneDisplayMode="{x:Bind ViewModel.PaneDisplayMode, Mode=OneWay}"
                                            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
-
                 <NavigationViewItem x:Uid="Shell_Favorites" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.FavoritesViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE728;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                
                 <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.SearchViewModel" Content="Search">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF6FA;" />
@@ -75,84 +66,6 @@
             <Grid>
                 <Frame x:Name="NavigationFrame" />
             </Grid>
-
-
-
         </usercontrols:CustomNavigationView>
-
-
-    </Grid>
-
-
-
-    <!--
-    <Grid>
-        <Grid x:Name="AppTitleBar"
-              Canvas.ZIndex="1"
-              Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-              IsHitTestVisible="True"
-              VerticalAlignment="Top">
-            <Image Source="/Assets/WindowIcon.ico"
-                   HorizontalAlignment="Left"
-                   Width="16"
-                   Height="16" />
-            <TextBlock x:Name="AppTitleBarText"
-                       VerticalAlignment="Center"
-                       TextWrapping="NoWrap"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="28,0,0,0"/>
-        </Grid>
-        <NavigationView
-            x:Name="NavigationViewControl"
-            Canvas.ZIndex="0"
-            IsBackButtonVisible="Visible"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-            IsSettingsVisible="True"
-            ExpandedModeThresholdWidth="1280"
-            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-            <NavigationView.MenuItems> 
-                <NavigationViewItem x:Uid="Shell_Main" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.MainViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.SearchViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xf0e2;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            <NavigationView.HeaderTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <TextBlock
-                            Text="{Binding}"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
-                    </Grid>
-                </DataTemplate>
-            </NavigationView.HeaderTemplate>
-            <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior
-                    DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    Style="{ThemeResource TitleTextBlockStyle}" />
-                            </Grid>
-                        </DataTemplate>
-                    </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                </behaviors:NavigationViewHeaderBehavior>
-            </i:Interaction.Behaviors>
-            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                <Frame x:Name="NavigationFrame" />
-            </Grid>
-        </NavigationView>
-    </Grid>
-    
-    -->
-
+    </Grid> 
 </Page>

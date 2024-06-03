@@ -14,6 +14,24 @@ public class DatabaseService
     {
 
     }
+    public async Task CreateFavorite(string fav)
+    {
+        var favorite = new FavoriteList { Name = fav };
+
+        await DB._db.InsertAsync(favorite);
+    }
+    public async Task UpdateFavorite(FavoriteList favorite)
+    {
+        await DB._db.UpdateAsync(favorite);
+    }
+    public async Task DeleteFavorite(FavoriteList favorite)
+    {
+        await DB._db.ExecuteAsync("delete from AnimexFavorite where FavoriteListId=? and Id>1",favorite.Id);
+        await DB._db.DeleteAsync(favorite);
+    }
+
+
+
     public async Task<FavoriteList[]> GetFavoriteLists()
     {
         var FavLists = await DB._db.Table<FavoriteList>().ToListAsync();
@@ -80,58 +98,143 @@ public class DatabaseService
     public async Task<Anime> UpsertAnime(Anime request, bool forceUpdate = false)
     {
         //
-        var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-        if (animeDB != null && forceUpdate == false)
+        var persistency = request.Provider.Persistent;
+
+        if (persistency)
         {
-            var lastUpdate = animeDB.LastUpdate;
-
-            var diffOfDates = DateTime.Now - lastUpdate;
-
-            if (diffOfDates.Days < 2)
+            var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
+            if (animeDB != null && forceUpdate == false && persistency)
             {
-                return null;
+                var lastUpdate = animeDB.LastUpdate;
+
+                var diffOfDates = DateTime.Now - lastUpdate;
+
+                if (diffOfDates.Days < 2)
+                {
+                    return null;
+                }
+
             }
 
+
+            var animeSource = await _searchAnimeService.GetAnimeDetailsAsync(request);
+            if (animeDB == null)
+            {
+                animeDB = await SaveAnime(animeSource);
+                animeSource.Id = animeDB.Id;
+            }
+            // update animedata
+            else
+            {
+                animeSource.Id = animeDB.Id;
+                animeSource.LastUpdate = DateTime.Now;
+                await DB._db.UpdateAsync(animeSource);
+                animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
+            }
+
+
+            var chapsSource = new List<Chapter>();
+            foreach (var chap in animeSource.Chapters.ToList())
+            {
+                chap.AnimeId = animeDB.Id;
+                chapsSource.Add(chap);
+            }
+
+            var chapsDB = await GetChaptersByAnime(animeDB.Id);
+            if (chapsDB.Count == 0)
+            {
+                await DB._db.InsertAllAsync(chapsSource);
+                chapsDB = await GetChaptersByAnime(animeDB.Id);
+            }
+            else
+            {
+                var chapstoadd = chapsSource.Where(c1 => !chapsDB.Any(c2 => c1.ChapterNumber == c2.ChapterNumber));
+                await DB._db.InsertAllAsync(chapstoadd);
+                chapsDB = await GetChaptersByAnime(animeDB.Id);
+            }
+            /**/
+            animeDB.Chapters = chapsDB.ToArray();
+            return animeDB;
         }
-        var animeSource = await _searchAnimeService.GetAnimeDetailsAsync(request);
-        if (animeDB == null)
-        {
-            animeDB = await SaveAnime(animeSource);
-            animeSource.Id = animeDB.Id;
-        }
-        // update animedata
         else
         {
-            animeSource.Id = animeDB.Id;
-            animeSource.LastUpdate = DateTime.Now;
-            await DB._db.UpdateAsync(animeSource);
-            animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
-        }
+            var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
+            if (animeDB != null && forceUpdate == false)
+            {
+                var lastUpdate = animeDB.LastUpdate;
+                var diffOfDates = DateTime.Now - lastUpdate;
+                if (diffOfDates.Days < 1)
+                {
+                    return null;
+                }
+            }
+            var animeSourceList = await _searchAnimeService.SearchAnimeAsync(request.Title, 1, request.Provider);
+            var animeSource = animeSourceList.Where(a => a.Title == request.Title).FirstOrDefault();
 
+            if (animeSource != null)
+            {
+                if (animeDB == null)
+                {
+                    animeDB = await SaveAnime(animeSource);
+                    animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
+                }
+                var animeSourceDet = await _searchAnimeService.GetAnimeDetailsAsync(animeSource);
 
-        var chapsSource = new List<Chapter>();
-        foreach (var chap in animeSource.Chapters.ToList())
-        {
-            chap.AnimeId = animeDB.Id;
-            chapsSource.Add(chap);
-        }
+                animeSource.Id = animeDB.Id;
+                animeSource.LastUpdate = DateTime.Now;
+                animeSourceDet.Id = animeDB.Id;
+                animeSourceDet.LastUpdate = DateTime.Now;
 
-        var chapsDB = await GetChaptersByAnime(animeDB.Id);
-        if (chapsDB.Count == 0)
-        {
-            await DB._db.InsertAllAsync(chapsSource);
-            chapsDB = await GetChaptersByAnime(animeDB.Id);
-        }
-        else
-        {
-            var chapstoadd = chapsSource.Where(c1 => !chapsDB.Any(c2 => c1.ChapterNumber == c2.ChapterNumber));
-            await DB._db.InsertAllAsync(chapstoadd);
-            chapsDB = await GetChaptersByAnime(animeDB.Id);
-        }
-        /**/
-        animeDB.Chapters = chapsDB.ToArray();
+                await DB._db.UpdateAsync(animeSourceDet);
+                animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
 
-        return animeDB;
+                animeSource.Chapters = animeSourceDet.Chapters;
+            }
+
+            var chapsSource = new List<Chapter>();
+            foreach (var chap in animeSource.Chapters.ToList())
+            {
+                chap.AnimeId = animeDB.Id;
+                chapsSource.Add(chap);
+            }
+            var chapsDB = await GetChaptersByAnime(animeDB.Id);
+            if (chapsDB.Count == 0)
+            {
+                await DB._db.InsertAllAsync(chapsSource);
+                chapsDB = await GetChaptersByAnime(animeDB.Id);
+            }
+            else
+            {
+                var toInsert = new List<Chapter>();
+                var toUpdate = new List<Chapter>();
+                foreach (var chap in chapsSource)
+                {
+                    var chpDB = chapsDB.Where(c => c.Name == chap.Name).FirstOrDefault();
+                    if (chpDB == null)
+                    {
+                        toInsert.Add(chap);
+                    }
+                    else
+                    {
+                        chap.Id = chpDB.Id;
+                        toUpdate.Add(chap);
+                    }
+                }
+                if (toInsert.Count > 0)
+                {
+                    await DB._db.InsertAllAsync(toInsert);
+                }
+                if (toUpdate.Count > 0)
+                {
+                    await DB._db.UpdateAllAsync(toUpdate);
+                }
+                chapsDB = await GetChaptersByAnime(animeDB.Id);
+            }
+            animeDB.Chapters = chapsDB.ToArray();
+
+            return animeDB;
+
+        }
     }
 
     private async Task<List<Chapter>> GetChaptersByAnime(int animeId)

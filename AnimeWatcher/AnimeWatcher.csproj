@@ -5,7 +5,7 @@
 		<TargetPlatformVersion>$(WindowsSdkTargetPlatformVersion)</TargetPlatformVersion>
 		<TargetPlatformMinVersion>$(WindowsAppSdkTargetPlatformVersion)</TargetPlatformMinVersion>
 		<RootNamespace>AnimeWatcher</RootNamespace>
-		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+		<ApplicationIcon>Assets/AnimeWatcher_icon.ico</ApplicationIcon>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 		<Platforms>x86;x64;arm64</Platforms>
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
@@ -47,6 +47,7 @@
 	<PropertyGroup>
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageIcon>WindowIcon-1.png</PackageIcon>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\AnimeWatcher.Core\AnimeWatcher.Core.csproj" />
@@ -55,6 +56,10 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Assets\WindowIcon-1.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None> 
 		<Page Update="Styles\NavigationViewStyles.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>
@@ -69,6 +74,21 @@
 
 	<ItemGroup>
 		<Folder Include="Views\Embeddeds\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="Properties\Resources.Designer.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Properties\Resources.resx">
+			<Generator>ResXFileCodeGenerator</Generator>
+			<LastGenOutput>Resources.Designer.cs</LastGenOutput>
+		</EmbeddedResource>
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

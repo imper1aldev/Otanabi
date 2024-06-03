@@ -17,12 +17,12 @@ public class JkanimeExtractor : IExtractor
     internal readonly int extractorId = 2;
     internal readonly string sourceName = "Jkanime";
     internal readonly string originUrl = "https://jkanime.net/";
-    internal readonly bool Secured = true;
+    internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
 
     public string GetSourceName() => sourceName;
     public string GetUrl() => originUrl;
-    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Secured = Secured };
+    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
     private readonly FlareService flareService = new();
 

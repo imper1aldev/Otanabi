@@ -18,7 +18,7 @@ public class StreamwishExtractor : IVideoExtractor
             HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
             var body = doc.DocumentNode.SelectSingleNode("/html"); 
             var pattern = @"file:""(https?://[^""]+)""";
-            var match = Regex.Match(body.InnerText, pattern);
+            var match = Regex.Match(body.InnerHtml, pattern);
             if (match.Success)
             {
                 streaminUrl = match.Groups[1].Value.Replace("{", "").Replace("}", "");
