@@ -225,7 +225,7 @@
                 </usercontrols:AppBarVolumeStateButton>
                 <Slider Width="150"
                         VerticalAlignment="Center"
-                        Maximum="100"
+                        Maximum="200"
                         Minimum="0"
                         SnapsTo="Ticks"
                         TickFrequency="5"
