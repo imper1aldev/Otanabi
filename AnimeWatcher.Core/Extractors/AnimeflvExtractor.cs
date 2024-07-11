@@ -68,6 +68,13 @@ public class AnimeflvExtractor : IExtractor
         var url = string.Concat(originUrl, requestUrl);
         HtmlWeb oWeb = new HtmlWeb();
         HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
+         
+        if (oWeb.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+           throw new Exception("Anime could not be found");
+           
+        }
+
 
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;

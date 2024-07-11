@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Timers;
 using AnimeWatcher.Contracts.Services;
@@ -13,10 +15,13 @@ using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using Microsoft.FSharp.Data.UnitSystems.SI.UnitNames;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using SharpDX.DXGI;
 using Windows.System;
+using Windows.UI.Core;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using MediaPlayer = LibVLCSharp.Shared.MediaPlayer;
 
@@ -27,29 +32,45 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
     private readonly IWindowPresenterService _windowPresenterService;
-
-    private Chapter selectecChapter;
+    private Chapter selectedChapter;
     private History selectedHistory;
+    private Provider selectedProvider;
+    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
+    //private List<Chapter> chapterList;
+
     private static System.Timers.Timer MainTimerForSave;
     private readonly DatabaseService dbService = new();
-
+    private readonly SearchAnimeService _searchAnimeService = new();
+    private readonly SelectSourceService _selectSourceService = new();
     private LibVLC libVLC;
     private MediaPlayer mediaPlayer;
     private string videoUrl = "Empty";
-
-    //private ObservableMediaPlayerWrapper mediaPlayerWrapper;
-    //private Visibility controlsVisibility;
-    private bool controlsVisibility=true;
+    private bool controlsVisibility = true;
 
     [ObservableProperty]
-    private string chapterName="";
+    private bool isChapPanelOpen = false;
+
+    [ObservableProperty]
+    private int selectedIndex = 0;
+
+    [ObservableProperty]
+    private string chapterName = "";
+
+    private string animeTitle = "";
+    private DateTime _lastClickTime;
+    private const int DoubleClickThreshold = 200;
+    private DateTime _lastChangedCap;
+    private const int ChangeChapThreshold = 2000;
+
+
+    //this thing will block the interface to prevent problems
+    [ObservableProperty]
+    private bool loadingVideo = false;
 
     private readonly DispatcherTimer controlsHideTimer = new()
     {
         Interval = TimeSpan.FromSeconds(1),
     };
-
-
     public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
     {
         _navigationService = navigationService;
@@ -65,7 +86,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MainTimerForSave.AutoReset = true;
         MainTimerForSave.Enabled = true;
     }
-
     private void OnWindowPresenterChanged(object? sender, EventArgs e)
     {
         if (sender is not IWindowPresenterService windowPresenter)
@@ -88,9 +108,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(ControlsVisibility));
         OnPropertyChanged(nameof(RowSpan));
     }
-
-
-
     private async void SaveProgressByTime(Object source, ElapsedEventArgs e)
     {
         if (selectedHistory != null)
@@ -101,8 +118,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                 {
                     await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
                 }
-
-
             } catch (Exception)
             {
 
@@ -111,57 +126,80 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
 
     }
-
     //getters and setters
     private LibVLC? LibVLC
     {
         get => libVLC;
         set => libVLC = value;
     }
-
     public MediaPlayer? Player
     {
         get => mediaPlayer;
         set => SetProperty(ref mediaPlayer, value);
     }
-
     public string VideoUrl
     {
         get => videoUrl;
         set => SetProperty(ref videoUrl, value);
     }
     public int RowSpan => _windowPresenterService.IsFullScreen ? 2 : 1;
-
     public bool LoadPlayer => VideoUrl != "Empty";
-
     public bool ControlsVisibility
     {
         get => controlsVisibility;
         set => SetProperty(ref controlsVisibility, value);
-    } 
-
+    }
+    public InputSystemCursor ProtectedCursor
+    {
+        get;
+        private set;
+    }
     public bool IsNotFullScreen => !_windowPresenterService.IsFullScreen;
-
-
     public void OnNavigatedTo(object parameter)
     {
 
         dynamic param = parameter as dynamic;
 
-        VideoUrl = param.Url;
-        ChapterName=param.ChapterName;
-        if (param.History is History hs && param.Chapter is Chapter ch)
+        //VideoUrl = param.Url;
+        //ChapterName = param.ChapterName;
+        animeTitle = param.AnimeTitle;
+        if (param.History is History hs
+            && param.Chapter is Chapter ch
+            && param.Provider is Provider prov
+            && param.ChapterList is List<Chapter> chapters)
         {
             selectedHistory = hs;
-            selectecChapter = ch;
+            selectedProvider = prov;
+            selectedChapter = ch;
+            foreach (Chapter chapter in chapters)
+            {
+                ChapterList.Add(chapter);
+
+            }
+
+        }
+    }
+    private async Task LoadVideo(Chapter chapter)
+    {
+        if (Player is not null && LibVLC is not null)
+        {
+            LoadingVideo = true;
+            //ControlsVisibility = false;
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+            SelectedIndex = selectedChapter.ChapterNumber - 1;
+            var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
+            VideoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
+            ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
+            await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+            TimeLong = 0;
+            //ControlsVisibility = true;
+            LoadingVideo = false;
         }
     }
     public void OnNavigatedFrom()
     {
-
         Dispose();
     }
-
     //end getters and setters
 
 
@@ -169,34 +207,34 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private async Task Initialized(InitializedEventArgs eventArgs)
     {
-        if (VideoUrl == "Empty")
-        {
-            return;
-        }
-
+        //if (VideoUrl == "Empty")
+        //{
+        //    return;
+        //} 
         LibVLC = new LibVLC(true, eventArgs.SwapChainOptions);
         Player = new MediaPlayer(LibVLC);
 
-        await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+        // await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+        await LoadVideo(selectedChapter);
         AttachPlayerEvents(Player);
-        await Task.CompletedTask; 
+        await Task.CompletedTask;
     }
     private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url, History lcHistory)
     {
-        await Task.Run(() =>
+        await Task.Run(async () =>
         {
             var mediaOptions = new[] { ":network-caching=60000", ":live-caching=60000" };
-            var media = new Media(lib, new Uri(url), mediaOptions);
+            using var media = new Media(lib, new Uri(url), mediaOptions);
             Pp.Play(media);
 
-            /*Recover for last seen*/
+            /*Recover for last seen
             if (lcHistory != null && lcHistory.SecondsWatched > 0)
             {
                 Pp.Time = lcHistory.SecondsWatched;
-            }
+            }*/
+            await Task.CompletedTask;
         });
     }
-
 
     [RelayCommand]
     private void PointerMoved(PointerRoutedEventArgs? args)
@@ -214,7 +252,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
         }
     }
-
     //end relay commands
 
     //Methods
@@ -226,13 +263,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private void ShowControls()
     {
         ControlsVisibility = true;
+        this.ProtectedCursor = null;
     }
-
     private void HideControls()
     {
         ControlsVisibility = false;
+        this.ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.IBeam);
     }
-
     //end methods
 
     public void Dispose()
@@ -250,11 +287,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
             GC.Collect();
         });
-
-
     }
-
-
     // player view related
     private const int rewindOffset10s = 10000;
     private const int rewindOffset3s = 3000;
@@ -266,20 +299,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         get => Player != null ? Player.Time : -1;
         set => SetProperty(Player.Time, value, Player, (u, n) => u.Time = n);
     }
-
     public string TimeString => TimeSpan.FromMilliseconds(TimeLong).ToString(@"hh\:mm\:ss");
     public long TotalTimeLong => Player != null ? Player.Length : -1;
-
     public string TotalTimeString => TimeSpan.FromMilliseconds(TotalTimeLong).ToString(@"hh\:mm\:ss");
-
     public int Volume
     {
         get => Player != null ? Player.Volume : -1;
         set => SetProperty(Player.Volume, value, Player, (u, n) => u.Volume = n);
     }
-
     public bool IsPlaying => Player != null ? Player.IsPlaying : false;
-
     [RelayCommand]
     public void VolumeUp()
     {
@@ -312,7 +340,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     public void PlayPause()
     {
-        if(Player==null)
+        if (Player == null)
             return;
 
         if (!IsPlaying)
@@ -327,7 +355,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     public void Stop()
     {
-        if(Player==null)
+        if (Player == null)
             return;
 
         Player.Stop();
@@ -335,20 +363,17 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private void ScrollChanged(PointerRoutedEventArgs args)
     {
-        var delta = args.GetCurrentPoint(null).Properties.MouseWheelDelta;
-        if (delta > 0)
-        {
-            VolumeUp();
-        }
-        else
-        {
-            VolumeDown();
-        }
+        //var delta = args.GetCurrentPoint(null).Properties.MouseWheelDelta;
+        //if (delta > 0)
+        //{
+        //    VolumeUp();
+        //}
+        //else
+        //{
+        //    VolumeDown();
+        //}
         args.Handled = true;
     }
-
-
-
     [RelayCommand]
     private void FastForward(object args)
     {
@@ -413,7 +438,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             RewindInter(RewindMode.Normal);
         }
     }
-
     private void RewindInter(RewindMode mode)
     {
         var offset = mode switch
@@ -423,8 +447,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             RewindMode.Long => rewindOffset60s,
             _ => rewindOffset10s,
         };
-
-        TimeLong -= offset;
+        if (TimeLong > (offset + 1))
+        {
+            TimeLong -= offset;
+        }
     }
     [RelayCommand]
     private void FullScreen()
@@ -432,9 +458,22 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService.ToggleFullScreen();
     }
     [RelayCommand]
+    private void ClickFull()
+    {
+        DateTime now = DateTime.Now;
+        TimeSpan interval = now - _lastClickTime;
+
+        if (interval.TotalMilliseconds <= DoubleClickThreshold)
+        {
+            _windowPresenterService.ToggleFullScreen();
+        }
+
+        _lastClickTime = now;
+    }
+    [RelayCommand]
     private void SkipIntro()
     {
-        if(Player==null)
+        if (Player == null)
             return;
 
         var crtm = Player.Time;
@@ -443,16 +482,67 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     }
     [RelayCommand]
+    private async void NextChapter()
+    {
+        var next = selectedChapter.ChapterNumber + 1;
+        await ChangeChapterByPos(next);
+    }
+    [RelayCommand]
+    private async void PrevChapter()
+    {
+        var prev = selectedChapter.ChapterNumber - 1;
+        await ChangeChapterByPos(prev);
+    }
+    private async Task ChangeChapterByPos(int pos)
+    {
+        DateTime now = DateTime.Now;
+        TimeSpan interval = now - _lastChangedCap;
+
+        if (interval.TotalMilliseconds > ChangeChapThreshold)
+        {
+            Chapter changedChap = ChapterList.FirstOrDefault(c => c.ChapterNumber == pos);
+            if (changedChap != null)
+            {
+                selectedChapter = changedChap;
+                await LoadVideo(selectedChapter);
+            }
+        }
+        _lastChangedCap = now;
+    }
+
+    [RelayCommand]
+    private void ToggleChapPanel()
+    {
+        IsChapPanelOpen = !IsChapPanelOpen;
+    }
+
+    [RelayCommand]
+    private async void onClickChap(ItemClickEventArgs args)
+    {
+        if (args.ClickedItem is Chapter ct && ct.ChapterNumber != selectedChapter.ChapterNumber)
+        {
+            selectedChapter = ct;
+            await LoadVideo(selectedChapter);
+        }
+    }
+
+
+    [RelayCommand]
+    private void onClosePane(dynamic test)
+    {
+        IsChapPanelOpen = false;
+    }
+
+
+    [RelayCommand]
     private void ChangeSpeed(ComboBox param)
     {
-        if(Player==null)
+        if (Player == null)
             return;
 
         var item = (ComboBoxItem)param.SelectedItem;
         Player.SetRate(float.Parse((string)item.Tag));
     }
-
-
     private void AttachPlayerEvents(MediaPlayer _player)
     {
         _player.TimeChanged += (sender, time) => _dispatcherQueue.TryEnqueue(() =>

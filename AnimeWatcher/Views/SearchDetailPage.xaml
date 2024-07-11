@@ -180,11 +180,11 @@
               >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="250"/>
+                <!--<ColumnDefinition Width="250"/>-->
             </Grid.ColumnDefinitions>
-            <AutoSuggestBox PlaceholderText="Search..."   
+            <!--<AutoSuggestBox PlaceholderText="Search..."   
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Width="Auto"                     
-                QueryIcon="Find" Grid.Column="1"  Margin="0,0,0,0" Height="35" VerticalAlignment="Top"/>
+                QueryIcon="Find" Grid.Column="1"  Margin="0,0,0,0" Height="35" VerticalAlignment="Top"/>-->
 
             <ListView Margin="0,0,0,0" Grid.Column="0" MinWidth="550" IsItemClickEnabled="True" 
                       ItemsSource="{x:Bind ViewModel.ChapterList, Mode=OneWay}" ItemClick="ListView_ItemClick">
@@ -199,8 +199,8 @@
                             <StackPanel Orientation="Horizontal" Visibility="{x:Bind History, Mode=OneWay,Converter={StaticResource EmptyObjectToObjectConverter} }">
                                 <TextBlock Text="Last seen :" Margin="0,0,10,0"/>
                                 <TextBlock Text="{Binding Path=History.WatchedDate}" />
-                                <TextBlock Text="Time watched :" Margin="10,0,10,0"/>
-                                <TextBlock Text="{Binding Path=History.TimeString}" />
+                                <!--<TextBlock Text="Time watched :" Margin="10,0,10,0"/>-->
+                                <!--<TextBlock Text="{Binding Path=History.TimeString}" />-->
                             </StackPanel>
 
                             <!--<TextBlock Text="{Binding Path=Url}" />-->

@@ -9,13 +9,13 @@
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:usercontrols="using:AnimeWatcher.UserControls"
     xmlns:converters="using:AnimeWatcher.Converters"
-    xmlns:converters1="using:CommunityToolkit.WinUI.Converters" 
+    xmlns:converters1="using:CommunityToolkit.WinUI.Converters" xmlns:models="using:AnimeWatcher.Core.Models"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:LongToDoubleConverter x:Key="LongToDoubleConverter" />
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
-
+        <converters1:StringFormatConverter x:Key="StringFormatConverter" />
     </Page.Resources>
     <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
@@ -27,52 +27,118 @@
             <interactions:EventTriggerBehavior EventName="PointerWheelChanged">
                 <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ScrollChangedCommand}" />
             </interactions:EventTriggerBehavior>
+
         </interactivity:Interaction.Behaviors>
 
+        <Grid Height="0" Width="0"
+              Visibility="{x:Bind ViewModel.ControlsVisibility, 
+                            Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter} ,
+                            ConverterParameter=True}" >
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.PlayPauseCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Space" />
+                </Button.KeyboardAccelerators>
+            </Button>
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.FullScreenCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Escape" />
+                </Button.KeyboardAccelerators>
+            </Button>
 
-        <!--<Grid x:Name="TopInfo"
-              Canvas.ZIndex="2"
-              Grid.Row="0"
-              Height="48"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Top" 
-              Background="{ThemeResource ControlsBackground}"
-              Visibility="{x:Bind ViewModel.ControlsVisibility, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0"
-                       HorizontalAlignment="Center"
-                       Margin="10,0"
-                       VerticalAlignment="Center"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Text="{x:Bind ViewModel.ChapterName,Mode=OneWay}" />
-        </Grid>-->
+        </Grid>
+
+        <ProgressRing IsActive="True" Canvas.ZIndex="2"  
+                      HorizontalAlignment="Center"  VerticalAlignment="Center"
+                      Width="80" Height="80"
+                      Visibility="{x:Bind ViewModel.LoadingVideo, 
+              Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}  }"
+                      />
+
+        <SplitView x:Name="splitView" PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+                   Grid.Row="0"
+                    Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch"  
+           IsPaneOpen="{x:Bind ViewModel.IsChapPanelOpen ,Mode=OneWay}" OpenPaneLength="256" CompactPaneLength="48" DisplayMode="Overlay" PanePlacement="Right">
+            <SplitView.Pane>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Chapter List" Grid.Row="1" x:Name="PaneHeader" Margin="0,50,0,0" HorizontalAlignment="Center" Style="{StaticResource BaseTextBlockStyle}"/>
+
+                    <ListView x:Name="ChapPaneList" Margin="0,12,0,0" SelectionMode="Single" Grid.Row="2" VerticalAlignment="Stretch"                     
+                    ItemsSource="{x:Bind ViewModel.ChapterList , Mode=OneWay}" IsItemClickEnabled="True" SelectedIndex="{x:Bind ViewModel.SelectedIndex,Mode=OneWay}">
+                        <interactivity:Interaction.Behaviors>
+                            <interactions:EventTriggerBehavior EventName="ItemClick">
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClickChapCommand}" />
+                            </interactions:EventTriggerBehavior>
+
+                        </interactivity:Interaction.Behaviors>
+                        <ListView.ItemTemplate >
+                            <DataTemplate x:DataType="models:Chapter">
+                                <StackPanel Padding="0,15,0,15">
+                                    <!--<TextBlock Text="{Binding Path=Name}" />-->
+                                    <TextBlock  VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}">
+                                        <TextBlock.FontSize>15</TextBlock.FontSize>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
 
 
-
-        <lvs:VideoView x:Name="VideoView"
-                       Grid.Row="0"
-                       Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
-                       HorizontalAlignment="Stretch" 
-                       VerticalAlignment="Stretch"
-                       x:Load="{x:Bind ViewModel.LoadPlayer}"
-                       MediaPlayer="{x:Bind ViewModel.Player}">
+                    <!--<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="14,24,0,24" >
+                        <SymbolIcon Symbol="Setting" />
+                        <TextBlock Text="Settings" Margin="24,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>-->
+                </Grid>
+            </SplitView.Pane>
             <interactivity:Interaction.Behaviors>
-                <interactions:EventTriggerBehavior EventName="Initialized">
-                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.InitializedCommand}" />
+                <interactions:EventTriggerBehavior EventName="PaneClosed">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClosePaneCommand}" />
                 </interactions:EventTriggerBehavior>
-                <interactions:EventTriggerBehavior EventName="PointerMoved">
-                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}" />
-                </interactions:EventTriggerBehavior>
+
             </interactivity:Interaction.Behaviors>
-        </lvs:VideoView>
+
+            <Grid
+                HorizontalAlignment="Stretch" 
+VerticalAlignment="Stretch" 
+                >
+                <Grid.RowDefinitions> 
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <lvs:VideoView x:Name="VideoView"
+               Grid.Row="0"
+               Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
+               HorizontalAlignment="Stretch" 
+               VerticalAlignment="Stretch" 
+               
+               MediaPlayer="{x:Bind ViewModel.Player}">
+                    <interactivity:Interaction.Behaviors>
+                        <interactions:EventTriggerBehavior EventName="Initialized">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.InitializedCommand}" />
+                        </interactions:EventTriggerBehavior>
+                        <interactions:EventTriggerBehavior EventName="PointerMoved">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}" />
+                        </interactions:EventTriggerBehavior>
+                        <interactions:EventTriggerBehavior EventName="PointerPressed">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ClickFullCommand}" />
+                        </interactions:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                </lvs:VideoView>
+            </Grid>
+        </SplitView>
+        
+        
 
 
         <Grid x:Name="Controls"
               Grid.Row="1"
               VerticalAlignment="Center"
+              
               Background="{ThemeResource ControlsBackground}"
               Visibility="{x:Bind ViewModel.ControlsVisibility, 
               Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -117,7 +183,25 @@
                         </AppBarButton.KeyboardAccelerators>
                     </usercontrols:AppBarPlaybackStateButton>
                     <AppBarSeparator />
-
+                    <AppBarButton Label="Rewind">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xEB9E;" />
+                        </AppBarButton.Icon>
+                        <interactivity:Interaction.Behaviors>
+                            <interactions:EventTriggerBehavior EventName="Click">
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                            </interactions:EventTriggerBehavior>
+                        </interactivity:Interaction.Behaviors>
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="Left">
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="Invoked">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.RewindCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </KeyboardAccelerator>
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
                     <AppBarButton Label="Fast forward">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xEB9D;" />
@@ -129,27 +213,6 @@
                         </interactivity:Interaction.Behaviors>
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="Right">
-                                <interactivity:Interaction.Behaviors>
-                                    <interactions:EventTriggerBehavior EventName="Invoked">
-                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
-                                    </interactions:EventTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </KeyboardAccelerator>
-                            <KeyboardAccelerator Key="Right" Modifiers="Control">
-                                <interactivity:Interaction.Behaviors>
-                                    <interactions:EventTriggerBehavior EventName="Invoked">
-                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
-                                    </interactions:EventTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </KeyboardAccelerator>
-                            <KeyboardAccelerator Key="Right" Modifiers="Menu">
-                                <interactivity:Interaction.Behaviors>
-                                    <interactions:EventTriggerBehavior EventName="Invoked">
-                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
-                                    </interactions:EventTriggerBehavior>
-                                </interactivity:Interaction.Behaviors>
-                            </KeyboardAccelerator>
-                            <KeyboardAccelerator Key="Right" Modifiers="Shift">
                                 <interactivity:Interaction.Behaviors>
                                     <interactions:EventTriggerBehavior EventName="Invoked">
                                         <interactions:InvokeCommandAction Command="{x:Bind ViewModel.FastForwardCommand}" />
@@ -178,6 +241,17 @@
                             </ComboBox>
                         </StackPanel>
                     </AppBarElementContainer>
+                    <AppBarSeparator />
+                    <AppBarButton Label="Previous"  Command="{x:Bind ViewModel.PrevChapterCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE892;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Next" Command="{x:Bind ViewModel.NextChapterCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE893;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
 
                 </CommandBar.PrimaryCommands>
             </CommandBar>
@@ -232,6 +306,12 @@
                         TickPlacement="Outside"
                         Value="{x:Bind ViewModel.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
                 <CommandBar DefaultLabelPosition="Collapsed">
+                    <AppBarButton Label="ChapterList"  Command="{x:Bind ViewModel.ToggleChapPanelCommand}">
+                        <AppBarButton.Icon>
+                            <FontIcon Glyph="&#xE7BC;" />
+                        </AppBarButton.Icon>
+                    </AppBarButton>
+
                     <usercontrols:AppBarWindowPresenterStateButton Command="{x:Bind ViewModel.FullScreenCommand}"
                                IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                Label="Toggle FullScreen"

@@ -22,7 +22,6 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private readonly DatabaseService _Db = new();
     private readonly SelectSourceService _selectSourceService = new();
     private readonly DispatcherQueue _dispatcherQueue;
-
     private readonly INavigationService _navigationService;
 
     public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
@@ -119,8 +118,8 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             SelectedAnime = anime;
             await checkFavorite();
 
-            if(SelectedAnime.Chapters==null) 
-                return ;
+            if (SelectedAnime.Chapters == null)
+                return;
 
             foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
             {
@@ -134,22 +133,35 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private async Task UpsertAnime(Anime request, bool force = false)
     {
         ForceLoad = false;
-        var anime = await _Db.UpsertAnime(request, force);
-        if (anime != null)
+        try
         {
-            SelectedAnime = anime;
-
-            await checkFavorite();
-            ChapterList.Clear();
-            if(SelectedAnime.Chapters==null) 
-                return ;
-
-            foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
+            var anime = await _Db.UpsertAnime(request, force);
+            if (anime != null)
             {
-                ChapterList.Add(chapter);
+                SelectedAnime = anime;
+
+                await checkFavorite();
+                ChapterList.Clear();
+                if (SelectedAnime.Chapters == null)
+                    return;
+
+                foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
+                {
+                    ChapterList.Add(chapter);
+                }
             }
+        } catch (Exception e)
+        {
+            ErrorMessage = e.Message.ToString();
+            ErrorActive = true; 
+        } finally
+        {
+            ForceLoad = true;
         }
-        ForceLoad = true;
+
+
+
+
     }
     [RelayCommand]
     private void ForceUpsert()
@@ -158,7 +170,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
         {
             IsLoading = true;
-            await UpsertAnime(SelectedAnime,true);
+            await UpsertAnime(SelectedAnime, true);
             IsLoading = false;
         });
         bw.RunWorkerAsync();
@@ -175,18 +187,21 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         IsLoadingVideo = true;
         try
         {
-            var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
-            var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
+            //var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
+            //var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             var history = await _Db.GetOrCreateHistoryByCap(chapter.Id);
             dynamic data = new ExpandoObject();
             data.History = history;
-            data.Url = videoUrl;
+            //data.Url = videoUrl;
             data.Chapter = chapter;
-            data.ChapterName=$"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
-            if (string.IsNullOrEmpty(videoUrl))
-            {
-                throw new Exception(ErrorMessage = "Can't extract the video URL");
-            }
+            //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
+            data.AnimeTitle=SelectedAnime.Title;
+            data.ChapterList=SelectedAnime.Chapters.ToList();
+            data.Provider=SelectedAnime.Provider;
+            //if (string.IsNullOrEmpty(videoUrl))
+            //{
+            //    throw new Exception(ErrorMessage = "Can't extract the video URL");
+            //}
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         } catch (Exception e)
