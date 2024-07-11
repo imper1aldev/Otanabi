@@ -185,14 +185,16 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             LoadingVideo = true;
             //ControlsVisibility = false;
+            TimeLong = 0;
             selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
             SelectedIndex = selectedChapter.ChapterNumber - 1;
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
             VideoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
             await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
-            TimeLong = 0;
             //ControlsVisibility = true;
+            OnPropertyChanged(nameof(IsEnablePrev));
+            OnPropertyChanged(nameof(IsEnableNext));
             LoadingVideo = false;
         }
     }
@@ -268,7 +270,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private void HideControls()
     {
         ControlsVisibility = false;
-        this.ProtectedCursor = InputSystemCursor.Create(InputSystemCursorShape.IBeam);
+        //IsChapPanelOpen = false; 
     }
     //end methods
 
@@ -294,6 +296,17 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private const int rewindOffset60s = 60000;
     private int previousVolume;
     private const int volumeStep = 5;
+    public bool IsEnablePrev => selectedChapter.ChapterNumber > 1;
+    public bool IsEnableNext
+    {
+        get
+        {
+            var maxchap= ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber ;
+
+            return  selectedChapter.ChapterNumber < maxchap;
+        }
+    }
+
     public long TimeLong
     {
         get => Player != null ? Player.Time : -1;

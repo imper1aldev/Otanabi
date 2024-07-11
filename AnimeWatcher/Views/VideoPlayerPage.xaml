@@ -242,12 +242,12 @@ VerticalAlignment="Stretch"
                         </StackPanel>
                     </AppBarElementContainer>
                     <AppBarSeparator />
-                    <AppBarButton Label="Previous"  Command="{x:Bind ViewModel.PrevChapterCommand}">
+                    <AppBarButton Label="Previous" IsEnabled="{x:Bind ViewModel.IsEnablePrev,Mode=OneWay}" Command="{x:Bind ViewModel.PrevChapterCommand}">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE892;" />
                         </AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="Next" Command="{x:Bind ViewModel.NextChapterCommand}">
+                    <AppBarButton Label="Next" IsEnabled="{x:Bind ViewModel.IsEnableNext,Mode=OneWay}" Command="{x:Bind ViewModel.NextChapterCommand}">
                         <AppBarButton.Icon>
                             <FontIcon Glyph="&#xE893;" />
                         </AppBarButton.Icon>
@@ -305,13 +305,12 @@ VerticalAlignment="Stretch"
                         TickFrequency="5"
                         TickPlacement="Outside"
                         Value="{x:Bind ViewModel.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
-                <CommandBar DefaultLabelPosition="Collapsed">
-                    <AppBarButton Label="ChapterList"  Command="{x:Bind ViewModel.ToggleChapPanelCommand}">
-                        <AppBarButton.Icon>
+                <CommandBar DefaultLabelPosition="Collapsed">                     
+                    <AppBarElementContainer VerticalContentAlignment="Center" >
+                        <ToggleButton IsChecked="{x:Bind ViewModel.IsChapPanelOpen , Mode=OneWay}" Command="{x:Bind ViewModel.ToggleChapPanelCommand}">
                             <FontIcon Glyph="&#xE7BC;" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
-
+                        </ToggleButton>
+                    </AppBarElementContainer>
                     <usercontrols:AppBarWindowPresenterStateButton Command="{x:Bind ViewModel.FullScreenCommand}"
                                IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                Label="Toggle FullScreen"
