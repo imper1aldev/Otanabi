@@ -1,27 +1,20 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Reflection;
-using System.Threading;
 using System.Timers;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.Models.Enums;
-using AnimeWatcher.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
-using Microsoft.FSharp.Data.UnitSystems.SI.UnitNames;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using SharpDX.DXGI;
 using Windows.System;
-using Windows.UI.Core;
+using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using MediaPlayer = LibVLCSharp.Shared.MediaPlayer;
 
@@ -46,7 +39,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private MediaPlayer mediaPlayer;
     private string videoUrl = "Empty";
     private bool controlsVisibility = true;
-
+    private string AppCurTitle="";
     [ObservableProperty]
     private bool isChapPanelOpen = false;
 
@@ -62,7 +55,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
-
+    private WindowEx _windowEx;
     //this thing will block the interface to prevent problems
     [ObservableProperty]
     private bool loadingVideo = false;
@@ -78,8 +71,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
-
-
+        _windowEx=App.MainWindow;
+        AppCurTitle = _windowEx.Title;
         //each 3 seconds it will save the current play time
         MainTimerForSave = new System.Timers.Timer(3000);
         MainTimerForSave.Elapsed += SaveProgressByTime;
@@ -195,6 +188,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
+            _windowEx.Title= ChapterName;
             LoadingVideo = false;
         }
     }
@@ -276,6 +270,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     public void Dispose()
     {
+        _windowEx.Title=AppCurTitle;
         MainTimerForSave.Stop();
         MainTimerForSave.Dispose();
         _dispatcherQueue.TryEnqueue(() =>

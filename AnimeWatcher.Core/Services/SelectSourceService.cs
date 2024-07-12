@@ -1,4 +1,4 @@
-﻿using AnimeWatcher.Core.Models; 
+﻿using AnimeWatcher.Core.Models;
 namespace AnimeWatcher.Core.Services;
 public class SelectSourceService
 {

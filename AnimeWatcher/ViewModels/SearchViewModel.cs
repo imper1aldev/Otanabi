@@ -1,18 +1,13 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
-using AnimeWatcher.Core.Contracts.Services;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using SharpDX.Direct3D11;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AnimeWatcher.ViewModels;
 

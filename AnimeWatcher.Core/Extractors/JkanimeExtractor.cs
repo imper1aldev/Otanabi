@@ -1,15 +1,12 @@
-﻿using AnimeWatcher.Core.Helpers;
-using AnimeWatcher.Core.Models;
-using HtmlAgilityPack;
-using ScrapySharp.Extensions;
+﻿using System.Diagnostics;
+using System.Text;
 using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Flare;
-using System.Diagnostics;
+using AnimeWatcher.Core.Helpers;
+using AnimeWatcher.Core.Models;
 using Newtonsoft.Json.Linq;
-using FlareSolverrSharp;
+using ScrapySharp.Extensions;
 using ScrapySharp.Network;
-using System.Globalization;
-using System.Text;
 namespace AnimeWatcher.Core.Extractors;
 public class JkanimeExtractor : IExtractor
 {

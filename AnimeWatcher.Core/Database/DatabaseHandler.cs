@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using System.Xml.Linq;
-using AnimeWatcher.Core.Helpers;
+﻿using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using SQLite;
 

@@ -1,11 +1,6 @@
-﻿using System.Diagnostics;
-using AnimeWatcher.Contracts.Services;
-using AnimeWatcher.Core.Models;
+﻿using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.ViewModels;
-
-using CommunityToolkit.WinUI.UI.Animations;
-using System.Linq;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 

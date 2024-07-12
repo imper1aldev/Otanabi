@@ -5,7 +5,6 @@ using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml.Controls;
 namespace AnimeWatcher.ViewModels;
 
 public partial class FavoritesViewModel : ObservableRecipient, INavigationAware

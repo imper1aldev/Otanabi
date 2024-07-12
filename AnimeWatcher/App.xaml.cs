@@ -1,20 +1,16 @@
 ﻿using AnimeWatcher.Activation;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Core.Contracts.Services;
-using AnimeWatcher.Core.Services;
 using AnimeWatcher.Core.Database;
-using AnimeWatcher.Helpers;
+using AnimeWatcher.Core.Services;
 using AnimeWatcher.Models;
 using AnimeWatcher.Notifications;
 using AnimeWatcher.Services;
 using AnimeWatcher.ViewModels;
 using AnimeWatcher.Views;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using AnimeWatcher.Core.Flare;
-using System.ComponentModel;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AnimeWatcher;
@@ -53,6 +49,7 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+
          _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         Host = Microsoft.Extensions.Hosting.Host.
         CreateDefaultBuilder().

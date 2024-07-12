@@ -48,6 +48,15 @@
 		<ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<PackageIcon>WindowIcon-1.png</PackageIcon>
+		<RunPostBuildEvent>Always</RunPostBuildEvent>
+		<Product>AnimeWatcher</Product>
+		<Company>None</Company>
+		<Authors>havsalazar</Authors>
+		<Version>0.1.2</Version>
+		<PackageId>AnimeWatcher</PackageId>
+		<Title>AnimeWatcher</Title>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/havsalazar/AnimeWatcher/</RepositoryUrl>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\AnimeWatcher.Core\AnimeWatcher.Core.csproj" />

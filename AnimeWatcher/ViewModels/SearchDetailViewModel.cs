@@ -1,18 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Dynamic;
-using System.Xml.Linq;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
-using AnimeWatcher.Core.Contracts.Services;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
-using static SQLite.TableMapping;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 namespace AnimeWatcher.ViewModels;
 

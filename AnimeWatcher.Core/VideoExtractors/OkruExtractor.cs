@@ -1,7 +1,7 @@
 ﻿using AnimeWatcher.Core.Contracts.VideoExtractors;
 using HtmlAgilityPack;
-using ScrapySharp.Extensions;
 using Newtonsoft.Json.Linq;
+using ScrapySharp.Extensions;
 
 namespace AnimeWatcher.Core.VideoExtractors;
 public class OkruExtractor : IVideoExtractor

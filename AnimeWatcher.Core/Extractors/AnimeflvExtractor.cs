@@ -1,13 +1,11 @@
 ﻿using System.Text.RegularExpressions;
+using System.Web;
+using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
-using System.Web;
 using ScrapySharp.Extensions;
-using AnimeWatcher.Core.Contracts.Extractors;
-using System.Xml.Linq;
-using System.Diagnostics;
 namespace AnimeWatcher.Core.Extractors;
 public class AnimeflvExtractor : IExtractor
 {
