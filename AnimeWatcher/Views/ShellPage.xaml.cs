@@ -5,7 +5,6 @@ using AnimeWatcher.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 
 using Windows.System;
 
@@ -30,6 +29,7 @@ public sealed partial class ShellPage : Page
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.SetTitleBar(AppTitleBar);
         App.MainWindow.Activated += MainWindow_Activated;
+        App.MainWindow.SetIcon("Assets/AnimeWatcher_icon.ico");
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
     }
 

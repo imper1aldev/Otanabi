@@ -1,5 +1,4 @@
-﻿using System;
-public static class StringExtensions
+﻿public static class StringExtensions
 {
     public static string SubstringBetween(this string str, string start, string end)
     {

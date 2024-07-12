@@ -2,8 +2,6 @@
 using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
-using Juro.Clients;
-using Juro.Core.Models.Videos;
 using Juro.Providers.Anime;
 namespace AnimeWatcher.Core.Extractors;
 public class AnimepacheExtractor : IExtractor

@@ -1,10 +1,6 @@
-﻿using AnimeWatcher.Core.Contracts.VideoExtractors;
+﻿using System.Text.RegularExpressions;
+using AnimeWatcher.Core.Contracts.VideoExtractors;
 using HtmlAgilityPack;
-using ScrapySharp.Extensions;
-using Newtonsoft.Json.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
 
 namespace AnimeWatcher.Core.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor

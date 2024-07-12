@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Serializers.NewtonsoftJson;
-using Newtonsoft.Json;
 namespace AnimeWatcher.Core.Flare;
 
 public class FlareService

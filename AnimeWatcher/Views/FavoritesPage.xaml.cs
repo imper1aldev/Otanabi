@@ -1,12 +1,8 @@
-﻿using System.Diagnostics;
-using AnimeWatcher.Contracts.ViewModels;
+﻿using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.ViewModels;
-using AnimeWatcher.Core.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using SharpDX.Direct3D11;
-using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace AnimeWatcher.Views;
 

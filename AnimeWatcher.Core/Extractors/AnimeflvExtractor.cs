@@ -1,13 +1,11 @@
 ﻿using System.Text.RegularExpressions;
+using System.Web;
+using AnimeWatcher.Core.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
-using System.Web;
 using ScrapySharp.Extensions;
-using AnimeWatcher.Core.Contracts.Extractors;
-using System.Xml.Linq;
-using System.Diagnostics;
 namespace AnimeWatcher.Core.Extractors;
 public class AnimeflvExtractor : IExtractor
 {
@@ -68,6 +66,13 @@ public class AnimeflvExtractor : IExtractor
         var url = string.Concat(originUrl, requestUrl);
         HtmlWeb oWeb = new HtmlWeb();
         HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
+         
+        if (oWeb.StatusCode != System.Net.HttpStatusCode.OK)
+        {
+           throw new Exception("Anime could not be found");
+           
+        }
+
 
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;

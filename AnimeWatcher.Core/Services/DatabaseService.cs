@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Xml.Linq;
 using AnimeWatcher.Core.Database;
 using AnimeWatcher.Core.Models;
 
