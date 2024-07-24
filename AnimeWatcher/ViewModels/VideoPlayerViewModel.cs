@@ -42,6 +42,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private string AppCurTitle="";
     [ObservableProperty]
     private bool isChapPanelOpen = false;
+    [ObservableProperty]
+    private bool isErrorVideo=false;
 
     [ObservableProperty]
     private int selectedIndex = 0;
@@ -176,6 +178,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         if (Player is not null && LibVLC is not null)
         {
+            IsErrorVideo = false;
             LoadingVideo = true;
             //ControlsVisibility = false;
             TimeLong = 0;
@@ -184,7 +187,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
             VideoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
-            await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+            if(VideoUrl!=""){
+                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+            }else
+            {
+                Player.Play(null);
+                IsErrorVideo = true;
+            }
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
@@ -200,6 +209,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
 
     // relay commands
+
+    [RelayCommand]
+    private async Task RetryLoad()
+    {
+       await LoadVideo(selectedChapter);
+    }
+
     [RelayCommand]
     private async Task Initialized(InitializedEventArgs eventArgs)
     {

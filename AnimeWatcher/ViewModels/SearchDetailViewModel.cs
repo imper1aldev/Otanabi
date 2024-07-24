@@ -154,11 +154,8 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         {
             ForceLoad = true;
         }
-
-
-
-
     }
+
     [RelayCommand]
     private void ForceUpsert()
     {
@@ -207,7 +204,6 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             ErrorActive = true;
             return;
         }
-
     }
     [RelayCommand]
     private void OrderChapterList()

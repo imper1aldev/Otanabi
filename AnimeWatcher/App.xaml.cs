@@ -8,10 +8,12 @@ using AnimeWatcher.Notifications;
 using AnimeWatcher.Services;
 using AnimeWatcher.ViewModels;
 using AnimeWatcher.Views;
+
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace AnimeWatcher;
 
@@ -77,6 +79,8 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<HistoryViewModel>();
+            services.AddTransient<HistoryPage>();
             services.AddTransient<FavoritesViewModel>();
             services.AddTransient<FavoritesPage>();
             services.AddTransient<VideoPlayerViewModel>();

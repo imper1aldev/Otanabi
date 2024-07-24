@@ -24,7 +24,7 @@ public class DatabaseService
     }
     public async Task DeleteFavorite(FavoriteList favorite)
     {
-        await DB._db.ExecuteAsync("delete from AnimexFavorite where FavoriteListId=? and Id>1",favorite.Id);
+        await DB._db.ExecuteAsync("delete from AnimexFavorite where FavoriteListId=? and Id>1", favorite.Id);
         await DB._db.DeleteAsync(favorite);
     }
 
@@ -235,12 +235,18 @@ public class DatabaseService
         }
     }
 
-    private async Task<List<Chapter>> GetChaptersByAnime(int animeId)
+    public async Task<List<Chapter>> GetChaptersByAnime(int animeId)
     {
         var chapOnDb = await DB._db.Table<Chapter>().Where(c => c.AnimeId == animeId).ToListAsync();
+        var chapIds = chapOnDb.Select(c => c.Id).Distinct().ToList();
+        var histories = await GetHistoriesByCapIds(chapIds);
         foreach (var c in chapOnDb)
-        {
-            c.History = await GetHistoryByCap(c.Id);
+        { 
+            var history = histories.FirstOrDefault(h => h.ChapterId == c.Id);
+            if (history != null)
+            {
+                c.History = history;
+            }
         }
 
         return chapOnDb;
@@ -295,13 +301,22 @@ public class DatabaseService
         }
     }
 
+    private async Task<List<History>> GetHistoriesByCapIds(List<int> chapterIds)
+    {
+        var query = $"select * from History where ChapterId in ({string.Join(",", chapterIds.ToArray())})";
+        var histories = await DB._db.QueryAsync<History>(query);
+
+        //var history = await DB._db.Table<History>()
+        //        .Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
+        return histories;
+    }
     private async Task<History> GetHistoryByCap(int chapterId)
     {
         var history = await DB._db.Table<History>()
                 .Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
-
         return history;
     }
+
 
     public async Task<History> GetOrCreateHistoryByCap(int chapterId)
     {
@@ -322,5 +337,29 @@ public class DatabaseService
     public async Task UpdateProgress(int historyId, long progress)
     {
         await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?", progress, historyId);
+    }
+    public async Task<List<History>> GetHistoriesAsync(int page, int limit = 20)
+    {
+        var offset = (page - 1) * limit;
+        var history = await DB._db.Table<History>().OrderByDescending(h => h.WatchedDate).Take(limit).Skip(offset).ToListAsync();
+        var chaptersId = history.Select(h => h.ChapterId).ToList().Distinct();
+        var queryC = $"select Chapter.* from Chapter where Chapter.Id in ({string.Join(",", chaptersId.ToArray())})";
+
+        var chapters = await DB._db.QueryAsync<Chapter>(queryC);
+        var animeIds = chapters.Select(c => c.AnimeId).ToList().Distinct();
+        var queryA = $"select Anime.* from Anime where Anime.Id in ({string.Join(",", animeIds.ToArray())})";
+        var animes = await DB._db.QueryAsync<Anime>(queryA);
+        var providersId = animes.Select(a => a.ProviderId).ToList().Distinct();
+        var queryProv = $"select * from Provider where Id in ({string.Join(",", providersId.ToArray())})";
+        var providers = await DB._db.QueryAsync<Provider>(queryProv);
+        foreach (var h in history)
+        {
+            var chSel = chapters.FirstOrDefault(c => c.Id == h.ChapterId);
+            chSel.Anime = animes.FirstOrDefault(a => a.Id == chSel.AnimeId);
+            chSel.Anime.Provider = providers.FirstOrDefault(p => p.Id == chSel.Anime.ProviderId);
+            h.Chapter = chSel;
+
+        }
+        return history;
     }
 }

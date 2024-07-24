@@ -22,4 +22,6 @@ public class History
     }
     [Ignore]
     public string TimeString => TimeSpan.FromMilliseconds(SecondsWatched).ToString(@"hh\:mm\:ss");
+    [Ignore]
+    public Chapter Chapter { get; set; }
 }
