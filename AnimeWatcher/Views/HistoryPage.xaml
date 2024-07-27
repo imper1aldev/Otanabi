@@ -67,7 +67,7 @@
             <ListView.Footer>
                 <Grid>
                     <interactivity:Interaction.Behaviors>
-                        <behaviors:ViewportBehavior x:Name="ViewportBehavior" IsAlwaysOn="True"/>
+                        <behaviors:ViewportBehavior x:Name="ViewportBehavior" IsAlwaysOn="True" />
                     </interactivity:Interaction.Behaviors>
                     <TextBox Text="{x:Bind ViewportBehavior.IsFullyInViewport}" Opacity="0" IsEnabled="False"> 
                          <interactivity:Interaction.Behaviors>

@@ -15,5 +15,6 @@ public sealed partial class VideoPlayerPage : Page
     {
         ViewModel = App.GetService<VideoPlayerViewModel>();
         InitializeComponent();
+
     }
 }
