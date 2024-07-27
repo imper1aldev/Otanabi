@@ -12,6 +12,7 @@ public class Chapter
     public string Extraval {get;set;}
     [Ignore]
     public History History {get;set;}
-    
+    [Ignore]
+    public Anime Anime {get;set;}
     
 }

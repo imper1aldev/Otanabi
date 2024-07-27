@@ -19,6 +19,7 @@ public class PageService : IPageService
         Configure<SearchDetailViewModel, SearchDetailPage>();
         Configure<VideoPlayerViewModel, VideoPlayerPage>();
         Configure<FavoritesViewModel, FavoritesPage>();
+        Configure<HistoryViewModel, HistoryPage>();
     }
 
     public Type GetPageType(string key)

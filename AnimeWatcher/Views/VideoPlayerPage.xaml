@@ -28,7 +28,6 @@
             <interactions:EventTriggerBehavior EventName="PointerWheelChanged">
                 <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ScrollChangedCommand}" />
             </interactions:EventTriggerBehavior>
-
         </interactivity:Interaction.Behaviors>
 
         <Grid Height="0" Width="0"
@@ -54,6 +53,24 @@
                       Visibility="{x:Bind ViewModel.LoadingVideo, 
               Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}  }"
                       />
+
+        <StackPanel
+            Canvas.ZIndex="2"   HorizontalAlignment="Center"  VerticalAlignment="Center" 
+          Visibility="{x:Bind ViewModel.IsErrorVideo,Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}  }"
+            >
+            <TextBlock Text="Video not Available" FontSize="25" Margin="0,0,0,15"/>
+
+            <!--<FontIcon Glyph="&#xEB90;" FontSize="40" Margin="0,0,0,15"/>-->
+            
+            <Button HorizontalAlignment="Center"  VerticalAlignment="Center" Command="{x:Bind ViewModel.RetryLoadCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Retry" Margin="0,0,15,0" FontSize="20"/>
+                    <FontIcon Glyph="&#xE72C;" FontSize="20"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+
 
         <SplitView x:Name="splitView" PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
                    Grid.Row="0"
@@ -109,7 +126,7 @@
                 HorizontalAlignment="Stretch" 
 VerticalAlignment="Stretch" 
                 >
-                <Grid.RowDefinitions> 
+                <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <lvs:VideoView x:Name="VideoView"
@@ -133,8 +150,8 @@ VerticalAlignment="Stretch"
                 </lvs:VideoView>
             </Grid>
         </SplitView>
-        
-        
+
+
 
 
         <Grid x:Name="Controls"
@@ -307,7 +324,7 @@ VerticalAlignment="Stretch"
                         TickFrequency="5"
                         TickPlacement="Outside"
                         Value="{x:Bind ViewModel.Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=100}" />
-                <CommandBar DefaultLabelPosition="Collapsed">                     
+                <CommandBar DefaultLabelPosition="Collapsed">
                     <AppBarElementContainer VerticalContentAlignment="Center" >
                         <ToggleButton IsChecked="{x:Bind ViewModel.IsChapPanelOpen , Mode=OneWay}" Command="{x:Bind ViewModel.ToggleChapPanelCommand}">
                             <FontIcon Glyph="&#xE7BC;" />

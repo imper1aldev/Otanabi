@@ -57,6 +57,11 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 
+                <NavigationViewItem x:Uid="Shell_History" helpers:NavigationHelper.NavigateTo="AnimeWatcher.ViewModels.HistoryViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE81C;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
             <i:Interaction.Behaviors>
