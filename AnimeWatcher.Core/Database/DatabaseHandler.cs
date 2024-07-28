@@ -1,4 +1,6 @@
-﻿using AnimeWatcher.Core.Helpers;
+﻿#pragma warning disable IDE0044
+
+using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using SQLite;
 
@@ -7,6 +9,22 @@ public sealed class DatabaseHandler
 {
 
     private static DatabaseHandler instance = null;
+    private readonly ClassReflectionHelper _classReflectionHelper = new();
+    public SQLiteAsyncConnection _db;
+
+    private const string _defaultApplicationDataFolder = "AnimeWatcher/ApplicationData";
+    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+    private string currDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+    private string dbName
+    {
+        get
+        {
+            return new ModeDetector().IsDebug ? $"animeDB-DEBUG" : "animeDB";
+        }
+    }
+
 
     public static DatabaseHandler GetInstance()
     {
@@ -21,23 +39,40 @@ public sealed class DatabaseHandler
         return _db;
     }
 
-    private readonly ClassReflectionHelper _classReflectionHelper = new();
-    public SQLiteAsyncConnection _db;
+
     public DatabaseHandler()
     {
-        var currDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-        var dbPath = Path.Combine(currDir, "animeDB");
+        var _applicationDataFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder);
+
+        var dbPath = Path.Combine(_applicationDataFolder, dbName);
+
+        // new ModeDetector().IsDebug?$"{dbName}-DEBUG":
+        if (File.Exists(Path.Combine(currDir, dbName)))
+        {
+            if (!File.Exists(dbPath))
+            {
+                File.Move(Path.Combine(currDir, dbName), dbPath);
+            }
+        }
+
+
+
         _db = new SQLiteAsyncConnection(dbPath);
 
+
+
+
+
+
     }
+    private void checkPreviusAndMove()
+    {
+
+    }
+
     public async Task InitDb()
     {
-        //await _db.CreateTableAsync<Anime>();
-        //await _db.CreateTableAsync<FavoriteList>();
-        //await _db.CreateTableAsync<AnimexFavorite>();
-        //await _db.CreateTableAsync<Chapter>();
-        //await _db.CreateTableAsync<History>();
-        //await _db.CreateTableAsync<Provider>();
+
         await _db.CreateTablesAsync(CreateFlags.None,
             typeof(Anime),
             typeof(FavoriteList),
@@ -67,7 +102,7 @@ public sealed class DatabaseHandler
         var runinit = await _db.Table<FavoriteList>().Where(f => f.Id == 1).ToListAsync();
         if (runinit.Count == 0)
         {
-            var indatlistFav = new FavoriteList{ Id = 1, Name = "Favorite List",Placement=0 }; 
+            var indatlistFav = new FavoriteList { Id = 1, Name = "Favorite List", Placement = 0 };
             await _db.InsertAsync(indatlistFav);
         }
 
