@@ -55,7 +55,14 @@
                 </ComboBox>
             </controls:SettingsCard>
 
-
+            <controls:SettingsCard x:Name="CheckUpdate" Margin="0,10,0,0"
+                    Header="Check For Updates"
+                    Description="{x:Bind ViewModel.VersionMessage ,Mode=OneWay}"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xECC5;}" >
+                <Button Command="{x:Bind ViewModel.CheckUpdatesCommand}">
+                    <FontIcon Glyph="&#xECC5;" />
+                </Button>
+            </controls:SettingsCard>
 
 
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="0,10,0,0" />
