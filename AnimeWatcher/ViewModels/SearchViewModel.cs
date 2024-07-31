@@ -43,18 +43,22 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        Source.Clear();
-        await GetProviders();
-        var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-
-        if (provdef != 0)
+        // Source.Clear();
+        if (Source.Count == 0)
         {
-            var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
-            if (tmp != null)
-                SelectedProvider = tmp;
+            await GetProviders();
+            var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
+
+            if (provdef != 0)
+            {
+                var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
+                if (tmp != null)
+                    SelectedProvider = tmp;
+            }
+            await Task.CompletedTask;
+            await LoadMainAnimePage();
         }
-        await Task.CompletedTask;
-        await LoadMainAnimePage();
+
     }
     private async Task GetProviders()
     {
@@ -131,6 +135,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task LoadMore()
     {
+        if (IsLoading)
+        {
+            return;
+        }
+
         currPage++;
         if (currQuery == "")
             await LoadMainAnimePage();

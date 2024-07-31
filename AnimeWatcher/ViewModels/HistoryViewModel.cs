@@ -77,6 +77,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         if(IsLoadingVideo)
             return;
 
+        IsLoadingVideo = true;
 
         var selectedHistory = param;
         var selectedChapter = param.Chapter;
@@ -110,7 +111,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
 
     public async Task OpenPlayer(History history, Chapter selectedChapter, Anime selectedAnime)
     {
-        IsLoadingVideo = true;
+        
         try
         {
             dynamic data = new ExpandoObject();

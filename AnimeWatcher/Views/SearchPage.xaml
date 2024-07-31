@@ -5,14 +5,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:c="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:AnimeWatcher.Core.Models"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    mc:Ignorable="d">
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    mc:Ignorable="d"
+    NavigationCacheMode="Required"
+    >
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
-
     </Page.Resources>
     <Grid x:Name="ContentArea" Margin="20,20,20,10" >
         <Grid.RowDefinitions>
@@ -67,16 +71,13 @@
                      Converter={StaticResource BoolToVisibilityConverter}}"
                    />
 
-        <controls:AdaptiveGridView 
-            Grid.Row="3"
+        <c:AdaptiveGridView x:Name="AnimeGrid"
+            Grid.Row="3" DesiredWidth="180"  IsItemClickEnabled="True"
             animations:Connected.ListItemElementName="itemThumbnail"
             animations:Connected.ListItemKey="animationKeyContentGrid"
-            DesiredWidth="180" 
-            IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
             ItemsSource="{x:Bind ViewModel.Source,Mode=OneWay}" 
-            SelectionMode="None"
-            StretchContentForSingleRow="False">
+            SelectionMode="Single"  StretchContentForSingleRow="False">
             <animations:Implicit.ShowAnimations>
                 <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
                 <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
@@ -88,11 +89,22 @@
                     <animations:ScalarKeyFrame Key="0.5" Value="0.0" />
                 </animations:ScalarAnimation>
             </animations:Implicit.HideAnimations>
-            <controls:AdaptiveGridView.ItemTemplate>
+            <c:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Anime" >
+
                     <Grid  MaxHeight="300" Height="300"
                         x:Name="itemThumbnail"
                         Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+                        <!--<Grid.ContextFlyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="Add To Favorites"  
+                                                Command="{Binding Path=ViewModel.AddToFavoritesCommand, RelativeSource={RelativeSource Mode=FindAncestor}}" 
+                        CommandParameter="{Binding Id}"   >
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </Grid.ContextFlyout>-->
+
+
                         <ToolTipService.ToolTip>
                             <ToolTip Content="{x:Bind Title }" HorizontalOffset="20"/>
                         </ToolTipService.ToolTip>
@@ -109,7 +121,7 @@
                            TextAlignment="Center" TextWrapping="Wrap"/>
                     </Grid>
                 </DataTemplate>
-            </controls:AdaptiveGridView.ItemTemplate>
-        </controls:AdaptiveGridView>
+            </c:AdaptiveGridView.ItemTemplate>
+        </c:AdaptiveGridView>
     </Grid>
 </Page>

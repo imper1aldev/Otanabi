@@ -22,12 +22,17 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ILocalSettingsService _localSettingsService;
     private readonly SearchAnimeService _searchAnimeService = new();
+    private readonly AppUpdateService _appUpdateService = new();
 
     [ObservableProperty]
     private ElementTheme _elementTheme;
 
     [ObservableProperty]
-    private string _versionDescription; 
+    private string _versionDescription;
+
+    [ObservableProperty]
+    private string versionMessage = "";
+
     [ObservableProperty]
     private int selectedThemeIndex;
     public ICommand SwitchThemeCommand
@@ -89,6 +94,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
 
 
+
+
     public async void OnNavigatedTo(object parameter)
     {
         await GetProviders();
@@ -103,13 +110,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
         switch (currentTheme)
         {
-            case ElementTheme.Light: 
+            case ElementTheme.Light:
                 SelectedThemeIndex = 0;
                 break;
-            case ElementTheme.Dark: 
+            case ElementTheme.Dark:
                 SelectedThemeIndex = 1;
                 break;
-            case ElementTheme.Default: 
+            case ElementTheme.Default:
                 SelectedThemeIndex = 2;
                 break;
         }
@@ -139,5 +146,34 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     }
 
-     
+
+    [RelayCommand]
+    private async void CheckUpdates()
+    {
+        try
+        {
+            VersionMessage = "Searching for updates";
+            var gitResponse = await _appUpdateService.CheckGitHubVersion();
+            var gitVersion = new Version(gitResponse);
+            var currVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var result = currVersion.CompareTo(gitVersion);
+            if (result > 0)
+            {
+                VersionMessage = "Greether";
+            }
+            else if (result < 0)
+            {
+                VersionMessage = "Update Is Avaible";
+            }
+            else
+            {
+                VersionMessage = "Same version";
+            }
+        } catch (Exception e)
+        {
+            VersionMessage = e.ToString();
+        }
+
+
+    }
 }
