@@ -23,12 +23,18 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions> 
+        </Grid.ColumnDefinitions>
 
-        <Rectangle Fill="{ThemeResource AcrylicInAppFillColorDefaultBrush}" 
-                   Visibility="{x:Bind ViewModel.IsLoadingVideo,Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}  }"
-                   Grid.Column="0" Grid.Row="0" Canvas.ZIndex="2"/>
-        
+
+        <Grid Visibility="{x:Bind ViewModel.IsLoadingVideo,Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}  }"
+             Grid.Column="0" Grid.Row="0" Canvas.ZIndex="2">
+            <Rectangle Fill="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
+            <TextBlock Text="Loading..." FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ProgressRing  Width="200" Height="200" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+
+
+
         <ListView x:Name="lstHistory" ItemsSource="{x:Bind ViewModel.Histories }">
             <interactivity:Interaction.Behaviors>
                 <interactions:EventTriggerBehavior EventName="SelectionChanged">
@@ -58,7 +64,7 @@
                                 <TextBlock Text="{x:Bind WatchedDate}" />
                                 <TextBlock Text="Time watched :" Margin="10,0,10,0"/>
                                 <TextBlock Text="{x:Bind TimeString}" />
-                            </StackPanel> 
+                            </StackPanel>
                         </StackPanel>
 
                     </Grid>
@@ -69,17 +75,21 @@
                     <interactivity:Interaction.Behaviors>
                         <behaviors:ViewportBehavior x:Name="ViewportBehavior" IsAlwaysOn="True" />
                     </interactivity:Interaction.Behaviors>
-                    <TextBox Text="{x:Bind ViewportBehavior.IsFullyInViewport}" Opacity="0" IsEnabled="False"> 
-                         <interactivity:Interaction.Behaviors>
-                             <interactions:EventTriggerBehavior EventName="TextChanged">
-                                 <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadHistoryCommand}" />
-                             </interactions:EventTriggerBehavior>
+                    <TextBox Text="{x:Bind ViewportBehavior.IsFullyInViewport}" Opacity="0" IsEnabled="False">
+                        <interactivity:Interaction.Behaviors>
+                            <interactions:EventTriggerBehavior EventName="TextChanged">
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadHistoryCommand}" />
+                            </interactions:EventTriggerBehavior>
                         </interactivity:Interaction.Behaviors>
                     </TextBox>
                     <ProgressRing IsActive="{x:Bind ViewModel.IsLoading }" Background="LightGray"/>
                 </Grid>
             </ListView.Footer>
-        </ListView>  
-
+        </ListView>
+        <TeachingTip  x:Name="ErrorTip" 
+                    IsOpen="{x:Bind ViewModel.ErrorActive , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Title="Error Detected" CloseButtonContent="Got it!"
+                    Subtitle="{x:Bind ViewModel.ErrorMessage,Mode=OneWay}"
+                    PreferredPlacement="Auto"  PlacementMargin="20"  IsLightDismissEnabled="True" />
     </Grid>
 </Page>
