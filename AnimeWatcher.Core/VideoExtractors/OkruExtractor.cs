@@ -8,7 +8,7 @@ public class OkruExtractor : IVideoExtractor
 {
     public async Task<string> GetStreamAsync(string url)
     {
-        // var url = "https://ok.ru/videoembed/947875089023";
+         url = "https://ok.ru/videoembed/947875089023";
         var streaminUrl = "";
         try
         {

@@ -5,11 +5,12 @@ public class ServerConventions
 {
     internal List<Convention> Conventions = new()
     {
-        new Convention
+        /*new Convention
         {
             Name = "Okru",
             PossibleNames = new string[] { "ok-ru", "okru", "OKRU" }
-        },new Convention
+        },*/
+        new Convention
         {
             Name = "Streamwish",
             PossibleNames = new string[] { "sw", "SW", "Streamwish", "streamwish" }
