@@ -1,7 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using AnimeWatcher.Core.Contracts.VideoExtractors;
-using HtmlAgilityPack;
-
+﻿using AnimeWatcher.Core.Contracts.VideoExtractors;
+using HtmlAgilityPack; 
+using JsUnpacker;
 namespace AnimeWatcher.Core.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor
 {
@@ -12,17 +11,25 @@ public class StreamwishExtractor : IVideoExtractor
         {
             HtmlWeb oWeb = new HtmlWeb();
             HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
-            var body = doc.DocumentNode.SelectSingleNode("/html"); 
-            var pattern = @"file:""(https?://[^""]+)""";
-            var match = Regex.Match(body.InnerHtml, pattern);
-            if (match.Success)
+
+            var packed = doc.DocumentNode.Descendants()
+                         .FirstOrDefault(x => x.Name == "script" && x.InnerText?.Contains("eval") == true);
+            var unpacked = "";
+            if (Unpacker.IsPacked(packed?.InnerText))
             {
-                streaminUrl = match.Groups[1].Value.Replace("{", "").Replace("}", "");
+                unpacked = Unpacker.UnpackAndCombine(packed?.InnerText);
             }
+            else
+            {
+                //not valid pack
+                return streaminUrl="";
+            }
+
+            streaminUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(new[] { "\"}" }, StringSplitOptions.None)[0];
 
         } catch (Exception e)
         {
-            
+            Console.WriteLine(e.ToString());
         }
         return streaminUrl;
     }
