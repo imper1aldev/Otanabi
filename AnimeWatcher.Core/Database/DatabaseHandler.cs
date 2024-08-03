@@ -44,6 +44,12 @@ public sealed class DatabaseHandler
     {
         var _applicationDataFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder);
 
+        if (!Directory.Exists(_applicationDataFolder))
+        {
+            Directory.CreateDirectory(_applicationDataFolder);
+        }
+
+
         var dbPath = Path.Combine(_applicationDataFolder, dbName);
 
         // new ModeDetector().IsDebug?$"{dbName}-DEBUG":
