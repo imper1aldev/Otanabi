@@ -1,5 +1,5 @@
 ﻿namespace AnimeWatcher.Core.Models;
-public class VideoSource
+public class VideoSource : IVideoSource
 {
     public string Server
     {

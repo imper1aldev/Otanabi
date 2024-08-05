@@ -2,8 +2,8 @@
 
 namespace AnimeWatcher.Core.Models;
 public enum AnimeType { OVA, TV, MOVIE ,SPECIAL,OTHER }
-public class Anime
-{   
+public class Anime : IAnime
+{
     [PrimaryKey, AutoIncrement]
     public int Id
     {
@@ -46,7 +46,10 @@ public class Anime
     {
         get; set;
     }
-    public DateTime LastUpdate {get;set;}
+    public DateTime LastUpdate
+    {
+        get; set;
+    }
 
     [Ignore]
     public ICollection<Chapter> Chapters
@@ -54,6 +57,6 @@ public class Anime
         get; set;
     }
 
-    public string TypeStr=>Type.ToString();
-     
+    public string TypeStr => Type.ToString();
+
 }
