@@ -1,9 +1,9 @@
-﻿using AnimeWatcher.Core.Contracts.VideoExtractors;
+﻿using AnimeWatcher.Extensions.Contracts.VideoExtractors;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 
-namespace AnimeWatcher.Core.VideoExtractors;
+namespace AnimeWatcher.Extensions.VideoExtractors;
 public class OkruExtractor : IVideoExtractor
 {
     public async Task<string> GetStreamAsync(string url)

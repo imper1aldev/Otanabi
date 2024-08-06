@@ -23,10 +23,8 @@ public class AnimeflvExtractor : IExtractor
     {
         return originUrl;
     }
-    public IProvider GenProvider()
-    {
-        return new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
-    }
+    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
+    
     public async Task<IAnime[]> MainPageAsync(int page = 1)
     {
         var animeList = await SearchAnimeAsync("", page);

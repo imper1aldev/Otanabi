@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
-using AnimeWatcher.Core.Contracts.Extractors;
+using AnimeWatcher.Extensions.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using Juro.Providers.Anime;
-namespace AnimeWatcher.Core.Extractors;
+namespace AnimeWatcher.Extensions.Extractors;
 public class AnimepacheExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
@@ -15,11 +15,11 @@ public class AnimepacheExtractor : IExtractor
 
     public string GetSourceName() => sourceName;
     public string GetUrl() => originUrl;
-    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
+    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
 
 
-    public async Task<Anime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1)
     {
         var animeList = new List<Anime>();
         //var client = new AnimeClient();
@@ -33,7 +33,7 @@ public class AnimepacheExtractor : IExtractor
             anime.Title = item.Title;
             anime.Cover = item.Image;
             anime.Url = item.Id;
-            anime.Provider = GenProvider();
+            anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
 
             animeList.Add(anime);
@@ -43,7 +43,7 @@ public class AnimepacheExtractor : IExtractor
         await Task.CompletedTask;
         return animeList.ToArray();
     }
-    public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
     {
         var animeList = new List<Anime>(); 
         var provider = new AnimePahe();
@@ -55,7 +55,7 @@ public class AnimepacheExtractor : IExtractor
             anime.Title = item.Title;
             anime.Cover = item.Image;
             anime.Url = item.Id;
-            anime.Provider = GenProvider();
+            anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             animeList.Add(anime);
         }
@@ -64,7 +64,7 @@ public class AnimepacheExtractor : IExtractor
         return animeList.ToArray();
     }
 
-    public async Task<Anime> GetAnimeDetailsAsync(string requestUrl)
+    public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
         Anime anime = new();
         var provider = new AnimePahe();
@@ -78,7 +78,7 @@ public class AnimepacheExtractor : IExtractor
         anime.RemoteID = animeInfo.Id;
         anime.Url = animeInfo.Id;
         anime.Type = getAnimeTypeByStr(animeInfo.Type);
-        anime.Provider = GenProvider();
+        anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 
         var chapters = new List<Chapter>();
@@ -101,9 +101,9 @@ public class AnimepacheExtractor : IExtractor
     }
 
 
-    public async Task<Models.VideoSource[]> GetVideoSources(string requestUrl)
+    public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
-        var videoSources = new List<Models.VideoSource>();
+        var videoSources = new List<VideoSource>();
         var provider = new AnimePahe();
 
         var videoServers = await provider.GetVideoServersAsync(requestUrl);
@@ -114,7 +114,7 @@ public class AnimepacheExtractor : IExtractor
 
             foreach (var video in videos)
             {
-                var vSouce = new Models.VideoSource();
+                var vSouce = new VideoSource();
                 vSouce.Server = "Juro";
                 vSouce.Title = "Juro";
                 vSouce.Code = video.VideoUrl;

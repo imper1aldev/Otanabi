@@ -35,7 +35,7 @@ public class SelectSourceService
             //    _ => ""
             //};
 
-            var videoExtractorType= Type.GetType($"AnimeWatcher.Core.VideoExtractors.{source.Server}Extractor");
+            var videoExtractorType= Type.GetType($"AnimeWatcher.Extensions.VideoExtractors.{source.Server}Extractor");
             var videoExtractorInstance = Activator.CreateInstance(videoExtractorType);
             var method=videoExtractorType.GetMethod("GetStreamAsync");
             tempUrl = await (Task<string>)method.Invoke(videoExtractorInstance, new object[]{source.CheckedUrl});

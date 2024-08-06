@@ -39,7 +39,7 @@ public class ClassReflectionHelper
     public (MethodInfo, object) GetMethodFromProvider(string methodName, Provider provider)
     {
         var provCl = provider.Name.Substring(0, 1).ToUpper() + provider.Name.Substring(1).ToLower();
-        var extractorType = Type.GetType($"AnimeWatcher.Core.Extractors.{provCl}Extractor");
+        var extractorType = Type.GetType($"AnimeWatcher.Extensions.Extractors.{provCl}Extractor");
         var extractorInstance = Activator.CreateInstance(extractorType);
         var method = extractorType.GetMethod(methodName);
         return (method, extractorInstance);
@@ -47,7 +47,7 @@ public class ClassReflectionHelper
     public Provider[] GetProviders()
     {
         var providers = new List<Provider>();
-        var namesp = "AnimeWatcher.Core.Extractors";
+        var namesp = "AnimeWatcher.Extensions.Extractors";
 
         var data = ExtractAssembliesOnlyClass(namesp);
         foreach (var cls in data)
