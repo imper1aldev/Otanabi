@@ -27,13 +27,13 @@ public class AnimeflvExtractor : IExtractor
     
     public async Task<IAnime[]> MainPageAsync(int page = 1)
     {
-        var animeList = await SearchAnimeAsync("", page);
+        var animeList = (Anime[])await SearchAnimeAsync("", page);
         return animeList.ToArray();
     }
 
     public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
     {
-        var animeList = new List<IAnime>();
+        var animeList = new List<Anime>();
 
         var url = string.Concat(originUrl, "/browse?q=", HttpUtility.UrlEncode(searchTerm), $"&page={page}");
 

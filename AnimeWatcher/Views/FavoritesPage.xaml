@@ -7,6 +7,7 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:models="using:AnimeWatcher.Core.Models"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea" Margin="20,20,20,10"  >
