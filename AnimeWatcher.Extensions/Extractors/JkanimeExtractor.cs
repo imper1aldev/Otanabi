@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using AnimeWatcher.Core.Contracts.Extractors;
-using AnimeWatcher.Core.Flare;
+using AnimeWatcher.Extensions.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
-namespace AnimeWatcher.Core.Extractors;
+namespace AnimeWatcher.Extensions.Extractors;
 public class JkanimeExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
@@ -19,13 +18,9 @@ public class JkanimeExtractor : IExtractor
 
     public string GetSourceName() => sourceName;
     public string GetUrl() => originUrl;
-    public Provider GenProvider() => new() { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
+    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
-    private readonly FlareService flareService = new();
-
-
-
-    public async Task<Anime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1)
     {
         var animeList = new List<Anime>();
         var mainPUrl = string.Concat(originUrl, "directorio/", page);
@@ -44,7 +39,7 @@ public class JkanimeExtractor : IExtractor
             var temp = nodo.CssSelect("h5.card-title a").First();
             anime.Url = removeDomain(temp.GetAttributeValue("href"));
             anime.Cover = nodo.CssSelect(".custom_thumb2 img").First().GetAttributeValue("src");
-            anime.Provider = GenProvider();
+            anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             anime.Type = getAnimeTypeByStr(nodo.CssSelect(".card-info p.card-txt").First().InnerText);
             animeList.Add(anime);
@@ -52,7 +47,7 @@ public class JkanimeExtractor : IExtractor
 
         return animeList.ToArray();
     }
-    public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
     {
         var animeList = new List<Anime>();
         var tmp = searchTerm == "" ? "" : searchTerm.Replace(" ", "_") + "/";
@@ -72,7 +67,7 @@ public class JkanimeExtractor : IExtractor
             var temp = nodo.CssSelect(".anime__item a").First();
             anime.Url = removeDomain(temp.GetAttributeValue("href"));
             anime.Cover = nodo.CssSelect(".anime__item__pic").First().GetAttributeValue("data-setbg");
-            anime.Provider = GenProvider();
+            anime.Provider =(Provider) GenProvider();
             anime.ProviderId = anime.Provider.Id;
             anime.Type = getAnimeTypeByStr(nodo.CssSelect(".anime__item__text ul li.anime").First().InnerText);
             animeList.Add(anime);
@@ -84,7 +79,7 @@ public class JkanimeExtractor : IExtractor
 
         return animeList.ToArray();
     }
-    public async Task<Anime> GetAnimeDetailsAsync(string requestUrl)
+    public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
         var mainPUrl = string.Concat(originUrl, requestUrl);
         var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
@@ -98,7 +93,7 @@ public class JkanimeExtractor : IExtractor
         anime.Title = doc.CssSelect(".anime__details__title h3").First().InnerText;
         anime.Cover = doc.CssSelect(".anime__details__pic").First().GetAttributeValue("data-setbg");
         anime.Description = doc.CssSelect(".sinopsis").First().InnerText;
-        anime.Provider = GenProvider();
+        anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
         var tempType = doc.SelectSingleNode(".//section[2]/div/div[1]/div/div[2]/div/div[2]/div/div[1]/ul/li[1]").InnerText;
         anime.Type = getAnimeTypeByStr(tempType);
@@ -131,7 +126,7 @@ public class JkanimeExtractor : IExtractor
         return anime;
     }
 
-    public async Task<VideoSource[]> GetVideoSources(string requestUrl)
+    public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
         var videoSource = new List<VideoSource>();
         var mainPUrl = string.Concat(originUrl, requestUrl);

@@ -12,38 +12,38 @@ public class SearchAnimeService
 
     public async Task<Anime[]> MainPageAsync(Provider provider,int page=1)
     {
-        var rexflex = _classReflectionHelper.GetMethodFromProvider("MainPageAsync", provider);
-        var method = rexflex.Item1;
-        var instance = rexflex.Item2;
-        var animesTmp = await (Task<Anime[]>)method.Invoke(instance, new object[] { page });
+        var reflex = _classReflectionHelper.GetMethodFromProvider("MainPageAsync", provider);
+        var method = reflex.Item1;
+        var instance = reflex.Item2;
+        var animesTmp =(Anime[]) await (Task<IAnime[]>)method.Invoke(instance, new object[] { page });
 
         return animesTmp.ToArray();
     }
 
     public async Task<Anime[]> SearchAnimeAsync(string searchTerm,int page, Provider provider)
     {
-        var rexflex = _classReflectionHelper.GetMethodFromProvider("SearchAnimeAsync", provider);
-        var method = rexflex.Item1;
-        var instance = rexflex.Item2;
-        var animesTmp = await (Task<Anime[]>)method.Invoke(instance, new object[] { searchTerm , page });
+        var reflex = _classReflectionHelper.GetMethodFromProvider("SearchAnimeAsync", provider);
+        var method = reflex.Item1;
+        var instance = reflex.Item2;
+        var animesTmp =(Anime[]) await (Task<IAnime[]>)method.Invoke(instance, new object[] { searchTerm , page });
 
         return animesTmp.ToArray();
     }
     public async Task<Anime> GetAnimeDetailsAsync(Anime animeReq)
     {
-        var rexflex = _classReflectionHelper.GetMethodFromProvider("GetAnimeDetailsAsync", animeReq.Provider);
-        var method = rexflex.Item1;
-        var instance = rexflex.Item2;
-        var animesDet = await (Task<Anime>)method.Invoke(instance, new object[] { animeReq.Url });
+        var reflex = _classReflectionHelper.GetMethodFromProvider("GetAnimeDetailsAsync", animeReq.Provider);
+        var method = reflex.Item1;
+        var instance = reflex.Item2;
+        var animesDet = (Anime) await (Task<IAnime>)method.Invoke(instance, new object[] { animeReq.Url });
 
         return animesDet;
     }
     public async Task<VideoSource[]> GetVideoSources(string requestUrl, Provider provider)
     {
-        var rexflex = _classReflectionHelper.GetMethodFromProvider("GetVideoSources", provider);
-        var method = rexflex.Item1;
-        var instance = rexflex.Item2;
-        var videoSources = await (Task<VideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
+        var reflex = _classReflectionHelper.GetMethodFromProvider("GetVideoSources", provider);
+        var method = reflex.Item1;
+        var instance = reflex.Item2;
+        var videoSources =(VideoSource[]) await (Task<IVideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
 
         return videoSources.ToArray();
     }

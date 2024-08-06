@@ -44,6 +44,16 @@
                     <KeyboardAccelerator Key="Escape" />
                 </Button.KeyboardAccelerators>
             </Button>
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.RewindCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Left"/>
+                </Button.KeyboardAccelerators>
+            </Button>
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.FastForwardCommand}">
+                <Button.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="Right" />
+                </Button.KeyboardAccelerators>
+            </Button>
 
         </Grid>
 
@@ -61,7 +71,7 @@
             <TextBlock Text="Video not Available" FontSize="25" Margin="0,0,0,15"/>
 
             <!--<FontIcon Glyph="&#xEB90;" FontSize="40" Margin="0,0,0,15"/>-->
-            
+
             <Button HorizontalAlignment="Center"  VerticalAlignment="Center" Command="{x:Bind ViewModel.RetryLoadCommand}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Retry" Margin="0,0,15,0" FontSize="20"/>

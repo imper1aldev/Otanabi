@@ -1,12 +1,12 @@
 ﻿using System.Text.RegularExpressions;
 using System.Web;
-using AnimeWatcher.Core.Contracts.Extractors;
+using AnimeWatcher.Extensions.Contracts.Extractors;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
-namespace AnimeWatcher.Core.Extractors;
+namespace AnimeWatcher.Extensions.Extractors;
 public class AnimeflvExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
@@ -23,17 +23,15 @@ public class AnimeflvExtractor : IExtractor
     {
         return originUrl;
     }
-    public Provider GenProvider()
+    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
+    
+    public async Task<IAnime[]> MainPageAsync(int page = 1)
     {
-        return new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
-    }
-    public async Task<Anime[]> MainPageAsync(int page = 1)
-    {
-        var animeList = await SearchAnimeAsync("", page);
+        var animeList = (Anime[])await SearchAnimeAsync("", page);
         return animeList.ToArray();
     }
 
-    public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
     {
         var animeList = new List<Anime>();
 
@@ -49,7 +47,7 @@ public class AnimeflvExtractor : IExtractor
             anime.Title = nodo.SelectSingleNode(".//h3").InnerText;
             anime.Url = nodo.Descendants("a").First().GetAttributeValue("href");
             anime.Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src");
-            anime.Provider = GenProvider();
+            anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             anime.Type = getAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
@@ -59,7 +57,7 @@ public class AnimeflvExtractor : IExtractor
 
     }
 
-    public async Task<Anime> GetAnimeDetailsAsync(string requestUrl)
+    public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
         Anime anime = new();
 
@@ -81,7 +79,7 @@ public class AnimeflvExtractor : IExtractor
         var coverTmp = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img").First().GetAttributeValue("src");
         anime.Cover = string.Concat(originUrl, coverTmp);
         anime.Description = node.CssSelect("div.Wrapper > div > div > div.Container > div > main > section").First().CssSelect("div.Description > p").First().InnerText;
-        anime.Provider = GenProvider();
+        anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
         var tempType = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
         anime.Type = getAnimeTypeByStr(tempType);
@@ -212,7 +210,7 @@ public class AnimeflvExtractor : IExtractor
         return sources.ToArray();
     }
 
-    public async Task<VideoSource[]> GetVideoSources(string requestUrl)
+    public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
 
         var url = string.Concat(originUrl, requestUrl);

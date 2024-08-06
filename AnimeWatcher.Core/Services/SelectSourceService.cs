@@ -1,10 +1,9 @@
 ﻿using AnimeWatcher.Core.Models;
+using AnimeWatcher.Core.Helpers;
 namespace AnimeWatcher.Core.Services;
 public class SelectSourceService
 {
-    //internal OkruExtractor okruExtractor = new();
-    //internal StreamWishExtractor streamWishExtractor = new();
-    //internal YourUploadExtractor yourUploadExtractor = new();
+    private readonly ClassReflectionHelper _classReflectionHelper = new();  
     internal static List<T> MoveToFirst<T>(List<T> list, T item)
     {
         List<T> newList = new List<T>(list);
@@ -17,9 +16,7 @@ public class SelectSourceService
 
     public async Task<string> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
-
         var streamUrl = "";
-
         /*logic to get the default source here*/
         var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
         var orderedSources = MoveToFirst(videoSources.ToList(), item);
@@ -34,11 +31,11 @@ public class SelectSourceService
             //    "YourUpload" => await yourUploadExtractor.GetStreamAsync(source.checkedUrl),
             //    _ => ""
             //};
-
-            var videoExtractorType= Type.GetType($"AnimeWatcher.Core.VideoExtractors.{source.Server}Extractor");
-            var videoExtractorInstance = Activator.CreateInstance(videoExtractorType);
-            var method=videoExtractorType.GetMethod("GetStreamAsync");
-            tempUrl = await (Task<string>)method.Invoke(videoExtractorInstance, new object[]{source.CheckedUrl});
+             
+            var reflex = _classReflectionHelper.GetMethodFromVideoSource(source);
+            var method = reflex.Item1;
+            var instance = reflex.Item2;
+            tempUrl = await (Task<string>)method.Invoke(instance, new object[]{source.CheckedUrl});
 
 
             if (!string.IsNullOrEmpty(tempUrl))

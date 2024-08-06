@@ -4,55 +4,72 @@ using System.Reflection;
 namespace AnimeWatcher.Core.Helpers;
 public class ClassReflectionHelper
 {
-    public Provider GetProviderPropsByName(string className)
+    private readonly string AssemblyName = "AnimeWatcher.Extensions";
+    private string ExNameSpace => $"{AssemblyName}.Extractors";
+    private string VidNameSpace => $"{AssemblyName}.VideoExtractors";
+
+
+
+    public Provider GetProviderPropsByType(Type type)
     {
-        var classType = Type.GetType(className);
-        var classInstance = Activator.CreateInstance(classType);
-        var methodName = classType.GetMethod("GenProvider"); 
-
-        var sourceName = (Provider)methodName.Invoke(classInstance, new object[] { }); 
-
-        return sourceName ; 
+        var c = Activator.CreateInstance(type);
+        var sourceName = (Provider)type.InvokeMember("GenProvider", BindingFlags.InvokeMethod, null, c, new object[] { });
+        return sourceName;
     }
 
     public Type[] ExtractAssembliesOnlyClass(string namesp)
     {
-        var types = new List<Type>();
+        var lTypes = new List<Type>();
 
-        var q = Assembly.GetExecutingAssembly()
-                           .GetTypes()
+        var data = LoadExtensionAssembly().GetTypes()
                            .Where(t => t.Namespace == namesp)
-                           .Select(t => t);
-
-        var data = q.ToList();
-        foreach (var cls in data)
+                           .Select(t => t).ToList();
+        foreach (var type in data)
         {
-            if (!cls.Name.Contains("<"))
+            if (!type.Name.Contains("<"))
             {
-                types.Add(cls);
-
+                lTypes.Add(type);
             }
         }
-        return types.ToArray();
+        return lTypes.ToArray();
     }
+    private Assembly LoadExtensionAssembly()
+    {
+        var currDir = Directory.GetCurrentDirectory();
+        return Assembly.LoadFile(Path.Join(currDir, $"{AssemblyName}.dll"));
+    }
+    private Type GetExtensionType(string className)
+    {
+        return LoadExtensionAssembly().
+            GetTypes().
+            Where(t => t.FullName == className).
+            ToList().First();
+    }
+
 
     public (MethodInfo, object) GetMethodFromProvider(string methodName, Provider provider)
     {
         var provCl = provider.Name.Substring(0, 1).ToUpper() + provider.Name.Substring(1).ToLower();
-        var extractorType = Type.GetType($"AnimeWatcher.Core.Extractors.{provCl}Extractor");
+        var extractorType = GetExtensionType($"{ExNameSpace}.{provCl}Extractor");
         var extractorInstance = Activator.CreateInstance(extractorType);
         var method = extractorType.GetMethod(methodName);
         return (method, extractorInstance);
     }
+    public (MethodInfo,object) GetMethodFromVideoSource(VideoSource source)
+    { 
+        var extractorType = GetExtensionType($"{VidNameSpace}.{source.Server}Extractor");
+        var extractorInstance = Activator.CreateInstance(extractorType);
+        var method = extractorType.GetMethod("GetStreamAsync");
+        return (method, extractorInstance);
+    }
+
     public Provider[] GetProviders()
     {
         var providers = new List<Provider>();
-        var namesp = "AnimeWatcher.Core.Extractors";
-
-        var data = ExtractAssembliesOnlyClass(namesp);
+        var data = ExtractAssembliesOnlyClass(ExNameSpace);
         foreach (var cls in data)
         {
-            var provider = GetProviderPropsByName(cls.FullName);
+            var provider = GetProviderPropsByType(cls);
             providers.Add(provider);
         }
         return providers.ToArray();

@@ -1,7 +1,7 @@
 ﻿using SQLite;
 
 namespace AnimeWatcher.Core.Models;
-public class Provider
+public class Provider : IProvider
 {
     [PrimaryKey]
     public int Id

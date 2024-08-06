@@ -1,7 +1,7 @@
-﻿using AnimeWatcher.Core.Contracts.VideoExtractors;
+﻿using AnimeWatcher.Extensions.Contracts.VideoExtractors;
 using HtmlAgilityPack; 
 using JsUnpacker;
-namespace AnimeWatcher.Core.VideoExtractors;
+namespace AnimeWatcher.Extensions.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor
 {
     public async Task<string> GetStreamAsync(string url)

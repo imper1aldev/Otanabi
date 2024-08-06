@@ -13,7 +13,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Windows.System; 
+using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using MediaPlayer = LibVLCSharp.Shared.MediaPlayer;
 
@@ -38,11 +38,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private MediaPlayer mediaPlayer;
     private string videoUrl = "Empty";
     private bool controlsVisibility = true;
-    private string AppCurTitle="";
+    private string AppCurTitle = "";
     [ObservableProperty]
     private bool isChapPanelOpen = false;
     [ObservableProperty]
-    private bool isErrorVideo=false;
+    private bool isErrorVideo = false;
 
     [ObservableProperty]
     private int selectedIndex = 0;
@@ -72,7 +72,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
-        _windowEx=App.MainWindow;
+        _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
         //each 3 seconds it will save the current play time
         MainTimerForSave = new System.Timers.Timer(3000);
@@ -186,17 +186,24 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
             VideoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
-            if(VideoUrl!=""){
-                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
-            }else
+            if (VideoUrl != "")
             {
-                Player.Play(null);
+                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+            }
+            else
+            {
+                if (Player is not null)
+                {
+                    Player.Play(null);
+
+                }
+
                 IsErrorVideo = true;
             }
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
-            _windowEx.Title= ChapterName;
+            _windowEx.Title = ChapterName;
             LoadingVideo = false;
         }
     }
@@ -212,7 +219,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private async Task RetryLoad()
     {
-       await LoadVideo(selectedChapter);
+        await LoadVideo(selectedChapter);
     }
 
     [RelayCommand]
@@ -285,7 +292,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     public void Dispose()
     {
-        _windowEx.Title=AppCurTitle;
+        _windowEx.Title = AppCurTitle;
         MainTimerForSave.Stop();
         MainTimerForSave.Dispose();
         _dispatcherQueue.TryEnqueue(() =>
@@ -311,9 +318,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         get
         {
-            var maxchap= ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber ;
+            var maxchap = ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
 
-            return  selectedChapter.ChapterNumber < maxchap;
+            return selectedChapter.ChapterNumber < maxchap;
         }
     }
 
