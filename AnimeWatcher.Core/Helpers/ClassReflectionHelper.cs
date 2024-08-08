@@ -33,11 +33,17 @@ public class ClassReflectionHelper
         }
         return lTypes.ToArray();
     }
-    private Assembly LoadExtensionAssembly()
+    public Assembly LoadExtensionAssembly()
     {
         var currDir = Directory.GetCurrentDirectory();
         return Assembly.LoadFile(Path.Join(currDir, $"{AssemblyName}.dll"));
     }
+    public String GetAssemblyPath()
+    {
+        var currDir = Directory.GetCurrentDirectory();
+        return Path.Join(currDir, $"{AssemblyName}.dll");
+    }
+
     private Type GetExtensionType(string className)
     {
         return LoadExtensionAssembly().
@@ -55,8 +61,8 @@ public class ClassReflectionHelper
         var method = extractorType.GetMethod(methodName);
         return (method, extractorInstance);
     }
-    public (MethodInfo,object) GetMethodFromVideoSource(VideoSource source)
-    { 
+    public (MethodInfo, object) GetMethodFromVideoSource(VideoSource source)
+    {
         var extractorType = GetExtensionType($"{VidNameSpace}.{source.Server}Extractor");
         var extractorInstance = Activator.CreateInstance(extractorType);
         var method = extractorType.GetMethod("GetStreamAsync");
