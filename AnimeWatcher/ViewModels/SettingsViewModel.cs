@@ -1,18 +1,17 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
-
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
+using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.Helpers;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 using Windows.ApplicationModel;
 
 namespace AnimeWatcher.ViewModels;
@@ -34,21 +33,32 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private string versionMessage = "";
 
     [ObservableProperty]
+    private string versionExtensions = "";
+    [ObservableProperty]
+    private string _appName = "";
+
+    [ObservableProperty]
     private int selectedThemeIndex;
     public ICommand SwitchThemeCommand
     {
         get;
     }
+
     [ObservableProperty]
     private Provider selectedProvider;
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
+
+    public SettingsViewModel(
+        IThemeSelectorService themeSelectorService,
+        ILocalSettingsService localSettingsService
+    )
     {
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
         _localSettingsService = localSettingsService;
         _versionDescription = GetVersionDescription();
-
+        _appName = GetAppName();
+        GetExtensionVersion();
 
         SwitchThemeCommand = new RelayCommand<ComboBox>(
             async (cb) =>
@@ -70,7 +80,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
                         break;
                 }
                 await _themeSelectorService.SetThemeAsync(selected);
-            });
+            }
+        );
+    }
+
+    private void GetExtensionVersion()
+    {
+        var currv = _appUpdateService.GetExtensionVer().ToString();
+        VersionExtensions = $"Extensions version : {currv}";
+    }
+    private string GetAppName()
+    {
+        return $"{"AppDisplayName".GetLocalized()}";
     }
 
     private static string GetVersionDescription()
@@ -81,20 +102,20 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         {
             var packageVersion = Package.Current.Id.Version;
 
-            version = new(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
+            version = new(
+                packageVersion.Major,
+                packageVersion.Minor,
+                packageVersion.Build,
+                packageVersion.Revision
+            );
         }
         else
         {
             version = Assembly.GetExecutingAssembly().GetName().Version!;
         }
 
-        return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        return $"Version - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
-
-
-
-
-
 
     public async void OnNavigatedTo(object parameter)
     {
@@ -120,11 +141,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
                 SelectedThemeIndex = 2;
                 break;
         }
-
     }
+
     public void OnNavigatedFrom()
     {
-
     }
 
     private async Task GetProviders()
@@ -143,9 +163,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     {
         if (SelectedProvider != null)
             await _localSettingsService.SaveSettingAsync<int>("ProviderId", SelectedProvider.Id);
-
     }
-
 
     [RelayCommand]
     private async void CheckUpdates()
@@ -153,27 +171,51 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         try
         {
             VersionMessage = "Searching for updates";
-            var gitResponse = await _appUpdateService.CheckGitHubVersion();
-            var gitVersion = new Version(gitResponse);
-            var currVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            var result = currVersion.CompareTo(gitVersion);
-            if (result > 0)
+
+            var result = await _appUpdateService.CheckMainUpdates();
+            var verEval = result.Item1;
+            var version = result.Item2;
+            if (verEval > 0)
             {
-                VersionMessage = "Greether";
+                VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
             }
-            else if (result < 0)
+            else if (verEval < 0)
             {
-                VersionMessage = "Update Is Avaible";
+                VersionMessage = "Update Available";
             }
             else
             {
                 VersionMessage = "Same version";
             }
+
+            var tmpNotes = await _appUpdateService.GetReleaseNotes();
+            var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
+
+            onPatchNotes(this, (patchNotes, version.ToString()));
+
+
         } catch (Exception e)
         {
             VersionMessage = e.ToString();
         }
+    }
+    [RelayCommand]
+    private async void CheckPatchNotes()
+    {
+        var vt = Assembly.GetExecutingAssembly().GetName().Version!;
+        var version = $"{vt.Major}.{vt.Minor}.{vt.Build}";
 
+
+        //var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
+        var tmpNotes = await _appUpdateService.GetReleaseNotes("0.2");
+
+
+        var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
+
+        onPatchNotes(this, (patchNotes, version.ToString()));
 
     }
+
+    public event EventHandler<(string Notes, string version)> onPatchNotes;
+
 }

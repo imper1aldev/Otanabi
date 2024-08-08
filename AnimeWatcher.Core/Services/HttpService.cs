@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,10 +15,13 @@ public class HttpService
     {
         HttpClientHandler handler = new HttpClientHandler
         {
-            AutomaticDecompression = DecompressionMethods.All
+            AutomaticDecompression = DecompressionMethods.All,
+
         };
 
         _client = new HttpClient();
+        var name = Assembly.GetExecutingAssembly().GetName().Name;
+        _client.DefaultRequestHeaders.UserAgent.ParseAdd(name);
     }
     public async Task<string> GetAsync(string uri)
     {

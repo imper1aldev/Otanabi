@@ -22,6 +22,7 @@
   <ItemGroup>
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
+    <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,7 +61,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\AnimeWatcher.Core\AnimeWatcher.Core.csproj" />
-    <ProjectReference Include="..\AnimeWatcher.Extensions\AnimeWatcher.Extensions.csproj"/>
+    <ProjectReference Include="..\AnimeWatcher.Extensions\AnimeWatcher.Extensions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">
@@ -80,10 +81,6 @@
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <ProjectCapability Include="Msix" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\Embeddeds\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,4 +111,10 @@
     <Exec Command="powershell.exe -Command Compress-Archive -Path $(TargetDir)* -DestinationPath $(TargetDir)win10-x64.zip -Force" />
     <Message Text="Builded" />
   </Target>
+  <ItemGroup>
+    <CustomAdditionalCompileInputs Remove="views\embeddeds\PatchNotesDialog.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
+  </ItemGroup>
 </Project>
