@@ -86,7 +86,11 @@
                             <FontIcon Glyph="&#xE8BC;" />
                         </Button>
                     </controls:SettingsCard>
-
+                    <controls:SettingsCard x:Name="RestartApp" Header="RestartApplication">
+                        <Button Command="{x:Bind ViewModel.RestartAppCommand}">
+                            <FontIcon Glyph="&#xE8BC;" />
+                        </Button>
+                    </controls:SettingsCard>
 
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>

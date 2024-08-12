@@ -11,7 +11,8 @@
     PrimaryButtonText=""
     mc:Ignorable="d">
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <ScrollViewer x:Name="ContentScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
+
 
 </ContentDialog>
 

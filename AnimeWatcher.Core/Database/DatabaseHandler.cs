@@ -5,26 +5,23 @@ using AnimeWatcher.Core.Models;
 using SQLite;
 
 namespace AnimeWatcher.Core.Database;
+
 public sealed class DatabaseHandler
 {
-
     private static DatabaseHandler instance = null;
     private readonly ClassReflectionHelper _classReflectionHelper = new();
     public SQLiteAsyncConnection _db;
 
     private const string _defaultApplicationDataFolder = "AnimeWatcher/ApplicationData";
-    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    private readonly string _localApplicationData = Environment.GetFolderPath(
+        Environment.SpecialFolder.LocalApplicationData
+    );
 
-    private string currDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+    private string currDir = Path.GetDirectoryName(
+        System.Reflection.Assembly.GetExecutingAssembly().Location
+    );
 
-    private string dbName
-    {
-        get
-        {
-            return new ModeDetector().IsDebug ? $"animeDB-DEBUG" : "animeDB";
-        }
-    }
-
+    private string DBName => new ModeDetector().IsDebug ? $"animeDB-DEBUG" : "animeDB";
 
     public static DatabaseHandler GetInstance()
     {
@@ -34,66 +31,57 @@ public sealed class DatabaseHandler
         }
         return instance;
     }
+
     public SQLiteAsyncConnection GetConnection()
     {
         return _db;
     }
 
-
     public DatabaseHandler()
     {
-        var _applicationDataFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder);
+        var _applicationDataFolder = Path.Combine(
+            _localApplicationData,
+            _defaultApplicationDataFolder
+        );
 
         if (!Directory.Exists(_applicationDataFolder))
         {
             Directory.CreateDirectory(_applicationDataFolder);
         }
 
+        var dbPath = Path.Combine(_applicationDataFolder, DBName);
 
-        var dbPath = Path.Combine(_applicationDataFolder, dbName);
-
-        // new ModeDetector().IsDebug?$"{dbName}-DEBUG":
-        if (File.Exists(Path.Combine(currDir, dbName)))
+        // new ModeDetector().IsDebug?$"{DBName}-DEBUG":
+        if (File.Exists(Path.Combine(currDir, DBName)))
         {
             if (!File.Exists(dbPath))
             {
-                File.Move(Path.Combine(currDir, dbName), dbPath);
+                File.Move(Path.Combine(currDir, DBName), dbPath);
             }
         }
 
-
-
         _db = new SQLiteAsyncConnection(dbPath);
-
-
-
-
-
-
     }
-    private void checkPreviusAndMove()
-    {
 
-    }
+    private void checkPreviusAndMove() { }
 
     public async Task InitDb()
     {
-
-        await _db.CreateTablesAsync(CreateFlags.None,
+        await _db.CreateTablesAsync(
+            CreateFlags.None,
             typeof(Anime),
             typeof(FavoriteList),
             typeof(AnimexFavorite),
             typeof(Chapter),
             typeof(History),
-            typeof(Provider));
+            typeof(Provider)
+        );
 
-        await initData();
-
+        await InitData();
     }
 
-    public async Task initData()
+    public async Task InitData()
     {
-
         var provDLL = _classReflectionHelper.GetProviders();
         var provDB = await _db.Table<Provider>().ToArrayAsync();
         var onDBsize = provDB.Length;
@@ -108,9 +96,13 @@ public sealed class DatabaseHandler
         var runinit = await _db.Table<FavoriteList>().Where(f => f.Id == 1).ToListAsync();
         if (runinit.Count == 0)
         {
-            var indatlistFav = new FavoriteList { Id = 1, Name = "Favorite List", Placement = 0 };
+            var indatlistFav = new FavoriteList
+            {
+                Id = 1,
+                Name = "Favorite List",
+                Placement = 0
+            };
             await _db.InsertAsync(indatlistFav);
         }
-
     }
 }

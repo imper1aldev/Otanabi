@@ -41,6 +41,7 @@ public partial class App : Application
         return service;
     }
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly LoggerService logger = new();
     public static WindowEx MainWindow { get; } = new MainWindow();
 
     public static UIElement? AppTitlebar
@@ -106,28 +107,15 @@ public partial class App : Application
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
-        // TODO: Log and handle exceptions as appropriate.
-        // https://docs.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.application.unhandledexception.
+        logger.LogFatal("App Crashed {0}",e.Message);
+        
     }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
-        //init database
         var db = new DatabaseHandler();
-        //var flareapp = new FlareSolverr();
-
         await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
-
-        /*
-        var bw = new BackgroundWorker();
-        bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
-        {
-            await flareapp.CheckFlareInstallation();
-        });
-        bw.RunWorkerAsync();
-        */
-
     }
 }

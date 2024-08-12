@@ -177,6 +177,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         if (Player is not null && LibVLC is not null)
         {
+            Player.Play(null);
             IsErrorVideo = false;
             LoadingVideo = true;
             //ControlsVisibility = false;
@@ -192,12 +193,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
             else
             {
-                if (Player is not null)
-                {
-                    Player.Play(null);
-
-                }
-
                 IsErrorVideo = true;
             }
             //ControlsVisibility = true;

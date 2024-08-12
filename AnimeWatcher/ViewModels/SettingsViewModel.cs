@@ -203,11 +203,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async void CheckPatchNotes()
     {
         var vt = Assembly.GetExecutingAssembly().GetName().Version!;
-        var version = $"{vt.Major}.{vt.Minor}.{vt.Build}";
+        var version = $"{vt.Major}.{vt.Minor}.{vt.Build}".TrimEnd(new Char[] { '0' }).TrimEnd(new Char[] { '.' });
 
 
-        //var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
-        var tmpNotes = await _appUpdateService.GetReleaseNotes("0.2");
+        var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
 
 
         var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
@@ -215,6 +214,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         onPatchNotes(this, (patchNotes, version.ToString()));
 
     }
+
+    [RelayCommand]
+    private void RestartApp()
+    {
+        _appUpdateService.RestartApp();
+    }
+
 
     public event EventHandler<(string Notes, string version)> onPatchNotes;
 
