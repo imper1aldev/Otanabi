@@ -62,7 +62,7 @@ public class AnimepaheExtractor : IExtractor
             anime.RemoteID = item.Id;
             anime.Title = item.Title;
             anime.Cover = item.Image;
-            anime.Url = item.Id;
+            anime.Url = item.Id; 
             anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             animeList.Add(anime);
@@ -86,6 +86,7 @@ public class AnimepaheExtractor : IExtractor
         anime.RemoteID = animeInfo.Id;
         anime.Url = animeInfo.Id;
         anime.Type = GetAnimeTypeByStr(animeInfo.Type);
+        anime.GenreStr=string.Join(",",animeInfo.Genres);
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 

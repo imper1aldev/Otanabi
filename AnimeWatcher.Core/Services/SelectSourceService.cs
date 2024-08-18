@@ -23,7 +23,7 @@ public class SelectSourceService
         {
             var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
             var orderedSources = MoveToFirst(videoSources.ToList(), item);
-            subUrl=item.Subtitle;
+            subUrl=item.Subtitle!=null?item.Subtitle:"";
             foreach (var source in orderedSources)
             {
                 var tempUrl = "";
