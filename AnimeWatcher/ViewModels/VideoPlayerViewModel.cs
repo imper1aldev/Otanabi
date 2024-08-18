@@ -119,7 +119,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(RowSpan));
     }
 
-    private async void SaveProgressByTime(Object source, ElapsedEventArgs e)
+    private async void SaveProgressByTime(object source, ElapsedEventArgs e)
     {
         if (selectedHistory != null)
         {
@@ -312,8 +312,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private void ShowControls()
     {
-        ControlsVisibility = true;
-        this.ProtectedCursor = null;
+        ControlsVisibility = true; 
     }
 
     private void HideControls()
@@ -412,7 +411,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void PlayPause()
     {
         if (Player == null)
+        {
             return;
+        }
 
         if (!IsPlaying)
         {
@@ -428,7 +429,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void Stop()
     {
         if (Player == null)
+        {
             return;
+        }
 
         Player.Stop();
     }
@@ -554,7 +557,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private void SkipIntro()
     {
         if (Player == null)
+        {
             return;
+        }
 
         var crtm = Player.Time;
         var skip = (long)TimeSpan.FromSeconds(79).TotalMilliseconds;
@@ -618,7 +623,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private void ChangeSpeed(ComboBox param)
     {
         if (Player == null)
+        {
             return;
+        }
 
         var item = (ComboBoxItem)param.SelectedItem;
         Player.SetRate(float.Parse((string)item.Tag));

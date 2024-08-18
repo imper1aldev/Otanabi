@@ -58,10 +58,10 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty]
     private string orderIcon = "\uE74B";
 
-    private Boolean orderedList = false;
+    private bool orderedList = false;
 
     [ObservableProperty]
-    public Boolean errorActive = false;
+    public bool errorActive = false;
 
     [ObservableProperty]
     public string errorMessage = "";
@@ -115,7 +115,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             await checkFavorite();
 
             if (SelectedAnime.Chapters == null)
+            {
                 return;
+            }
 
             foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
             {
@@ -139,7 +141,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
                 await checkFavorite();
                 ChapterList.Clear();
                 if (SelectedAnime.Chapters == null)
+                {
                     return;
+                }
 
                 foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
                 {
@@ -260,7 +264,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             foreach (var item in box.SelectedItems)
             {
                 if (item is FavoriteList lt)
+                {
                     idList.Add(lt.Id);
+                }
             }
         }
         if (idList.Count > 0)

@@ -44,12 +44,15 @@ public class HstreamExtractor : IExtractor
 
     public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
     {
-       var animeList = new List<Anime>();
+        var animeList = new List<Anime>();
 
         var url = string.Concat(originUrl, $"/search/?page={page}&view=poster");
-        if(searchTerm != "")
+        if (searchTerm != "")
         {
-            url = string.Concat(originUrl, $"/search/?page={page}&view=poster&s={Uri.EscapeDataString(searchTerm)}");
+            url = string.Concat(
+                originUrl,
+                $"/search/?page={page}&view=poster&s={Uri.EscapeDataString(searchTerm)}"
+            );
         }
 
         var oWeb = new HtmlWeb();
@@ -85,14 +88,52 @@ public class HstreamExtractor : IExtractor
 
     public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
-        Anime anime = new();
-        var animeInfo = await GetExtraData(requestUrl);
+        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
+        var webPage = await browser.NavigateToPageAsync(new Uri(requestUrl));
+        var doc = webPage.Html.CssSelect("body").First();
+        var img = doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[1]/img");
 
-        anime = (Anime)animeInfo;
+        var geners = doc.CssSelect("ul.list-none > li > a")
+            .Select(x => Regex.Replace(x.InnerText, @"\t|\n|\r", ""))
+            .ToList();
+        var anime = new Anime
+        {
+            Url = requestUrl,
+            Title = Regex.Replace(
+                doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[2]/h1").InnerText,
+                @"\t|\n|\r",
+                ""
+            ),
+            Cover = string.Concat(originUrl, img.Attributes["src"].Value),
+            Description = doc.SelectSingleNode(
+                ".//div/main/div/div/div[1]/div[1]/div[2]/p[2]"
+            ).InnerText,
+            Type = AnimeType.OVA,
+            Status = "",
+            GenreStr = string.Join(",", geners),
+            RemoteID = requestUrl.Replace("/", "")
+        };
+
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 
-        var chapters = await GetChaptersAsync(requestUrl);
+        var chapters = new List<Chapter>();
+
+        var nodes = doc.SelectNodes(".//div/main/div/div/div[1]/div[2]/div/div");
+
+        var i = 1;
+        foreach (var node in nodes)
+        {
+            var chapter = new Chapter
+            {
+                Url = node.CssSelect("a").First().GetAttributeValue("href"),
+                ChapterNumber = i,
+                Name = node.CssSelect("a div p").First().InnerText,
+                Extraval = node.CssSelect("a").First().GetAttributeValue("href")
+            };
+            chapters.Add(chapter);
+            i++;
+        }
 
         anime.Chapters = chapters;
 
@@ -164,69 +205,5 @@ public class HstreamExtractor : IExtractor
         }
 
         return videoSources.ToArray();
-    }
-
-    private AnimeType getAnimeTypeByStr(string strType)
-    {
-        return strType switch
-        {
-            "Type: ONA" => AnimeType.OVA,
-            "TV" => AnimeType.TV,
-            "Movie" => AnimeType.MOVIE,
-            "Special" => AnimeType.SPECIAL,
-            _ => AnimeType.TV,
-        };
-    }
-
-    private async Task<IAnime> GetExtraData(string requestUrl)
-    {
-        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
-        var webPage = await browser.NavigateToPageAsync(new Uri(requestUrl));
-        var doc = webPage.Html.CssSelect("body").First();
-        var img = doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[1]/img");
-        var anime = new Anime
-        {
-            Url = requestUrl,
-            Title = Regex.Replace(
-                doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[2]/h1").InnerText,
-                @"\t|\n|\r",
-                ""
-            ),
-            Cover = string.Concat(originUrl, img.Attributes["src"].Value),
-            Description = doc.SelectSingleNode(
-                ".//div/main/div/div/div[1]/div[1]/div[2]/p[2]"
-            ).InnerText,
-            Type = AnimeType.OVA,
-            Status = "",
-            RemoteID = requestUrl.Replace("/", "")
-        };
-
-        return anime;
-    }
-
-    private async Task<Chapter[]> GetChaptersAsync(string requestUrl)
-    {
-        var chapters = new List<Chapter>();
-        var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
-        var webPage = await browser.NavigateToPageAsync(new Uri(requestUrl));
-
-        var doc = webPage.Html.CssSelect("body").First();
-
-        var nodes = doc.SelectNodes(".//div/main/div/div/div[1]/div[2]/div/div");
-
-        var i = 1;
-        foreach (var node in nodes)
-        {
-            var chapter = new Chapter
-            {
-                Url = node.CssSelect("a").First().GetAttributeValue("href"),
-                ChapterNumber = i,
-                Name = node.CssSelect("a div p").First().InnerText,
-                Extraval = node.CssSelect("a").First().GetAttributeValue("href")
-            };
-            chapters.Add(chapter);
-            i++;
-        }
-        return chapters.ToArray();
     }
 }

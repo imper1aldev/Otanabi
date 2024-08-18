@@ -68,7 +68,7 @@ public class AnimeflvExtractor : IExtractor
                 Provider = (Provider)GenProvider()
             };
             anime.ProviderId = anime.Provider.Id;
-            anime.Type = getAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
+            anime.Type = GetAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
             animeList.Add(anime);
         }
@@ -116,7 +116,7 @@ public class AnimeflvExtractor : IExtractor
             )
             .First()
             .InnerText;
-        anime.Type = getAnimeTypeByStr(tempType);
+        anime.Type = GetAnimeTypeByStr(tempType);
 
         anime.Status = node.CssSelect(
                 "div.Wrapper > div > div > div.Container > div > aside > p > span"
@@ -265,7 +265,7 @@ public class AnimeflvExtractor : IExtractor
         return sources;
     }
 
-    private AnimeType getAnimeTypeByStr(string strType)
+    private static AnimeType GetAnimeTypeByStr(string strType)
     {
         return strType switch
         {

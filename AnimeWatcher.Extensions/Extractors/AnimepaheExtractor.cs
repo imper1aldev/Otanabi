@@ -85,7 +85,7 @@ public class AnimepaheExtractor : IExtractor
         anime.Description = animeInfo.Summary;
         anime.RemoteID = animeInfo.Id;
         anime.Url = animeInfo.Id;
-        anime.Type = getAnimeTypeByStr(animeInfo.Type);
+        anime.Type = GetAnimeTypeByStr(animeInfo.Type);
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 
@@ -134,7 +134,7 @@ public class AnimepaheExtractor : IExtractor
         return videoSources.ToArray();
     }
 
-    private AnimeType getAnimeTypeByStr(string strType)
+    private static AnimeType GetAnimeTypeByStr(string strType)
     {
         switch (strType)
         {

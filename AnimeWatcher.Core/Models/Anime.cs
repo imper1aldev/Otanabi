@@ -27,10 +27,14 @@ public class Anime : IAnime
     public string Status { get; set; }
     public DateTime LastUpdate { get; set; }
     public string TypeStr => Type.ToString();
+    public string GenreStr { get; set; }
 
     [Ignore]
     public ICollection<Chapter> Chapters { get; set; }
 
     [Ignore]
     public Provider Provider { get; set; }
+
+    [Ignore]
+    public List<string> Genre => (GenreStr!=null)? GenreStr.Split(',').ToList():new ();
 }
