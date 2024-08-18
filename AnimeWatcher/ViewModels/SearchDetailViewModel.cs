@@ -149,7 +149,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         } catch (Exception e)
         {
             ErrorMessage = e.Message.ToString();
-            ErrorActive = true; 
+            ErrorActive = true;
         } finally
         {
             ForceLoad = true;
@@ -188,9 +188,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             //data.Url = videoUrl;
             data.Chapter = chapter;
             //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
-            data.AnimeTitle=SelectedAnime.Title;
-            data.ChapterList=SelectedAnime.Chapters.ToList();
-            data.Provider=SelectedAnime.Provider;
+            data.AnimeTitle = SelectedAnime.Title;
+            data.ChapterList = SelectedAnime.Chapters.ToList();
+            data.Provider = SelectedAnime.Provider;
             //if (string.IsNullOrEmpty(videoUrl))
             //{
             //    throw new Exception(ErrorMessage = "Can't extract the video URL");

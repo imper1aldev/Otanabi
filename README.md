@@ -3,6 +3,32 @@
 	<em>A simple App to watch anime in English or Spanish</em>
 </p>
 
+
+## Features
+### Watch Latest Releases or Search for anime
+> Only Search by name is avaible, Genre and others filters will be added on future versions.
+
+![Search View](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Search.png?raw=true)
+
+### Save your favorite anime
+
+![Favorite view](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Favorites.png?raw=true)
+
+### Full featured video player 
+
+![Video Player](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Player.png?raw=true)
+
+### History of watched episodes
+
+![History](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/History.png?raw=true)
+
+
+### Dark mode Support.
+
+![Settings](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Settings.png?raw=true)
+
+
+
 ## :brain: Getting Started
 Quick start guide to building this App locally:
 

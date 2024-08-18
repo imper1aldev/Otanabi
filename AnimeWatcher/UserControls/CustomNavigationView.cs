@@ -24,5 +24,5 @@ public sealed class CustomNavigationView : NavigationView
                 VisualStateManager.GoToState(this, "NotFullScreen", true);
             }
         }
-    }
+    } 
 }
