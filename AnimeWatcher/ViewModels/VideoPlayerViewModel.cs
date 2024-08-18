@@ -209,12 +209,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             if (VideoUrl != "")
             {
                 await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory,AddCC, activeCC);
-                IsCCactive = activeCC != "";
+                IsCCactive = !string.IsNullOrEmpty(activeCC) ;
             }
             else
             {
                 IsErrorVideo = true;
-            }
+            } 
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
@@ -647,6 +647,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private void AddCC()
     {
         if (Player == null)
+        {
+            return;
+        }
+        if (string.IsNullOrEmpty(activeCC))
         {
             return;
         }
