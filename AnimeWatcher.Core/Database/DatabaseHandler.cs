@@ -63,7 +63,9 @@ public sealed class DatabaseHandler
         _db = new SQLiteAsyncConnection(dbPath);
     }
 
-    private void checkPreviusAndMove() { }
+    private void checkPreviusAndMove()
+    {
+    }
 
     public async Task InitDb()
     {
@@ -77,24 +79,14 @@ public sealed class DatabaseHandler
             typeof(Provider)
         );
 
+        await ProvidersSetUp();
         await InitData();
     }
 
     public async Task InitData()
     {
-        var provDLL = _classReflectionHelper.GetProviders();
-        var provDB = await _db.Table<Provider>().ToArrayAsync();
-        var onDBsize = provDB.Length;
-        var onLocalSize = provDLL.Length;
-
-        var providersToAdd = provDLL.Where(c1 => !provDB.Any(c2 => c1.Id == c2.Id));
-        if (providersToAdd.Count() > 0)
-        {
-            await _db.InsertAllAsync(providersToAdd);
-        }
-
-        var runinit = await _db.Table<FavoriteList>().Where(f => f.Id == 1).ToListAsync();
-        if (runinit.Count == 0)
+        var favData = await _db.Table<FavoriteList>().Where(f => f.Id == 1).ToListAsync();
+        if (favData.Count == 0)
         {
             var indatlistFav = new FavoriteList
             {
@@ -103,6 +95,33 @@ public sealed class DatabaseHandler
                 Placement = 0
             };
             await _db.InsertAsync(indatlistFav);
+        }
+    }
+
+    private async Task ProvidersSetUp()
+    {
+        //Add new providers
+        var provDLL = _classReflectionHelper.GetProviders();
+        var provDB = await _db.Table<Provider>().ToArrayAsync();
+
+        var providersToAdd = provDLL.Where(c1 => !provDB.Any(c2 => c1.Id == c2.Id));
+        if (providersToAdd.Count() > 0)
+        {
+            await _db.InsertAllAsync(providersToAdd);
+        }
+
+        //Fix current providers
+
+        foreach (var prop in provDB)
+        {
+            var prDll = provDLL.FirstOrDefault(c1 => c1.Id == prop.Id);
+            if (prDll != null && (prDll.Name != prop.Name || prDll.Persistent != prop.Persistent || prDll.Url != prop.Url))
+            {
+                prop.Name = prDll.Name;
+                prop.Persistent = prDll.Persistent;
+                prop.Url = prDll.Url;
+                await _db.UpdateAsync(prop);
+            }
         }
     }
 }

@@ -264,6 +264,8 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             }
         }
         if (idList.Count > 0)
+        {
             await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
+        }
     }
 }

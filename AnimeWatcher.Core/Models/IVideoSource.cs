@@ -9,4 +9,5 @@ public interface IVideoSource
     string Server { get; set; }
     string Title { get; set; }
     string Url { get; set; }
+    string Subtitle { get; set; }
 }

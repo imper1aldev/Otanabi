@@ -15,14 +15,15 @@ public class SelectSourceService
         return newList;
     }
 
-    public async Task<string> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
+    public async Task<(string,string)> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
         var streamUrl = "";
+        var subUrl = "";
         try
         {
             var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
             var orderedSources = MoveToFirst(videoSources.ToList(), item);
-
+            subUrl=item.Subtitle;
             foreach (var source in orderedSources)
             {
                 var tempUrl = "";
@@ -42,6 +43,6 @@ public class SelectSourceService
             streamUrl = "";
             throw;
         } 
-        return streamUrl;
+        return (streamUrl,subUrl);
     }
 }

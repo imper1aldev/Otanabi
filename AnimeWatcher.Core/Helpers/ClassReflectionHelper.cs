@@ -46,6 +46,7 @@ public class ClassReflectionHelper
 
     private Type GetExtensionType(string className)
     {
+        var types = LoadExtensionAssembly().GetTypes();
         return LoadExtensionAssembly().
             GetTypes().
             Where(t => t.FullName == className).
