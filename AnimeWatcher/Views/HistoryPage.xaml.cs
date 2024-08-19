@@ -16,4 +16,6 @@ public sealed partial class HistoryPage : Page
         ViewModel = App.GetService<HistoryViewModel>();
         InitializeComponent();
     }
+
+    private void DeleteBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) => ViewModel.DeleteHistoryById((int)((Button)sender).Tag);
 }

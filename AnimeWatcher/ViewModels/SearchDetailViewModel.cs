@@ -58,10 +58,10 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty]
     private string orderIcon = "\uE74B";
 
-    private Boolean orderedList = false;
+    private bool orderedList = false;
 
     [ObservableProperty]
-    public Boolean errorActive = false;
+    public bool errorActive = false;
 
     [ObservableProperty]
     public string errorMessage = "";
@@ -115,7 +115,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             await checkFavorite();
 
             if (SelectedAnime.Chapters == null)
+            {
                 return;
+            }
 
             foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
             {
@@ -139,7 +141,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
                 await checkFavorite();
                 ChapterList.Clear();
                 if (SelectedAnime.Chapters == null)
+                {
                     return;
+                }
 
                 foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
                 {
@@ -149,7 +153,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         } catch (Exception e)
         {
             ErrorMessage = e.Message.ToString();
-            ErrorActive = true; 
+            ErrorActive = true;
         } finally
         {
             ForceLoad = true;
@@ -188,9 +192,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             //data.Url = videoUrl;
             data.Chapter = chapter;
             //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
-            data.AnimeTitle=SelectedAnime.Title;
-            data.ChapterList=SelectedAnime.Chapters.ToList();
-            data.Provider=SelectedAnime.Provider;
+            data.AnimeTitle = SelectedAnime.Title;
+            data.ChapterList = SelectedAnime.Chapters.ToList();
+            data.Provider = SelectedAnime.Provider;
             //if (string.IsNullOrEmpty(videoUrl))
             //{
             //    throw new Exception(ErrorMessage = "Can't extract the video URL");
@@ -260,10 +264,14 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             foreach (var item in box.SelectedItems)
             {
                 if (item is FavoriteList lt)
+                {
                     idList.Add(lt.Id);
+                }
             }
         }
         if (idList.Count > 0)
+        {
             await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
+        }
     }
 }

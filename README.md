@@ -3,6 +3,16 @@
 	<em>A simple App to watch anime in English or Spanish</em>
 </p>
 
+
+## :spiral_notepad: Features
+
+ + Categories to organize your favorite anime.
+ + History of watched episodes.
+ + Dark/Ligth mode support.
+ + Video player ( Video Speed Controller, Next/Prev episode, List of episodes)
+ + Search for anime by name. **(Only search by name is available. Genre and other filters will be added in future versions**
+
+
 ## :brain: Getting Started
 Quick start guide to building this App locally:
 
@@ -13,7 +23,7 @@ Quick start guide to building this App locally:
 - .NET Desktop Development.
 - Windows App SDK C# Templates
 - Windows 10 SDK (10.0.19041.0)
-- [.NET SDK 7](https://dotnet.microsoft.com/en-us/download/dotnet)
+- [.NET SDK 8](https://dotnet.microsoft.com/en-us/download/dotnet)
 - [Template Studio for WinUI](https://marketplace.visualstudio.com/items?itemName=TemplateStudio.TemplateStudioForWinUICs)
 
 ### 2. Clone the Repository 
@@ -33,3 +43,29 @@ git clone https://github.com/havsalazar/AnimeWatcher.git
 ## Or Download the Latest Release
 
 :point_down: [Last stable release](https://github.com/havsalazar/AnimeWatcher/releases/latest)
+
+
+
+
+## Screenshots 
+
+###  Watch Latest Releases or Search for anime
+
+![Search View](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Search.png?raw=true)
+
+### Save your favorite anime
+
+![Favorite view](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Favorites.png?raw=true)
+
+### Video Player
+
+![Video Player](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Player.png?raw=true)
+
+### History of watched episodes
+
+![History](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/History.png?raw=true)
+
+### Dark mode Support.
+
+![Settings](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Settings.png?raw=true)
+

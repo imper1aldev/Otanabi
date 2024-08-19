@@ -40,4 +40,9 @@ public class AppUpdateService
         FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assemblyPath);
         return new Version(fvi.FileVersion);
     }
+    public void RestartApp()
+    {
+        Process.Start(AppDomain.CurrentDomain.FriendlyName);
+        Environment.Exit(0);
+    }
 }

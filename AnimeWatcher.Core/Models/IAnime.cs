@@ -15,4 +15,6 @@ public interface IAnime
     AnimeType Type { get; set; }
     string TypeStr { get; }
     string Url { get; set; }
+    string GenreStr { get; set; }
+    List<string> Genre { get;  }
 }

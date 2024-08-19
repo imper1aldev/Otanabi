@@ -7,6 +7,7 @@ using AnimeWatcher.Core.Services;
 using AnimeWatcher.Models.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Juro.Core.Models;
 using LibVLCSharp.Platforms.Windows;
 using LibVLCSharp.Shared;
 using Microsoft.UI.Input;
@@ -28,6 +29,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private History selectedHistory;
     private Provider selectedProvider;
     public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
+
     //private List<Chapter> chapterList;
 
     private static System.Timers.Timer MainTimerForSave;
@@ -39,8 +41,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private string videoUrl = "Empty";
     private bool controlsVisibility = true;
     private string AppCurTitle = "";
+
     [ObservableProperty]
     private bool isChapPanelOpen = false;
+
+    [ObservableProperty]
+    private bool isCCactive = false;
+
     [ObservableProperty]
     private bool isErrorVideo = false;
 
@@ -51,21 +58,29 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private string chapterName = "";
 
     private string animeTitle = "";
+    private string activeCC = "";
+
     private DateTime _lastClickTime;
     private const int DoubleClickThreshold = 200;
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
     private WindowEx _windowEx;
+
     //this thing will block the interface to prevent problems
     [ObservableProperty]
     private bool loadingVideo = false;
 
-    private readonly DispatcherTimer controlsHideTimer = new()
-    {
-        Interval = TimeSpan.FromSeconds(1),
-    };
-    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
+    private readonly DispatcherTimer controlsHideTimer =
+        new()
+        {
+            Interval = TimeSpan.FromSeconds(1),
+        };
+
+    public VideoPlayerViewModel(
+        INavigationService navigationService,
+        IWindowPresenterService windowPresenterService
+    )
     {
         _navigationService = navigationService;
         _windowPresenterService = windowPresenterService;
@@ -80,6 +95,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MainTimerForSave.AutoReset = true;
         MainTimerForSave.Enabled = true;
     }
+
     private void OnWindowPresenterChanged(object? sender, EventArgs e)
     {
         if (sender is not IWindowPresenterService windowPresenter)
@@ -102,7 +118,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(ControlsVisibility));
         OnPropertyChanged(nameof(RowSpan));
     }
-    private async void SaveProgressByTime(Object source, ElapsedEventArgs e)
+
+    private async void SaveProgressByTime(object source, ElapsedEventArgs e)
     {
         if (selectedHistory != null)
         {
@@ -112,14 +129,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                 {
                     await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
                 }
-            } catch (Exception)
-            {
-
-            }
-
+            } catch (Exception) { }
         }
-
     }
+
     //getters and setters
     private LibVLC? LibVLC
     {
@@ -145,22 +158,23 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
     public InputSystemCursor ProtectedCursor
     {
-        get;
-        private set;
+        get; private set;
     }
     public bool IsNotFullScreen => !_windowPresenterService.IsFullScreen;
+
     public void OnNavigatedTo(object parameter)
     {
-
         dynamic param = parameter as dynamic;
 
         //VideoUrl = param.Url;
         //ChapterName = param.ChapterName;
         animeTitle = param.AnimeTitle;
-        if (param.History is History hs
+        if (
+            param.History is History hs
             && param.Chapter is Chapter ch
             && param.Provider is Provider prov
-            && param.ChapterList is List<Chapter> chapters)
+            && param.ChapterList is List<Chapter> chapters
+        )
         {
             selectedHistory = hs;
             selectedProvider = prov;
@@ -168,38 +182,39 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             foreach (Chapter chapter in chapters)
             {
                 ChapterList.Add(chapter);
-
             }
-
         }
     }
+
     private async Task LoadVideo(Chapter chapter)
     {
         if (Player is not null && LibVLC is not null)
         {
+            Player.Play(null);
             IsErrorVideo = false;
             LoadingVideo = true;
             //ControlsVisibility = false;
             TimeLong = 0;
             selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
             SelectedIndex = selectedChapter.ChapterNumber - 1;
-            var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
-            VideoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
+            var videoSources = await _searchAnimeService.GetVideoSources(
+                chapter.Url,
+                selectedProvider
+            );
+            var data = await _selectSourceService.SelectSourceAsync(videoSources);
+            VideoUrl = data.Item1;
+            activeCC = data.Item2;
+
             ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
             if (VideoUrl != "")
             {
-                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory);
+                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory,AddCC, activeCC);
+                IsCCactive = !string.IsNullOrEmpty(activeCC) ;
             }
             else
             {
-                if (Player is not null)
-                {
-                    Player.Play(null);
-
-                }
-
                 IsErrorVideo = true;
-            }
+            } 
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
@@ -207,10 +222,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             LoadingVideo = false;
         }
     }
+
     public void OnNavigatedFrom()
     {
         Dispose();
     }
+
     //end getters and setters
 
 
@@ -228,7 +245,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //if (VideoUrl == "Empty")
         //{
         //    return;
-        //} 
+        //}
         LibVLC = new LibVLC(true, eventArgs.SwapChainOptions);
         Player = new MediaPlayer(LibVLC);
 
@@ -237,14 +254,27 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         AttachPlayerEvents(Player);
         await Task.CompletedTask;
     }
-    private static async Task LoadMediaAsync(LibVLC lib, MediaPlayer Pp, string url, History lcHistory)
+
+    private static async Task LoadMediaAsync(
+        LibVLC lib,
+        MediaPlayer Pp,
+        string url,
+        History lcHistory,
+        Action vc ,
+        string subtitle = ""
+    )
     {
         await Task.Run(async () =>
         {
             var mediaOptions = new[] { ":network-caching=60000", ":live-caching=60000" };
             using var media = new Media(lib, new Uri(url), mediaOptions);
+
             Pp.Play(media);
 
+            if (subtitle != "")
+            {
+                vc(); 
+            }
             /*Recover for last seen
             if (lcHistory != null && lcHistory.SecondsWatched > 0)
             {
@@ -270,6 +300,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
         }
     }
+
     //end relay commands
 
     //Methods
@@ -278,16 +309,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         HideControls();
         controlsHideTimer.Stop();
     }
+
     private void ShowControls()
     {
-        ControlsVisibility = true;
-        this.ProtectedCursor = null;
+        ControlsVisibility = true; 
     }
+
     private void HideControls()
     {
         ControlsVisibility = false;
-        //IsChapPanelOpen = false; 
+        //IsChapPanelOpen = false;
     }
+
     //end methods
 
     public void Dispose()
@@ -297,7 +330,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MainTimerForSave.Dispose();
         _dispatcherQueue.TryEnqueue(() =>
         {
-
             var mediaPlayer = Player;
             Player = null;
             mediaPlayer?.Dispose();
@@ -307,6 +339,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             GC.Collect();
         });
     }
+
     // player view related
     private const int rewindOffset10s = 10000;
     private const int rewindOffset3s = 3000;
@@ -318,7 +351,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         get
         {
-            var maxchap = ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
+            var maxchap = ChapterList is null
+                ? 1
+                : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
 
             return selectedChapter.ChapterNumber < maxchap;
         }
@@ -331,13 +366,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
     public string TimeString => TimeSpan.FromMilliseconds(TimeLong).ToString(@"hh\:mm\:ss");
     public long TotalTimeLong => Player != null ? Player.Length : -1;
-    public string TotalTimeString => TimeSpan.FromMilliseconds(TotalTimeLong).ToString(@"hh\:mm\:ss");
+    public string TotalTimeString =>
+        TimeSpan.FromMilliseconds(TotalTimeLong).ToString(@"hh\:mm\:ss");
     public int Volume
     {
         get => Player != null ? Player.Volume : -1;
         set => SetProperty(Player.Volume, value, Player, (u, n) => u.Volume = n);
     }
     public bool IsPlaying => Player != null ? Player.IsPlaying : false;
+
     [RelayCommand]
     public void VolumeUp()
     {
@@ -346,6 +383,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Volume += volumeStep;
         }
     }
+
     [RelayCommand]
     public void VolumeDown()
     {
@@ -354,6 +392,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Volume -= volumeStep;
         }
     }
+
     [RelayCommand]
     public void Mute()
     {
@@ -367,11 +406,14 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Volume = 0;
         }
     }
+
     [RelayCommand]
     public void PlayPause()
     {
         if (Player == null)
+        {
             return;
+        }
 
         if (!IsPlaying)
         {
@@ -382,14 +424,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Player.Pause();
         }
     }
+
     [RelayCommand]
     public void Stop()
     {
         if (Player == null)
+        {
             return;
+        }
 
         Player.Stop();
     }
+
     [RelayCommand]
     private void ScrollChanged(PointerRoutedEventArgs args)
     {
@@ -404,6 +450,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //}
         args.Handled = true;
     }
+
     [RelayCommand]
     private void FastForward(object args)
     {
@@ -413,13 +460,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             switch (modifier)
             {
                 case VirtualKeyModifiers.None:
-                case VirtualKeyModifiers.Menu://10s
+                case VirtualKeyModifiers.Menu: //10s
                     FastForwardInter(RewindMode.Normal);
                     break;
-                case VirtualKeyModifiers.Control://60s
+                case VirtualKeyModifiers.Control: //60s
                     FastForwardInter(RewindMode.Long);
                     break;
-                case VirtualKeyModifiers.Shift://3s
+                case VirtualKeyModifiers.Shift: //3s
                     FastForwardInter(RewindMode.Short);
                     break;
             }
@@ -430,6 +477,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             FastForwardInter(RewindMode.Normal);
         }
     }
+
     private void FastForwardInter(RewindMode mode)
     {
         var offset = mode switch
@@ -442,6 +490,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         TimeLong += offset;
     }
+
     [RelayCommand]
     private void Rewind(object args)
     {
@@ -451,13 +500,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             switch (modifier)
             {
                 case VirtualKeyModifiers.None:
-                case VirtualKeyModifiers.Menu://10s
+                case VirtualKeyModifiers.Menu: //10s
                     RewindInter(RewindMode.Normal);
                     break;
-                case VirtualKeyModifiers.Control://60s
+                case VirtualKeyModifiers.Control: //60s
                     RewindInter(RewindMode.Long);
                     break;
-                case VirtualKeyModifiers.Shift://3s
+                case VirtualKeyModifiers.Shift: //3s
                     RewindInter(RewindMode.Short);
                     break;
             }
@@ -468,6 +517,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             RewindInter(RewindMode.Normal);
         }
     }
+
     private void RewindInter(RewindMode mode)
     {
         var offset = mode switch
@@ -482,11 +532,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             TimeLong -= offset;
         }
     }
+
     [RelayCommand]
     private void FullScreen()
     {
         _windowPresenterService.ToggleFullScreen();
     }
+
     [RelayCommand]
     private void ClickFull()
     {
@@ -500,29 +552,34 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         _lastClickTime = now;
     }
+
     [RelayCommand]
     private void SkipIntro()
     {
         if (Player == null)
+        {
             return;
+        }
 
         var crtm = Player.Time;
         var skip = (long)TimeSpan.FromSeconds(79).TotalMilliseconds;
         Player.Time = crtm + skip;
-
     }
+
     [RelayCommand]
     private async void NextChapter()
     {
         var next = selectedChapter.ChapterNumber + 1;
         await ChangeChapterByPos(next);
     }
+
     [RelayCommand]
     private async void PrevChapter()
     {
         var prev = selectedChapter.ChapterNumber - 1;
         await ChangeChapterByPos(prev);
     }
+
     private async Task ChangeChapterByPos(int pos)
     {
         DateTime now = DateTime.Now;
@@ -556,58 +613,92 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
     }
 
-
     [RelayCommand]
     private void onClosePane(dynamic test)
     {
         IsChapPanelOpen = false;
     }
 
-
     [RelayCommand]
     private void ChangeSpeed(ComboBox param)
     {
         if (Player == null)
+        {
             return;
+        }
 
         var item = (ComboBoxItem)param.SelectedItem;
         Player.SetRate(float.Parse((string)item.Tag));
     }
+
+    [RelayCommand]
+    private void ToggleCC()
+    {
+        IsCCactive = !IsCCactive;
+        if (Player != null)
+        {
+            var tt = Player.SetSpu(IsCCactive ? 0 : -1);
+            if (!tt)
+            {
+                AddCC();
+            }
+        }
+    }
+    private void AddCC()
+    {
+        if (Player == null)
+        {
+            return;
+        }
+        if (string.IsNullOrEmpty(activeCC))
+        {
+            return;
+        }
+        Player.AddSlave(MediaSlaveType.Subtitle, activeCC, true);
+        Player.SetSpu(0);
+    }
+
     private void AttachPlayerEvents(MediaPlayer _player)
     {
-        _player.TimeChanged += (sender, time) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(TimeLong));
-            OnPropertyChanged(nameof(TimeString));
+        _player.TimeChanged += (sender, time) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(TimeLong));
+                OnPropertyChanged(nameof(TimeString));
+            });
+        _player.VolumeChanged += (sender, volumeArgs) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(Volume));
+            });
+        _player.Playing += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(IsPlaying));
+            });
+        _player.Paused += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(IsPlaying));
+            });
+        _player.Stopped += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(IsPlaying));
+            });
 
-        });
-        _player.VolumeChanged += (sender, volumeArgs) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(Volume));
-        });
-        _player.Playing += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(IsPlaying));
-        });
-        _player.Paused += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(IsPlaying));
-        });
-        _player.Stopped += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(IsPlaying));
-        });
+        _player.EndReached += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(IsPlaying));
+            });
 
-        _player.EndReached += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(IsPlaying));
-        });
-
-        _player.LengthChanged += (sender, args) => _dispatcherQueue.TryEnqueue(() =>
-        {
-            OnPropertyChanged(nameof(TotalTimeLong));
-            OnPropertyChanged(nameof(TotalTimeString));
-        });
+        _player.LengthChanged += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                OnPropertyChanged(nameof(TotalTimeLong));
+                OnPropertyChanged(nameof(TotalTimeString));
+            });
     }
     // end´player view related
 }

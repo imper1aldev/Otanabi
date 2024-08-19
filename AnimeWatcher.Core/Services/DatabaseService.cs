@@ -42,7 +42,7 @@ public class DatabaseService
         var el = await DB._db.Table<AnimexFavorite>().Where(
                 af => af.AnimeId == animeId).FirstOrDefaultAsync();
 
-        return el != null ? true : false;
+        return el != null;
 
     }
 
@@ -77,13 +77,22 @@ public class DatabaseService
     public async Task<Anime> GetAnimeOnDB(Anime request)
     {
         if (request.Url == null)
+        {
             return null;
+        }
+
         var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
         var chapters = new List<Chapter>();
         if (animeDB != null)
+        {
             chapters = await GetChaptersByAnime(animeDB.Id);
+        }
+
         if (chapters.Count > 0)
+        {
             animeDB.Chapters = chapters.ToArray();
+        }
+
         return animeDB;
     }
     public async Task<Anime> SaveAnime(Anime request)
@@ -254,7 +263,9 @@ public class DatabaseService
     private async Task<Anime> GetAnimeByProv(string Url, int ProviderId)
     {
         if (Url == null)
+        {
             return null;
+        }
 
         var exist = await DB._db.Table<Anime>().Where(a => a.Url == Url
         && a.ProviderId == ProviderId).FirstOrDefaultAsync();
@@ -362,4 +373,16 @@ public class DatabaseService
         }
         return history;
     }
+    public async Task Vacuum()
+    {
+        await DB._db.ExecuteAsync("vacuum");
+    }
+    public async Task DeleteFromHistory(int Id)
+    {
+        var history = await DB._db.Table<History>()
+                .Where(h => h.Id == Id).FirstOrDefaultAsync();
+
+        await DB._db.DeleteAsync(history);
+    }
+
 }

@@ -9,4 +9,5 @@ public class VideoSource : IVideoSource
     public bool Allow_mobile { get; set; }
     public string Code { get; set; }
     public string CheckedUrl => Url != null ? Url : Code;
+    public string Subtitle { get; set; }
 }

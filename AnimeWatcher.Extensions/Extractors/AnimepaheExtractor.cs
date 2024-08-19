@@ -1,28 +1,36 @@
-﻿using System.Diagnostics;
-using AnimeWatcher.Extensions.Contracts.Extractors;
-using AnimeWatcher.Core.Helpers;
+﻿using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
+using AnimeWatcher.Extensions.Contracts.Extractors;
 using Juro.Providers.Anime;
+
 namespace AnimeWatcher.Extensions.Extractors;
-public class AnimepacheExtractor : IExtractor
+
+public class AnimepaheExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
     internal readonly int extractorId = 3;
-    internal readonly string sourceName = "Animepache";
+    internal readonly string sourceName = "Animepahe";
     internal readonly string originUrl = "https://animepahe.com";
     internal readonly bool Persistent = false;
     internal readonly string Type = "ANIME";
 
     public string GetSourceName() => sourceName;
+
     public string GetUrl() => originUrl;
-    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
+    public IProvider GenProvider() =>
+        new Provider
+        {
+            Id = extractorId,
+            Name = sourceName,
+            Url = originUrl,
+            Type = Type,
+            Persistent = Persistent
+        };
 
-
-    public async Task<IAnime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
-        //var client = new AnimeClient();
         var provider = new AnimePahe();
 
         var animes = await provider.GetAiringAsync(page);
@@ -37,15 +45,15 @@ public class AnimepacheExtractor : IExtractor
             anime.ProviderId = anime.Provider.Id;
 
             animeList.Add(anime);
-
         }
 
         await Task.CompletedTask;
         return animeList.ToArray();
     }
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
+
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page,Tag[]? tags =null)
     {
-        var animeList = new List<Anime>(); 
+        var animeList = new List<Anime>();
         var provider = new AnimePahe();
         var animes = await provider.SearchAsync(searchTerm);
         foreach (var item in animes)
@@ -77,7 +85,8 @@ public class AnimepacheExtractor : IExtractor
         anime.Description = animeInfo.Summary;
         anime.RemoteID = animeInfo.Id;
         anime.Url = animeInfo.Id;
-        anime.Type = getAnimeTypeByStr(animeInfo.Type);
+        anime.Type = GetAnimeTypeByStr(animeInfo.Type);
+        anime.GenreStr = string.Join(",", animeInfo.Genres);
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 
@@ -85,7 +94,6 @@ public class AnimepacheExtractor : IExtractor
         var i = 1;
         foreach (var ep in episodes)
         {
-
             var chapter = new Chapter();
             chapter.Url = ep.Link;
             chapter.ChapterNumber = i;
@@ -100,14 +108,15 @@ public class AnimepacheExtractor : IExtractor
         return anime;
     }
 
-
     public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
         var videoSources = new List<VideoSource>();
         var provider = new AnimePahe();
 
         var videoServers = await provider.GetVideoServersAsync(requestUrl);
-        var selected = videoServers.Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720")).FirstOrDefault();
+        var selected = videoServers
+            .Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720"))
+            .FirstOrDefault();
         if (selected != null)
         {
             var videos = await provider.GetVideosAsync(selected);
@@ -122,12 +131,11 @@ public class AnimepacheExtractor : IExtractor
                 videoSources.Add(vSouce);
             }
         }
-        Debug.WriteLine(videoServers);
-
         await Task.CompletedTask;
         return videoSources.ToArray();
     }
-    private AnimeType getAnimeTypeByStr(string strType)
+
+    private static AnimeType GetAnimeTypeByStr(string strType)
     {
         switch (strType)
         {
@@ -142,5 +150,9 @@ public class AnimepacheExtractor : IExtractor
             default:
                 return AnimeType.TV;
         }
+    }
+    public Tag[] GetTags()
+    {
+        return Array.Empty<Tag>();
     }
 }

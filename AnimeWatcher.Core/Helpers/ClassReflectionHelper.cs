@@ -13,7 +13,7 @@ public class ClassReflectionHelper
     public Provider GetProviderPropsByType(Type type)
     {
         var c = Activator.CreateInstance(type);
-        var sourceName = (Provider)type.InvokeMember("GenProvider", BindingFlags.InvokeMethod, null, c, new object[] { });
+        var sourceName = (Provider)type.InvokeMember("GenProvider", BindingFlags.InvokeMethod, null, c, Array.Empty<object>());
         return sourceName;
     }
 
@@ -38,7 +38,7 @@ public class ClassReflectionHelper
         var currDir = Directory.GetCurrentDirectory();
         return Assembly.LoadFile(Path.Join(currDir, $"{AssemblyName}.dll"));
     }
-    public String GetAssemblyPath()
+    public string GetAssemblyPath()
     {
         var currDir = Directory.GetCurrentDirectory();
         return Path.Join(currDir, $"{AssemblyName}.dll");
@@ -46,6 +46,7 @@ public class ClassReflectionHelper
 
     private Type GetExtensionType(string className)
     {
+        var types = LoadExtensionAssembly().GetTypes();
         return LoadExtensionAssembly().
             GetTypes().
             Where(t => t.FullName == className).

@@ -3,29 +3,29 @@ using AnimeWatcher.Core.Helpers;
 namespace AnimeWatcher.Core.Services;
 public class SearchAnimeService
 {
-    private readonly ClassReflectionHelper _classReflectionHelper = new();  
+    private readonly ClassReflectionHelper _classReflectionHelper = new();
 
     public Provider[] GetProviders()
     {
-        return  _classReflectionHelper.GetProviders();
+        return _classReflectionHelper.GetProviders();
     }
 
-    public async Task<Anime[]> MainPageAsync(Provider provider,int page=1)
+    public async Task<Anime[]> MainPageAsync(Provider provider, int page = 1, Tag[] tags = null)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("MainPageAsync", provider);
         var method = reflex.Item1;
         var instance = reflex.Item2;
-        var animesTmp =(Anime[]) await (Task<IAnime[]>)method.Invoke(instance, new object[] { page });
+        var animesTmp = (Anime[])await (Task<IAnime[]>)method.Invoke(instance, new object[] { page, tags });
 
         return animesTmp.ToArray();
     }
 
-    public async Task<Anime[]> SearchAnimeAsync(string searchTerm,int page, Provider provider)
+    public async Task<Anime[]> SearchAnimeAsync(string searchTerm, int page, Provider provider, Tag[] tags = null)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("SearchAnimeAsync", provider);
         var method = reflex.Item1;
         var instance = reflex.Item2;
-        var animesTmp =(Anime[]) await (Task<IAnime[]>)method.Invoke(instance, new object[] { searchTerm , page });
+        var animesTmp = (Anime[])await (Task<IAnime[]>)method.Invoke(instance, new object[] { searchTerm, page, tags });
 
         return animesTmp.ToArray();
     }
@@ -34,7 +34,7 @@ public class SearchAnimeService
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetAnimeDetailsAsync", animeReq.Provider);
         var method = reflex.Item1;
         var instance = reflex.Item2;
-        var animesDet = (Anime) await (Task<IAnime>)method.Invoke(instance, new object[] { animeReq.Url });
+        var animesDet = (Anime)await (Task<IAnime>)method.Invoke(instance, new object[] { animeReq.Url });
 
         return animesDet;
     }
@@ -43,9 +43,17 @@ public class SearchAnimeService
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetVideoSources", provider);
         var method = reflex.Item1;
         var instance = reflex.Item2;
-        var videoSources =(VideoSource[]) await (Task<IVideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
+        var videoSources = (VideoSource[])await (Task<IVideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
 
         return videoSources.ToArray();
     }
+    public Tag[] GetTags(Provider provider)
+    {
+        var reflex = _classReflectionHelper.GetMethodFromProvider("GetTags", provider);
+        var method = reflex.Item1;
+        var instance = reflex.Item2;
+        var tags = (Tag[])method.Invoke(instance, null);
 
+        return tags.ToArray();
+    }
 }
