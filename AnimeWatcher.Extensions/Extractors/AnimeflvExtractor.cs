@@ -1,11 +1,12 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
 using System.Web;
 using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Extensions.Contracts.Extractors;
 using HtmlAgilityPack;
-using ScrapySharp.Extensions;
 using Newtonsoft.Json.Linq;
+using ScrapySharp.Extensions;
 
 namespace AnimeWatcher.Extensions.Extractors;
 
@@ -38,35 +39,40 @@ public class AnimeflvExtractor : IExtractor
             Persistent = Persistent
         };
 
-    public async Task<IAnime[]> MainPageAsync(int page = 1,Tag[]? tags =null)
+    public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
     {
-        var animeList = (Anime[])await SearchAnimeAsync("", page,tags);
+        var animeList = (Anime[])await SearchAnimeAsync("", page, tags);
         return animeList.ToArray();
     }
 
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page,Tag[]? tags =null)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page, Tag[]? tags = null)
     {
         var animeList = new List<Anime>();
 
-        var url = string.Concat(
-            originUrl,
-            "/browse?q=",
-            HttpUtility.UrlEncode(searchTerm),
-            $"&page={page}"
-        );
+        var url = string.Concat(originUrl, "/browse?", $"page={page}");
+
+        if (tags != null && tags.Length > 0)
+        {
+            url += $"&{GenerateTagString(tags)}";
+        }
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            url += $"&q={HttpUtility.UrlEncode(searchTerm)}";
+        }
 
         var oWeb = new HtmlWeb();
         var doc = await oWeb.LoadFromWebAsync(url);
 
         foreach (var nodo in doc.DocumentNode.CssSelect(".Anime"))
         {
-            Anime anime = new()
-            {
-                Title = nodo.SelectSingleNode(".//h3").InnerText,
-                Url = nodo.Descendants("a").First().GetAttributeValue("href"),
-                Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src"),
-                Provider = (Provider)GenProvider()
-            };
+            Anime anime =
+                new()
+                {
+                    Title = nodo.SelectSingleNode(".//h3").InnerText,
+                    Url = nodo.Descendants("a").First().GetAttributeValue("href"),
+                    Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src"),
+                    Provider = (Provider)GenProvider()
+                };
             anime.ProviderId = anime.Provider.Id;
             anime.Type = GetAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
@@ -80,11 +86,10 @@ public class AnimeflvExtractor : IExtractor
         Anime anime = new();
 
         var url = string.Concat(originUrl, requestUrl);
-        var oWeb = new HtmlWeb();
+        var oWeb = new HtmlWeb(); 
         var doc = await oWeb.LoadFromWebAsync(url);
 
-        if (oWeb.StatusCode != System.Net.HttpStatusCode.OK)
-        {
+        if (oWeb.StatusCode != System.Net.HttpStatusCode.OK) {
             throw new Exception("Anime could not be found");
         }
 
@@ -123,6 +128,10 @@ public class AnimeflvExtractor : IExtractor
             )
             .First()
             .InnerText;
+
+        var genres = node.CssSelect(".Nvgnrs a").Select(x=>WebUtility.HtmlDecode(x.InnerText)).ToList();
+        anime.GenreStr=string.Join(",",genres);
+
 
         var identifier = GetUriIdentify(node.InnerHtml, anime.Status);
         anime.Chapters = GetChaptersByregex(node.InnerHtml, identifier);
@@ -276,8 +285,66 @@ public class AnimeflvExtractor : IExtractor
             _ => AnimeType.TV,
         };
     }
+
+    public static string GenerateTagString(Tag[] tags)
+    {
+        var result = "";
+        for (var i = 0; i < tags.Length; i++)
+        {
+            result += $"genre%5B%5D={tags[i].Value}";
+            if (i < tags.Length - 1)
+            {
+                result += "&";
+            }
+        }
+        return result;
+    }
+
     public Tag[] GetTags()
     {
-        return Array.Empty<Tag>();
+        return new Tag[]
+        {
+            new() { Name = "Todo", Value = "all" },
+            new() { Name = "Acción", Value = "accion" },
+            new() { Name = "Artes Marciales", Value = "artes_marciales" },
+            new() { Name = "Aventuras", Value = "aventura" },
+            new() { Name = "Carreras", Value = "carreras" },
+            new() { Name = "Ciencia Ficción", Value = "ciencia_ficcion" },
+            new() { Name = "Comedia", Value = "comedia" },
+            new() { Name = "Demencia", Value = "demencia" },
+            new() { Name = "Demonios", Value = "demonios" },
+            new() { Name = "Deportes", Value = "deportes" },
+            new() { Name = "Drama", Value = "drama" },
+            new() { Name = "Ecchi", Value = "ecchi" },
+            new() { Name = "Escolares", Value = "escolares" },
+            new() { Name = "Espacial", Value = "espacial" },
+            new() { Name = "Fantasía", Value = "fantasia" },
+            new() { Name = "Harem", Value = "harem" },
+            new() { Name = "Historico", Value = "historico" },
+            new() { Name = "Infantil", Value = "infantil" },
+            new() { Name = "Josei", Value = "josei" },
+            new() { Name = "Juegos", Value = "juegos" },
+            new() { Name = "Magia", Value = "magia" },
+            new() { Name = "Mecha", Value = "mecha" },
+            new() { Name = "Militar", Value = "militar" },
+            new() { Name = "Misterio", Value = "misterio" },
+            new() { Name = "Música", Value = "musica" },
+            new() { Name = "Parodia", Value = "parodia" },
+            new() { Name = "Policía", Value = "policia" },
+            new() { Name = "Psicológico", Value = "psicologico" },
+            new() { Name = "Recuentos de la vida", Value = "recuentos_de_la_vida" },
+            new() { Name = "Romance", Value = "romance" },
+            new() { Name = "Samurai", Value = "samurai" },
+            new() { Name = "Seinen", Value = "seinen" },
+            new() { Name = "Shoujo", Value = "shoujo" },
+            new() { Name = "Shounen", Value = "shounen" },
+            new() { Name = "Sobrenatural", Value = "sobrenatural" },
+            new() { Name = "Superpoderes", Value = "superpoderes" },
+            new() { Name = "Suspenso", Value = "suspenso" },
+            new() { Name = "Terror", Value = "terror" },
+            new() { Name = "Vampiros", Value = "vampiros" },
+            new() { Name = "Yaoi", Value = "yaoi" },
+            new() { Name = "Yuri", Value = "yuri" },
+        };
     }
 }

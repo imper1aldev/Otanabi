@@ -4,7 +4,6 @@ using AnimeWatcher.Core.Helpers;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Extensions.Contracts.Extractors;
 using HtmlAgilityPack;
-using Juro.Providers.Anime;
 using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
@@ -21,7 +20,7 @@ public class HstreamExtractor : IExtractor
     internal readonly string Type = "ANIME";
 
     //internal readonly HttpService HService =  new ();
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient client = new();
 
     public string GetSourceName() => sourceName;
 

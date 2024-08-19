@@ -377,5 +377,12 @@ public class DatabaseService
     {
         await DB._db.ExecuteAsync("vacuum");
     }
+    public async Task DeleteFromHistory(int Id)
+    {
+        var history = await DB._db.Table<History>()
+                .Where(h => h.Id == Id).FirstOrDefaultAsync();
+
+        await DB._db.DeleteAsync(history);
+    }
 
 }

@@ -48,7 +48,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         LoadHistory();
     }
     [RelayCommand]
-    public async void LoadHistory()
+    public async Task LoadHistory()
     {
         if (IsLoading && noData)
             return;
@@ -133,5 +133,13 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             ErrorActive = true;
             return;
         }
+    }
+    [RelayCommand]
+    public async Task DeleteHistoryById(int id)
+    {
+        var hs = Histories.Where(h=>h.Id==id).First();  
+        Histories.Remove(hs);
+        await dbService.DeleteFromHistory(id);
+        await LoadHistory();
     }
 }
