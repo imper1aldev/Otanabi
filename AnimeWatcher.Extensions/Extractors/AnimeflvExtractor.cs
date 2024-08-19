@@ -38,13 +38,13 @@ public class AnimeflvExtractor : IExtractor
             Persistent = Persistent
         };
 
-    public async Task<IAnime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1,Tag[]? tags =null)
     {
-        var animeList = (Anime[])await SearchAnimeAsync("", page);
+        var animeList = (Anime[])await SearchAnimeAsync("", page,tags);
         return animeList.ToArray();
     }
 
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
 
@@ -275,5 +275,9 @@ public class AnimeflvExtractor : IExtractor
             "Especial" => AnimeType.SPECIAL,
             _ => AnimeType.TV,
         };
+    }
+    public Tag[] GetTags()
+    {
+        return Array.Empty<Tag>();
     }
 }

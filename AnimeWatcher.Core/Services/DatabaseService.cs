@@ -42,7 +42,7 @@ public class DatabaseService
         var el = await DB._db.Table<AnimexFavorite>().Where(
                 af => af.AnimeId == animeId).FirstOrDefaultAsync();
 
-        return el != null ? true : false;
+        return el != null;
 
     }
 
@@ -373,4 +373,9 @@ public class DatabaseService
         }
         return history;
     }
+    public async Task Vacuum()
+    {
+        await DB._db.ExecuteAsync("vacuum");
+    }
+
 }

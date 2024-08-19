@@ -28,7 +28,7 @@ public class AnimepaheExtractor : IExtractor
             Persistent = Persistent
         };
 
-    public async Task<IAnime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
         var provider = new AnimePahe();
@@ -51,7 +51,7 @@ public class AnimepaheExtractor : IExtractor
         return animeList.ToArray();
     }
 
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
         var provider = new AnimePahe();
@@ -62,7 +62,7 @@ public class AnimepaheExtractor : IExtractor
             anime.RemoteID = item.Id;
             anime.Title = item.Title;
             anime.Cover = item.Image;
-            anime.Url = item.Id; 
+            anime.Url = item.Id;
             anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             animeList.Add(anime);
@@ -86,7 +86,7 @@ public class AnimepaheExtractor : IExtractor
         anime.RemoteID = animeInfo.Id;
         anime.Url = animeInfo.Id;
         anime.Type = GetAnimeTypeByStr(animeInfo.Type);
-        anime.GenreStr=string.Join(",",animeInfo.Genres);
+        anime.GenreStr = string.Join(",", animeInfo.Genres);
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
 
@@ -150,5 +150,9 @@ public class AnimepaheExtractor : IExtractor
             default:
                 return AnimeType.TV;
         }
+    }
+    public Tag[] GetTags()
+    {
+        return Array.Empty<Tag>();
     }
 }

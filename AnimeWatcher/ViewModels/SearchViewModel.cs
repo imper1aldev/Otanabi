@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
@@ -19,6 +20,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private string currQuery = string.Empty;
     private int currPage = 1;
+
     public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
 
     [ObservableProperty]
@@ -32,6 +34,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
+    public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
+
+    private Tag[] OriginalTags=Array.Empty<Tag>();
 
     public SearchViewModel(
         INavigationService navigationService, ILocalSettingsService localSettingsService
@@ -57,6 +62,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             }
             await Task.CompletedTask;
             await LoadMainAnimePage();
+            LoadTags();
         }
 
     }
@@ -89,7 +95,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         IsLoading = true;
         NoResults = false;
-        var data = await _searchAnimeService.MainPageAsync(SelectedProvider, currPage);
+        var selectedTags = Tags.Where(t => t.IsChecked == true).ToArray();
+        var data = await _searchAnimeService.MainPageAsync(SelectedProvider, currPage, selectedTags);
         if (data.Count() == 0)
         {
             NoResults = true;
@@ -106,7 +113,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         NoResults = false;
         IsLoading = true;
-        var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider);
+        var selectedTags = Tags.Where(t => t.IsChecked == true).ToArray();
+        var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider, selectedTags);
         if (data.Count() == 0)
         {
             NoResults = true;
@@ -119,9 +127,28 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
         IsLoading = false;
     }
+    private void LoadTags()
+    {
+        var filters = _searchAnimeService.GetTags(SelectedProvider);
+        if (filters.Length > 0)
+        {
+            foreach (var item in filters)
+            {
+                Tags.Add(item);
+            }
+            OriginalTags= (Tag[])filters.Clone();
+        }
 
+    }
     public void OnNavigatedFrom()
     {
+    }
+    private void ResetData()
+    {
+        Source.Clear();
+        Tags.Clear();
+        currQuery = string.Empty;
+        currPage = 1;
     }
 
     [RelayCommand]
@@ -146,5 +173,25 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         else
             await SearchManga(currQuery);
 
+    }
+    [RelayCommand]
+    private async Task OnProviderChanged()
+    {
+        ResetData();
+        LoadTags();
+        await LoadMainAnimePage();
+    }
+    [RelayCommand]
+    private void ResetFilterBox()
+    {
+        if (OriginalTags.Length > 0)
+        {
+            Tags.Clear(); 
+            foreach (var tag in OriginalTags)
+            {
+                tag.IsChecked=false;
+                Tags.Add(tag);
+            } 
+        }
     }
 }

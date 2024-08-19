@@ -20,7 +20,7 @@ public class JkanimeExtractor : IExtractor
     public string GetUrl() => originUrl;
     public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
 
-    public async Task<IAnime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
         var mainPUrl = string.Concat(originUrl, "directorio/", page);
@@ -47,7 +47,7 @@ public class JkanimeExtractor : IExtractor
 
         return animeList.ToArray();
     }
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page,Tag[]? tags =null)
     {
         var animeList = new List<Anime>();
         var tmp = searchTerm == "" ? "" : searchTerm.Replace(" ", "_") + "/";
@@ -67,7 +67,7 @@ public class JkanimeExtractor : IExtractor
             var temp = nodo.CssSelect(".anime__item a").First();
             anime.Url = removeDomain(temp.GetAttributeValue("href"));
             anime.Cover = nodo.CssSelect(".anime__item__pic").First().GetAttributeValue("data-setbg");
-            anime.Provider =(Provider) GenProvider();
+            anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             anime.Type = getAnimeTypeByStr(nodo.CssSelect(".anime__item__text ul li.anime").First().InnerText);
             animeList.Add(anime);
@@ -181,5 +181,10 @@ public class JkanimeExtractor : IExtractor
     {
         var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
         return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+    }
+
+    public Tag[] GetTags()
+    {
+        return Array.Empty<Tag>();
     }
 }

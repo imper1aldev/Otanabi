@@ -37,12 +37,12 @@ public class HstreamExtractor : IExtractor
             Persistent = Persistent
         };
 
-    public async Task<IAnime[]> MainPageAsync(int page = 1)
+    public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
     {
-        return await SearchAnimeAsync("", page);
+        return await SearchAnimeAsync("", page, tags);
     }
 
-    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page)
+    public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page, Tag[]? tags = null)
     {
         var animeList = new List<Anime>();
 
@@ -54,6 +54,10 @@ public class HstreamExtractor : IExtractor
                 $"/search/?page={page}&view=poster&s={Uri.EscapeDataString(searchTerm)}"
             );
         }
+        if (tags != null && tags.Length > 0)
+        {
+            url += $"&{GenerateTagString(tags)}";
+        }
 
         var oWeb = new HtmlWeb();
         var doc = await oWeb.LoadFromWebAsync(url);
@@ -62,26 +66,31 @@ public class HstreamExtractor : IExtractor
         var nodes = doc.DocumentNode.SelectNodes(
             "/html/body/div/main/div[2]/div[2]/div/div/div/div"
         );
-
         foreach (var node in nodes)
         {
-            Anime anime = new();
+            try
+            {
+                var img = node.CssSelect("div a img").First();
+                var pttitle = img.GetAttributeValue("alt");
+                var pturl = img.GetAttributeValue("src");
+                var temp = pttitle.Split(" - ");
+                var temp2 = pturl.Split("/");
 
-            var img = node.CssSelect("div a img").First();
-            var pttitle = img.GetAttributeValue("alt");
-            var pturl = img.GetAttributeValue("src");
-            var temp = pttitle.Split(" - ");
-            var temp2 = pturl.Split("/");
-
-            anime.Title = temp[0];
-            anime.Url = string.Concat(originUrl, "/", temp2[2], "/", temp2[3]);
-            anime.Cover = string.Concat(originUrl, img.Attributes["src"].Value);
-            anime.Type = AnimeType.OVA;
-            anime.Status = "";
-            anime.Provider = (Provider)GenProvider();
-            anime.ProviderId = anime.Provider.Id;
-
-            animeList.Add(anime);
+                Anime anime = new()
+                {
+                    Title = temp[0],
+                    Url = string.Concat(originUrl, "/", temp2[2], "/", temp2[3]),
+                    Cover = string.Concat(originUrl, img.Attributes["src"].Value),
+                    Type = AnimeType.OVA,
+                    Status = "",
+                    Provider = (Provider)GenProvider()
+                };
+                anime.ProviderId = anime.Provider.Id;
+                animeList.Add(anime);
+            } catch (Exception)
+            {
+                continue;
+            }
         }
         return animeList.ToArray();
     }
@@ -205,5 +214,87 @@ public class HstreamExtractor : IExtractor
         }
 
         return videoSources.ToArray();
+    }
+    public static string GenerateTagString(Tag[] tags)
+    {
+        var result = "";
+        for (var i = 0; i < tags.Length; i++)
+        {
+            result += $"tags[{i}]={tags[i].Value}";
+            if (i < tags.Length - 1)
+            {
+                result += "&";
+            }
+        }
+        return result;
+    }
+    public Tag[] GetTags()
+    {
+        return new Tag[]
+        {
+            new() { Name = "3D", Value = "3d" },
+            new() { Name = "4K", Value = "4k" },
+            new() { Name = "Ahegao", Value = "ahegao" },
+            new() { Name = "Anal", Value = "anal" },
+            new() { Name = "Bdsm", Value = "bdsm" },
+            new() { Name = "Big Boobs", Value = "big-boobs" },
+            new() { Name = "Blow Job", Value = "blow-job" },
+            new() { Name = "Bondage", Value = "bondage" },
+            new() { Name = "Boob Job", Value = "boob-job" },
+            new() { Name = "Censored", Value = "censored" },
+            new() { Name = "Comedy", Value = "comedy" },
+            new() { Name = "Cosplay", Value = "cosplay" },
+            new() { Name = "Creampie", Value = "creampie" },
+            new() { Name = "Dark Skin", Value = "dark-skin" },
+            new() { Name = "Elf", Value = "elf" },
+            new() { Name = "Facial", Value = "facial" },
+            new() { Name = "Fantasy", Value = "fantasy" },
+            new() { Name = "Filmed", Value = "filmed" },
+            new() { Name = "Foot Job", Value = "foot-job" },
+            new() { Name = "Futanari", Value = "futanari" },
+            new() { Name = "Gangbang", Value = "gangbang" },
+            new() { Name = "Glasses", Value = "glasses" },
+            new() { Name = "Hand Job", Value = "hand-job" },
+            new() { Name = "Harem", Value = "harem" },
+            new() { Name = "Horror", Value = "horror" },
+            new() { Name = "Incest", Value = "incest" },
+            new() { Name = "Inflation", Value = "inflation" },
+            new() { Name = "Lactation", Value = "lactation" },
+            new() { Name = "Loli", Value = "loli" },
+            new() { Name = "Maid", Value = "maid" },
+            new() { Name = "Masturbation", Value = "masturbation" },
+            new() { Name = "Milf", Value = "milf" },
+            new() { Name = "Mind Break", Value = "mind-break" },
+            new() { Name = "Mind Control", Value = "mind-control" },
+            new() { Name = "Monster", Value = "monster" },
+            new() { Name = "Nekomimi", Value = "nekomimi" },
+            new() { Name = "Ntr", Value = "ntr" },
+            new() { Name = "Nurse", Value = "nurse" },
+            new() { Name = "Orgy", Value = "orgy" },
+            new() { Name = "Pov", Value = "pov" },
+            new() { Name = "Pregnant", Value = "pregnant" },
+            new() { Name = "Public Sex", Value = "public-sex" },
+            new() { Name = "Rape", Value = "rape" },
+            new() { Name = "Reverse Rape", Value = "reverse-rape" },
+            new() { Name = "Rimjob", Value = "rimjob" },
+            new() { Name = "Scat", Value = "scat" },
+            new() { Name = "School Girl", Value = "school-girl" },
+            new() { Name = "Shota", Value = "shota" },
+            new() { Name = "Small Boobs", Value = "small-boobs" },
+            new() { Name = "Succubus", Value = "succubus" },
+            new() { Name = "Swim Suit", Value = "swim-suit" },
+            new() { Name = "Teacher", Value = "teacher" },
+            new() { Name = "Tentacle", Value = "tentacle" },
+            new() { Name = "Threesome", Value = "threesome" },
+            new() { Name = "Toys", Value = "toys" },
+            new() { Name = "Trap", Value = "trap" },
+            new() { Name = "Tsundere", Value = "tsundere" },
+            new() { Name = "Ugly Bastard", Value = "ugly-bastard" },
+            new() { Name = "Uncensored", Value = "uncensored" },
+            new() { Name = "Vanilla", Value = "vanilla" },
+            new() { Name = "Virgin", Value = "virgin" },
+            new() { Name = "X-Ray,", Value = "x-ray" },
+            new() { Name = "Yuri", Value = "yuri" }
+        };
     }
 }
