@@ -83,6 +83,113 @@ jobs:
           $runtimeIdentifier = "${{ matrix.platform }}"
           dotnet publish ${{ env.PROJECT_PATH }} -c Release -r win-$($runtimeIdentifier.ToLower()) /p:GITHUB_ACTIONS=true -p:Platform=${{ matrix.platform }} --self-contained ${{ env.PUBLISH_SELF_CONTAINED }} -p:PublishSingleFile=${{ env.PUBLISH_SINGLE_FILE }} -p:PublishReadyToRun=${{ env.PUBLISH_READY_TO_RUN }} -p:PublishTrimmed=${{ env.PUBLISH_TRIMMED }} -p:TrimMode=${{ env.PUBLISH_TRIM_MODE }} -p:PublishAot=${{ env.PUBLISH_AOT }} --output ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}
 
+      - name: Remove LangFolders
+        uses: Lyoko-Jeremie/js-rm-github-action@master
+        with:
+          path: |
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/cs
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/da
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/de
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fa
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fi
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fr
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/it
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ko
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/mk
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/nl
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pl
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pt
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ru
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sv
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/tr
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/zh-CN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/zh-TW
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/vi-VN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/af-ZA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/uz-Latn-UZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ur-PK
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/uk-UA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ug-CN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/tt-RU
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/tr-TR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/th-TH
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/te-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ta-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sv-SE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sr-Latn-RS
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sr-Cyrl-RS
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sr-Cyrl-BA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/am-ET
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/as-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/az-Latn-AZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/bg-BG
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/bn-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/am-ET
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ar-SA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/as-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/az-Latn-AZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/bg-BG
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/bn-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/bs-Latn-BA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ca-ES
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ca-Es-VALENCIA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/cs-CZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/cy-GB
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/da-DK
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/de-DE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/el-GR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/et-EE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/eu-ES
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fa-IR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fi-FI
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fil-PH
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fr-CA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/fr-FR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ga-IE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/gd-gb
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/gl-ES
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/gu-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/he-IL
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/hi-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/hr-HR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/hu-HU
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/hy-AM
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/id-ID
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/is-IS
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/it-IT
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ja-JP
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ka-GE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/kk-KZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/km-KH
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/kn-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ko-KR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/kok-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/lb-LU
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/lo-LA
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/lt-LT
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/lv-LV
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/mi-NZ
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/mk-MK
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ml-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/mr-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ms-MY
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/mt-MT
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/nb-NO
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ne-NP
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/nl-NL
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/nn-NO
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/or-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pa-IN
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pl-PL
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pt-BR
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/pt-PT
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/quz-PE
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ro-RO
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/ru-RU
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sk-SK
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sl-SI
+            ${{ env.PUBLISH_OUTPUT_FOLDER }}/${{ matrix.platform }}/sq-AL
+
       # Zipping folder and all files
       - uses: vimtor/action-zip@v1.2
         with:
