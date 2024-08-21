@@ -51,8 +51,9 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-dotnet@v4
+        if: ${{ ! env.ACT }}
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "7.0.x"
 
       # Add CommunityToolkit Labs and Main nuget sources
       - run: |
@@ -91,6 +92,7 @@ jobs:
 
       # Uploading all zip files to access them in the 'release' job
       - uses: actions/upload-artifact@v4
+        if: ${{ ! env.ACT }}
         with:
           name: artifacts-${{ matrix.platform }}
           path: ${{ env.APP_NAME }}-v${{ steps.get-version.outputs.version }}-${{ matrix.platform }}.zip
@@ -125,6 +127,7 @@ jobs:
 
       # Downloading all zip files into the GitHub root directory (uploaded in 'build' job)
       - uses: actions/download-artifact@v4
+        if: ${{ ! env.ACT }}
         with:
           merge-multiple: true
 
@@ -155,6 +158,7 @@ jobs:
 
       # Creating a Release in GitHub
       - uses: ncipollo/release-action@v1
+        if: ${{ ! env.ACT }}
         with:
           artifacts: "${{ env.APP_NAME }}-v${{ env.APP_VERSION }}-*.zip"
           bodyFile: "CHANGELOG.md"
