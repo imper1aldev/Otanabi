@@ -60,7 +60,7 @@ public sealed partial class SettingsPage : Page
         if (dialog != null)
         {
             dialog.Hide();
-            await Task.Delay(500); // Wait for the dialog to close
+            await Task.Delay(2000); // Wait for the dialog to close
         }
         var content = new StackPanel
         {

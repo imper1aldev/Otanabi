@@ -55,7 +55,7 @@
     <Product>AnimeWatcher</Product>
     <Company>None</Company>
     <Authors>havsalazar</Authors>
-    <Version>0.3.4</Version>
+    <Version>0.3.5</Version>
     <PackageId>AnimeWatcher</PackageId>
     <Title>AnimeWatcher</Title>
     <RepositoryType>git</RepositoryType>
@@ -116,5 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
+    <None Update="version.v" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
