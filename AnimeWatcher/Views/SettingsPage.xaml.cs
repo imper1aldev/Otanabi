@@ -26,8 +26,7 @@ public sealed partial class SettingsPage : Page
             HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             Content = new TextBlock
-            {
-                Height = 1000,
+            { 
                 Width = 490,
                 Text = e.notes,
                 TextWrapping = TextWrapping.Wrap

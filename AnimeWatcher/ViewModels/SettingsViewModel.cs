@@ -113,6 +113,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
+
+        
+
         await GetProviders();
         var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
 
@@ -134,6 +137,11 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             case ElementTheme.Default:
                 SelectedThemeIndex = 2;
                 break;
+        }
+
+        if(parameter is bool isUpdate && isUpdate)
+        {
+            await CheckUpdates();
         }
     }
 
@@ -195,7 +203,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             }
             else
             {
-                VersionMessage = "Same version";
+                VersionMessage = "This version is the latest, no update required";
                 updateAvailable = false;
             }
         }

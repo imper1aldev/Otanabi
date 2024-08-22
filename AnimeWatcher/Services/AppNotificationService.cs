@@ -1,10 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
-
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.ViewModels;
-
 using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications.Builder;
 
 namespace AnimeWatcher.Notifications;
 
@@ -29,30 +28,48 @@ public class AppNotificationService : IAppNotificationService
         AppNotificationManager.Default.Register();
     }
 
-    public void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
+    public void OnNotificationInvoked(
+        AppNotificationManager sender,
+        AppNotificationActivatedEventArgs args
+    )
     {
         // TODO: Handle notification invocations when your app is already running.
 
         //// // Navigate to a specific page based on the notification arguments.
-        //// if (ParseArguments(args.Argument)["action"] == "Settings")
-        //// {
-        ////    App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-        ////    {
-        ////        _navigationService.NavigateTo(typeof(SettingsViewModel).FullName!);
-        ////    });
-        //// }
-
-        App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+        if (ParseArguments(args.Argument)["action"] == "Settings")
         {
-            App.MainWindow.ShowMessageDialogAsync("TODO: Handle notification invocations when your app is already running.", "Notification Invoked");
+            App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            {
+                _navigationService.NavigateTo(typeof(SettingsViewModel).FullName!,true);
+            });
+        }
 
-            App.MainWindow.BringToFront();
-        });
+        //App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+        //{
+        //    App.MainWindow.ShowMessageDialogAsync(
+        //        "TODO: Handle notification invocations when your app is already running.",
+        //        "Notification Invoked"
+        //    );
+
+        //    App.MainWindow.BringToFront();
+        //});
     }
 
     public bool Show(string payload)
     {
         var appNotification = new AppNotification(payload);
+
+        AppNotificationManager.Default.Show(appNotification);
+
+        return appNotification.Id != 0;
+    }
+
+    public bool ShowByUpdate()
+    {
+        var appNotification = new AppNotificationBuilder()
+            .AddText("New Update available")
+            .AddArgument("action", "Settings")
+            .BuildNotification();
 
         AppNotificationManager.Default.Show(appNotification);
 

@@ -120,4 +120,9 @@ public class AppUpdateService
         }
         return "";
     }
+    public async Task<bool> IsNeedUpdate()
+    {
+        var result = await CheckMainUpdates();
+        return result.Item1 < 0;
+    }
 }
