@@ -37,9 +37,11 @@ public class AppUpdateService
     public async Task<(int, Version)> CheckMainUpdates()
     {
         var gitResponse = await CheckGitHubVersion();
-        var gitVersion = new Version(gitResponse);
-        var currVersion = Assembly.GetExecutingAssembly().GetName().Version;
-
+        var gitVersion = new Version(gitResponse); 
+        var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var versionPath = Path.Combine(currDir, "version.v");
+        var line1 = File.ReadLines(versionPath).First();
+        var currVersion = new Version(line1);
         var result = currVersion.CompareTo(gitVersion);
         return (result, gitVersion);
     }
