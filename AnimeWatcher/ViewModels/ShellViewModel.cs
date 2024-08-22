@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using AnimeWatcher.Contracts.Services;
+using AnimeWatcher.Core.Services;
 using AnimeWatcher.Views;
 
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +20,7 @@ public partial class ShellViewModel : ObservableRecipient
     [ObservableProperty]
     private NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto;
 
-
+    private readonly LoggerService logger = new();
     //getters and setters
 
     public ICommand MenuFileExitCommand
@@ -100,5 +101,5 @@ public partial class ShellViewModel : ObservableRecipient
         {
             Selected = selectedItem;
         }
-    }
+    } 
 }

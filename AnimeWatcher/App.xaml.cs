@@ -13,7 +13,7 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml; 
 
 namespace AnimeWatcher;
 
@@ -42,6 +42,7 @@ public partial class App : Application
     }
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly LoggerService logger = new();
+    private readonly AppUpdateService _appUpdateService = new();
     public static WindowEx MainWindow { get; } = new MainWindow();
 
     public static UIElement? AppTitlebar
@@ -103,12 +104,12 @@ public partial class App : Application
         App.GetService<IAppNotificationService>().Initialize();
 
         UnhandledException += App_UnhandledException;
+        
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
-        logger.LogFatal("App Crashed {0}",e.Message);
-        
+        logger.LogFatal("App Crashed {0}",e.Message);        
     }
 
     protected async override void OnLaunched(LaunchActivatedEventArgs args)
@@ -117,5 +118,14 @@ public partial class App : Application
         var db = new DatabaseHandler();
         await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
+        var isNeedUpdate = await _appUpdateService.IsNeedUpdate();
+        if (isNeedUpdate)
+        {
+            var not=App.GetService<IAppNotificationService>().ShowByUpdate(); 
+        }
+       
+
     }
+    
+
 }

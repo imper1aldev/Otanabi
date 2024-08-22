@@ -2,6 +2,7 @@
 
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
+using AnimeWatcher.Core.Services;
 using AnimeWatcher.Helpers;
 
 using CommunityToolkit.WinUI.UI.Animations;
@@ -18,7 +19,7 @@ public class NavigationService : INavigationService
     private readonly IPageService _pageService;
     private object? _lastParameterUsed;
     private Frame? _frame;
-
+    private readonly LoggerService logger = new();
     public event NavigatedEventHandler? Navigated;
 
     public Frame? Frame
@@ -127,4 +128,9 @@ public class NavigationService : INavigationService
     }
 
     public void SetListDataItemForNextConnectedAnimation(object item) => Frame.SetListDataItemForNextConnectedAnimation(item);
+
+    private void OnNavigationError(object sender, NavigationFailedEventArgs e)
+    {
+        logger.LogError(e.Exception.ToString(), e.SourcePageType);
+    }
 }
