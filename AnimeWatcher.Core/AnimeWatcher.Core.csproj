@@ -16,10 +16,9 @@
     <PackageReference Include="RestSharp" Version="111.1.0" />
     <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="111.1.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-    <PackageReference Include="WinSparkle" Version="0.8.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config" CopyToOutputDirectory="Always" />
-    <None Update="WinSparkle.dll" CopyToOutputDirectory="Always" />
+    <None Update="update.ps1" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>

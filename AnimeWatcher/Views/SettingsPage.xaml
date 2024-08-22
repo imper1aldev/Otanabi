@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:AnimeWatcher.Helpers"
@@ -13,6 +14,8 @@
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+
         <Style x:Key="SettingsSectionHeaderTextBlockStyle" BasedOn="{StaticResource BodyStrongTextBlockStyle}" TargetType="TextBlock">
             <Style.Setters>
                 <Setter Property="Margin" Value="1,30,0,6" />
@@ -76,18 +79,13 @@
                         </Button>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Name="UpdateExt" Description="{x:Bind ViewModel.VersionExtensions, Mode=OneWay}" Header="Check For Extensions Updates">
+                    <!--<controls:SettingsCard x:Name="UpdateExt" Description="{x:Bind ViewModel.VersionExtensions, Mode=OneWay}" Header="Check For Extensions Updates">
                         <Button Command="{x:Bind ViewModel.CheckUpdatesCommand}">
                             <FontIcon Glyph="&#xECC5;" />
                         </Button>
-                    </controls:SettingsCard>
+                    </controls:SettingsCard>-->
                     <controls:SettingsCard x:Name="CurrPn" Header="Check Current Patch Notes">
                         <Button Command="{x:Bind ViewModel.CheckPatchNotesCommand}">
-                            <FontIcon Glyph="&#xE8BC;" />
-                        </Button>
-                    </controls:SettingsCard>
-                    <controls:SettingsCard x:Name="RestartApp" Header="RestartApplication">
-                        <Button Command="{x:Bind ViewModel.RestartAppCommand}">
                             <FontIcon Glyph="&#xE8BC;" />
                         </Button>
                     </controls:SettingsCard>
@@ -96,7 +94,8 @@
             </controls:SettingsExpander>
 
         </StackPanel>
-        <ContentDialog />
+        <ContentDialog x:Name="PatchNotesDialog" />
+
     </Grid>
 
 </Page>

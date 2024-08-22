@@ -34,15 +34,16 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     private string versionExtensions = "";
+
     [ObservableProperty]
     private string _appName = "";
 
     [ObservableProperty]
     private int selectedThemeIndex;
-    public ICommand SwitchThemeCommand
-    {
-        get;
-    }
+
+    private bool updateAvailable = false;
+
+    public ICommand SwitchThemeCommand { get; }
 
     [ObservableProperty]
     private Provider selectedProvider;
@@ -64,21 +65,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             async (cb) =>
             {
                 var selected = ElementTheme.Dark;
-                switch (cb.SelectedIndex)
+                selected = cb.SelectedIndex switch
                 {
-                    case 0:
-                        selected = ElementTheme.Light;
-                        break;
-                    case 1:
-                        selected = ElementTheme.Dark;
-                        break;
-                    case 2:
-                        selected = ElementTheme.Default;
-                        break;
-                    default:
-                        selected = ElementTheme.Default;
-                        break;
-                }
+                    0 => ElementTheme.Light,
+                    1 => ElementTheme.Dark,
+                    2 => ElementTheme.Default,
+                    _ => ElementTheme.Default,
+                };
                 await _themeSelectorService.SetThemeAsync(selected);
             }
         );
@@ -89,6 +82,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         var currv = _appUpdateService.GetExtensionVer().ToString();
         VersionExtensions = $"Extensions version : {currv}";
     }
+
     private string GetAppName()
     {
         return $"{"AppDisplayName".GetLocalized()}";
@@ -143,9 +137,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom()
-    {
-    }
+    public void OnNavigatedFrom() { }
 
     private async Task GetProviders()
     {
@@ -162,66 +154,75 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task ChangedProvider()
     {
         if (SelectedProvider != null)
+        {
             await _localSettingsService.SaveSettingAsync<int>("ProviderId", SelectedProvider.Id);
+        }
     }
 
     [RelayCommand]
-    private async void CheckUpdates()
+    private async Task CheckUpdates()
     {
         try
         {
-            //VersionMessage = "Searching for updates";
+            VersionMessage = "Searching for updates";
 
-            //var result = await _appUpdateService.CheckMainUpdates();
-            //var verEval = result.Item1;
-            //var version = result.Item2;
-            //if (verEval > 0)
-            //{
-            //    VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
-            //}
-            //else if (verEval < 0)
-            //{
-            //    VersionMessage = "Update Available";
-            //}
-            //else
-            //{
-            //    VersionMessage = "Same version";
-            //}
+            var result = await _appUpdateService.CheckMainUpdates();
+            var verEval = result.Item1;
+            var version = result.Item2;
+            if (verEval > 0)
+            {
+                VersionMessage =
+                    "The running version is higher than the main version; it is not recommended to update in debug mode.";
+                OnPatchNotes(
+                    this,
+                    (
+                        " This action will break the application, be aware "
+                        + "The running version is higher than the main version; it is not recommended to update in debug mode."
+                        ,
+                        version.ToString(),
+                        true
+                    )
+                );
+            }
+            else if (verEval < 0)
+            {
+                VersionMessage = "Update Available";
+                updateAvailable = true;
+                var tmpNotes = await _appUpdateService.GetReleaseNotes();
+                var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
 
-            //var tmpNotes = await _appUpdateService.GetReleaseNotes();
-            //var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
-
-            //onPatchNotes(this, (patchNotes, version.ToString()));
-
-            await _appUpdateService.CheckMainUpdates();
-        } catch (Exception e)
+                OnPatchNotes(this, (patchNotes, version.ToString(), updateAvailable));
+            }
+            else
+            {
+                VersionMessage = "Same version";
+                updateAvailable = false;
+            }
+        }
+        catch (Exception e)
         {
             VersionMessage = e.ToString();
         }
     }
+
+    public async Task UpdateApp()
+    {
+        OnUpdatePressed(this, true);
+        await _appUpdateService.UpdateApp();
+    }
+
     [RelayCommand]
-    private async void CheckPatchNotes()
+    private async Task CheckPatchNotes()
     {
         var vt = Assembly.GetExecutingAssembly().GetName().Version!;
-        var version = $"{vt.Major}.{vt.Minor}.{vt.Build}".TrimEnd(new Char[] { '0' }).TrimEnd(new Char[] { '.' });
-
-
+        var version = $"v{vt.Major}.{vt.Minor}.{vt.Build}"
+            .TrimEnd(new Char[] { '0' })
+            .TrimEnd(new Char[] { '.' });
         var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
-
-
         var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
-
-        onPatchNotes(this, (patchNotes, version.ToString()));
-
+        OnPatchNotes(this, (patchNotes, version.ToString(), false));
     }
 
-    [RelayCommand]
-    private void RestartApp()
-    {
-        _appUpdateService.RestartApp();
-    }
-
-
-    public event EventHandler<(string Notes, string version)> onPatchNotes;
-
+    public event EventHandler<(string Notes, string version, bool IsAvaible)> OnPatchNotes;
+    public event EventHandler<bool> OnUpdatePressed;
 }

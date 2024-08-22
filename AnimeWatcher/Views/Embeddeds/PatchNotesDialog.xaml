@@ -9,10 +9,5 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     CloseButtonText="" DefaultButton="Primary"
     PrimaryButtonText=""
-    mc:Ignorable="d">
-
-    <ScrollViewer x:Name="ContentScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" />
-
-
-</ContentDialog>
+    mc:Ignorable="d" />
 

@@ -13,9 +13,7 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.UI.Xaml;
-using AnimeWatcher.Core.Helpers;
-using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml; 
 
 namespace AnimeWatcher;
 
@@ -104,7 +102,8 @@ public partial class App : Application
 
         App.GetService<IAppNotificationService>().Initialize();
 
-        UnhandledException += App_UnhandledException; 
+        UnhandledException += App_UnhandledException;
+        
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -118,11 +117,7 @@ public partial class App : Application
         base.OnLaunched(args);
         var db = new DatabaseHandler();
         await db.InitDb();
-        await App.GetService<IActivationService>().ActivateAsync(args);
-        WinSparkle.win_sparkle_set_appcast_url("https://raw.githubusercontent.com/havsalazar/AnimeWatcher/dev/appcast.xml");
-        
-        // Initialize WinSparkle
-        WinSparkle.win_sparkle_init();
+        await App.GetService<IActivationService>().ActivateAsync(args); 
 
     }
     

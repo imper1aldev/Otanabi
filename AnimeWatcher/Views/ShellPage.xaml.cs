@@ -34,7 +34,7 @@ public sealed partial class ShellPage : Page
         if(setting != null){
             setting.Content = "Settings";
         }
-        AppTitleBarText.Text = "AppDisplayName".GetLocalized();
+        AppTitleBarText.Text = "AppDisplayName".GetLocalized(); 
     }
 
     private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO.Compression;
-using System.Net;
+﻿using System.Diagnostics; 
 using System.Reflection;
 using AnimeWatcher.Core.Helpers;
 using Newtonsoft.Json.Linq;
@@ -36,21 +34,20 @@ public class AppUpdateService
         return response;
     }
 
-    //public async Task<(int, Version)> CheckMainUpdates()
-    //{
-    //    var gitResponse = await CheckGitHubVersion();
-    //    var gitVersion = new Version(gitResponse);
-    //    var currVersion = Assembly.GetExecutingAssembly().GetName().Version;
-
-    //    var result = currVersion.CompareTo(gitVersion);
-    //    return (result, gitVersion);
-    //}
-    public async Task CheckMainUpdates()
+    public async Task<(int, Version)> CheckMainUpdates()
     {
-        WinSparkle.win_sparkle_check_update_with_ui();
-        var tag = GetLastReleaseTag();
-        var updateUrl =$"https://github.com/havsalazar/AnimeWatcher/releases/download/{tag}/AnimeWatcher-{tag}-x64.zip";
-        var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location); 
+        var gitResponse = await CheckGitHubVersion();
+        var gitVersion = new Version(gitResponse);
+        var currVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+        var result = currVersion.CompareTo(gitVersion);
+        return (result, gitVersion);
+    }
+    public async Task UpdateApp()
+    { 
+        var tag = await GetLastReleaseTag();
+        var updateUrl = $"https://github.com/havsalazar/AnimeWatcher/releases/download/{tag}/AnimeWatcher-{tag}-x64.zip";
+        var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         await DownloadAndInstallUpdate(updateUrl, currDir);
     }
@@ -70,27 +67,17 @@ public class AppUpdateService
 
     public static async Task DownloadAndInstallUpdate(string url, string destinationFolder)
     {
-        var tempFile = Path.Combine(Path.GetTempPath(), "update.zip");
+        var tempFile = Path.Combine(Path.GetTempPath(), "animeupdate.zip");
 
         await DownloadFileAsync(url, tempFile);
-
-        // Unzip the contents to the destination folder
-        if (Directory.Exists(destinationFolder))
+        var ps1File = Path.Combine(destinationFolder, "update.ps1");
+        var startInfo = new ProcessStartInfo()
         {
-            Directory.Delete(destinationFolder, true);
-        }
-
-        ZipFile.ExtractToDirectory(tempFile, destinationFolder);
-
-        // Optionally: launch the updated application, etc.
-        var newExePath = Path.Combine(destinationFolder, "YourApp.exe");
-        System.Diagnostics.Process.Start(newExePath);
-
-        // Clean up
-        File.Delete(tempFile);
-
-        // Exit current application
-        Environment.Exit(0);
+            FileName = "powershell.exe",
+            Arguments = $"-NoProfile -ExecutionPolicy ByPass -File \"{ps1File}\"",
+            UseShellExecute = false
+        };
+        Process.Start(startInfo);
     }
 
     internal static async Task DownloadFileAsync(string url, string outputPath)
@@ -126,8 +113,7 @@ public class AppUpdateService
             var releaseName = release["name"].ToString();
             var releaseDate = release["published_at"].ToString();
             return tagName;
-        }
-        catch (HttpRequestException e)
+        } catch (HttpRequestException e)
         {
             Debug.WriteLine("\nException Caught!");
             Debug.WriteLine("Message :{0} ", e.Message);

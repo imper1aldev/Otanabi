@@ -208,13 +208,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
             if (VideoUrl != "")
             {
-                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory,AddCC, activeCC);
-                IsCCactive = !string.IsNullOrEmpty(activeCC) ;
+                await LoadMediaAsync(LibVLC, Player, VideoUrl, selectedHistory, AddCC, activeCC);
+                IsCCactive = !string.IsNullOrEmpty(activeCC);
             }
             else
             {
                 IsErrorVideo = true;
-            } 
+            }
             //ControlsVisibility = true;
             OnPropertyChanged(nameof(IsEnablePrev));
             OnPropertyChanged(nameof(IsEnableNext));
@@ -260,7 +260,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MediaPlayer Pp,
         string url,
         History lcHistory,
-        Action vc ,
+        Action vc,
         string subtitle = ""
     )
     {
@@ -273,7 +273,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
             if (subtitle != "")
             {
-                vc(); 
+                vc();
             }
             /*Recover for last seen
             if (lcHistory != null && lcHistory.SecondsWatched > 0)
@@ -312,7 +312,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private void ShowControls()
     {
-        ControlsVisibility = true; 
+        ControlsVisibility = true;
     }
 
     private void HideControls()
@@ -362,7 +362,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public long TimeLong
     {
         get => Player != null ? Player.Time : -1;
-        set => SetProperty(Player.Time, value, Player, (u, n) => u.Time = n);
+        set
+        {
+            if (Player != null){
+                SetProperty(Player.Time, value, Player, (u, n) => u.Time = n);
+            }
+        }
     }
     public string TimeString => TimeSpan.FromMilliseconds(TimeLong).ToString(@"hh\:mm\:ss");
     public long TotalTimeLong => Player != null ? Player.Length : -1;
@@ -644,6 +649,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
         }
     }
+
     private void AddCC()
     {
         if (Player == null)
@@ -663,42 +669,76 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _player.TimeChanged += (sender, time) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(TimeLong));
-                OnPropertyChanged(nameof(TimeString));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(TimeLong));
+                    OnPropertyChanged(nameof(TimeString));
+                });
             });
         _player.VolumeChanged += (sender, volumeArgs) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(Volume));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(Volume));
+                });
             });
         _player.Playing += (sender, args) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(IsPlaying));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(IsPlaying));
+                });
             });
         _player.Paused += (sender, args) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(IsPlaying));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(IsPlaying));
+                });
             });
         _player.Stopped += (sender, args) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(IsPlaying));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(IsPlaying));
+                });
             });
 
         _player.EndReached += (sender, args) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(IsPlaying));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(IsPlaying));
+                });
             });
 
         _player.LengthChanged += (sender, args) =>
             _dispatcherQueue.TryEnqueue(() =>
             {
-                OnPropertyChanged(nameof(TotalTimeLong));
-                OnPropertyChanged(nameof(TotalTimeString));
+                UpdateUI(() =>
+                {
+                    OnPropertyChanged(nameof(TotalTimeLong));
+                    OnPropertyChanged(nameof(TotalTimeString));
+                });
             });
     }
-    // end´player view related
+
+    // end player view related
+    private void UpdateUI(Action action)
+    {
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        if (dispatcherQueue != null)
+        {
+            dispatcherQueue.TryEnqueue(() => action());
+        }
+        else
+        {
+            action();
+        }
+    }
 }
