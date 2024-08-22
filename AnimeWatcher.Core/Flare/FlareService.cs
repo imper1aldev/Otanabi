@@ -28,9 +28,10 @@ public class FlareService
         });
         var response = await _client.PostAsync(request);
         var sessionCreated = JsonConvert.DeserializeObject<SesionCreated>(response.Content);
-        var sescred = new Session();
-        sescred.session = sessionCreated.session;
-        return sescred;
+        return new Session
+        {
+            session = sessionCreated.session
+        }; 
     }
     internal RestRequest sameRequester(object body)
     {

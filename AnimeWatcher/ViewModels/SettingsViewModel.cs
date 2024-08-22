@@ -170,30 +170,30 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     {
         try
         {
-            VersionMessage = "Searching for updates";
+            //VersionMessage = "Searching for updates";
 
-            var result = await _appUpdateService.CheckMainUpdates();
-            var verEval = result.Item1;
-            var version = result.Item2;
-            if (verEval > 0)
-            {
-                VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
-            }
-            else if (verEval < 0)
-            {
-                VersionMessage = "Update Available";
-            }
-            else
-            {
-                VersionMessage = "Same version";
-            }
+            //var result = await _appUpdateService.CheckMainUpdates();
+            //var verEval = result.Item1;
+            //var version = result.Item2;
+            //if (verEval > 0)
+            //{
+            //    VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
+            //}
+            //else if (verEval < 0)
+            //{
+            //    VersionMessage = "Update Available";
+            //}
+            //else
+            //{
+            //    VersionMessage = "Same version";
+            //}
 
-            var tmpNotes = await _appUpdateService.GetReleaseNotes();
-            var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
+            //var tmpNotes = await _appUpdateService.GetReleaseNotes();
+            //var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
 
-            onPatchNotes(this, (patchNotes, version.ToString()));
+            //onPatchNotes(this, (patchNotes, version.ToString()));
 
-
+            await _appUpdateService.CheckMainUpdates();
         } catch (Exception e)
         {
             VersionMessage = e.ToString();

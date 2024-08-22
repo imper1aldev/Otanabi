@@ -1,4 +1,6 @@
-﻿using AnimeWatcher.Helpers;
+﻿using AnimeWatcher.Core.Helpers;
+using AnimeWatcher.Helpers;
+using Microsoft.UI.Windowing;
 using System;
 using Windows.UI.ViewManagement;
 
@@ -22,6 +24,12 @@ public sealed partial class MainWindow : WindowEx
         dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
         settings = new UISettings();
         settings.ColorValuesChanged += Settings_ColorValuesChanged; // cannot use FrameworkElement.ActualThemeChanged event 
+        this.Closed += MainWindow_Closed;
+    }
+
+    private void MainWindow_Closed(object sender, Microsoft.UI.Xaml.WindowEventArgs args)
+    {
+        WinSparkle.win_sparkle_cleanup();
     }
 
     // this handles updating the caption button colors correctly when indows system theme is changed
