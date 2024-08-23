@@ -15,6 +15,18 @@ Write-Host "Cleaning installation folder"
 
 Start-Sleep -Seconds 4
 
+# 1) recheck if is running 
+$processName = "Animewatcher"
+$process = Get-Process -Name $processName -ErrorAction SilentlyContinue
+if ($process) {
+    Stop-Process -Name $processName -Force
+    Write-Host "Closed Animewatcher.exe"
+} else {
+    Write-Host "Animewatcher.exe is not running"
+}
+Start-Sleep -Seconds 3
+
+
 $excludeFile = "update.ps1"
 
 $destinationPath = (Get-Location).Path

@@ -222,10 +222,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task CheckPatchNotes()
     {
-        var vt = Assembly.GetExecutingAssembly().GetName().Version!;
-        var version = $"v{vt.Major}.{vt.Minor}.{vt.Build}"
-            .TrimEnd(new Char[] { '0' })
-            .TrimEnd(new Char[] { '.' });
+        var version = _appUpdateService.GetCurrVersion();
         var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
         var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
         OnPatchNotes(this, (patchNotes, version.ToString(), false));

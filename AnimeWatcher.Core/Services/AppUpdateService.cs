@@ -30,10 +30,17 @@ public class AppUpdateService
 
     public async Task<string> GetReleaseNotes(string version)
     {
+
         var response = await _http.GetAsync($"{gitRelease}/tags/v{version}");
         return response;
     }
-
+    public string GetCurrVersion()
+    {
+        var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var versionPath = Path.Combine(currDir, "version.v");
+        var line1 = File.ReadLines(versionPath).First();
+        return line1;
+    }
     public async Task<(int, Version)> CheckMainUpdates()
     {
         var gitResponse = await CheckGitHubVersion();
