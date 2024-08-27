@@ -16,7 +16,7 @@ public class AppUpdateService
     internal string UserAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0";
 
-    public async Task<String> CheckGitHubVersion()
+    public async Task<string> CheckGitHubVersion()
     {
         var response = await _http.GetAsync(gitUrl);
         return response;
@@ -67,12 +67,7 @@ public class AppUpdateService
         var fvi = FileVersionInfo.GetVersionInfo(assemblyPath);
         return new Version(fvi.FileVersion);
     }
-
-    public void RestartApp()
-    {
-        Process.Start(AppDomain.CurrentDomain.FriendlyName);
-        Environment.Exit(0);
-    }
+     
 
     public static async Task DownloadAndInstallUpdate(string url, string destinationFolder)
     {

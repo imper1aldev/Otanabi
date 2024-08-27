@@ -10,7 +10,7 @@ namespace AnimeWatcher.ViewModels;
 public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
-    private DatabaseService dbService = new();
+    private readonly DatabaseService dbService = new();
     public ObservableCollection<Anime> FavoriteAnimes { get; } = new ObservableCollection<Anime>();
     public FavoritesViewModel(INavigationService navigationService)
     {
