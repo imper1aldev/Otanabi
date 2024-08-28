@@ -24,6 +24,8 @@
   <ItemGroup>
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
+    <None Remove="Styles\Player.xaml" />
+
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>
 
@@ -40,11 +42,9 @@
     <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="LibVLCSharp" Version="3.8.5" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
-    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.18" />
     <PackageReference Include="WinUIEx" Version="2.3.2" />
   </ItemGroup>
   <PropertyGroup>
@@ -72,6 +72,9 @@
     <None Update="Assets\WindowIcon-1.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
+    </None>
+    <None Update="Styles\Player.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </None>
     <Page Update="Styles\NavigationViewStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -113,7 +116,7 @@
   </Target>
   <ItemGroup>
     <CustomAdditionalCompileInputs Remove="views\embeddeds\PatchNotesDialog.xaml" />
-  </ItemGroup>
+  </ItemGroup> 
   <ItemGroup>
     <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
     <None Update="version.v" CopyToOutputDirectory="Always" />
