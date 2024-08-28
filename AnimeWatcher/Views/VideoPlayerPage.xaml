@@ -24,12 +24,12 @@
         </Grid.RowDefinitions>
 
 
-        <Grid Width="0" Height="0" Visibility="{x:Bind ViewModel.ControlsVisibility, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
-            <!--<Button Width="0" Height="0" Command="{x:Bind ViewModel.PlayPauseCommand}">
+        <Grid Width="0" Height="0" Visibility="Visible">
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.PlayPauseCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Space" />
                 </Button.KeyboardAccelerators>
-            </Button>-->
+            </Button>
             <Button Width="0" Height="0" Command="{x:Bind ViewModel.FullScreenCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Escape" />
@@ -177,6 +177,7 @@
                             NextCommand="{x:Bind ViewModel.NextChapterCommand}"
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
+                            SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}"
                             Style="{StaticResource DefaultAnimeMediaTransportControlsStyle}" />
                     </MediaPlayerElement.TransportControls>
                 </MediaPlayerElement>

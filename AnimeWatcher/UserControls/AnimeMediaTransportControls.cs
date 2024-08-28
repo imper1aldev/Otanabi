@@ -44,6 +44,13 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
             typeof(AnimeMediaTransportControls),
             new PropertyMetadata(null)
         );
+    public static readonly DependencyProperty SkipIntroCommandProperty =
+        DependencyProperty.Register(
+            nameof(SkipIntroCommand),
+            typeof(ICommand),
+            typeof(AnimeMediaTransportControls),
+            new PropertyMetadata(null)
+        );
 
     public static readonly DependencyProperty IsNextEnabledProperty =
         DependencyProperty.Register(
@@ -103,6 +110,11 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         get => (ICommand)GetValue(OpenPanelCommandProperty);
         set => SetValue(OpenPanelCommandProperty, value);
     }
+    public ICommand SkipIntroCommand
+    {
+        get => (ICommand)GetValue(SkipIntroCommandProperty);
+        set => SetValue(SkipIntroCommandProperty, value);
+    }
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -121,6 +133,10 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         if (GetTemplateChild("OpenPanelButton") is ToggleButton openPanelButton)
         {
             openPanelButton.Click += (s, e) => OpenPanelCommand?.Execute(null);
+        }
+        if (GetTemplateChild("SkipIntroButton") is Button skipIntroButton)
+        {
+            skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
         }
     }
 }

@@ -229,6 +229,11 @@
                                                     <SymbolIcon x:Name="VolumeMuteSymbol" Symbol="Volume" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <AppBarButton x:Name="SkipIntroButton" MediaTransportControlsHelper.DropoutOrder="15" Style="{StaticResource AppBarButtonStyle}" ToolTipService.ToolTip="Skip Intro">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE78A;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
                                             <AppBarButton x:Name="CCSelectionButton" MediaTransportControlsHelper.DropoutOrder="15" Style="{StaticResource AppBarButtonStyle}" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED1E;" />
@@ -323,8 +328,8 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>-->
                                             <AppBarElementContainer VerticalContentAlignment="Center" MediaTransportControlsHelper.DropoutOrder="17" Style="{StaticResource AppBarButtonStyle}">
-                                                <ToggleButton x:Name="OpenPanelButton" IsChecked="{Binding IsPanelOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}">
-                                                    <FontIcon Glyph="&#xE7BC;" />
+                                                <ToggleButton x:Name="OpenPanelButton" IsChecked="{Binding IsPanelOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                    <FontIcon Glyph="&#xE8A0;" />
                                                 </ToggleButton>
                                             </AppBarElementContainer>
                                             <AppBarButton x:Name="FullScreenButton" MediaTransportControlsHelper.DropoutOrder="17" Style="{StaticResource AppBarButtonStyle}">
