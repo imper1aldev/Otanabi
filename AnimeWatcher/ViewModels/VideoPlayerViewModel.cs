@@ -98,10 +98,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             try
             {
-                //if (Player != null)
-                //{
-                //    await dbService.UpdateProgress(selectedHistory.Id, Player.Time);
-                //}
+                if (ActiveMP != null)
+                {
+                    await dbService.UpdateProgress(selectedHistory.Id,ActiveMP.PlaybackSession.Position.Ticks);
+                }
             }
             catch (Exception) { }
         }
@@ -205,17 +205,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     //end methods
 
-    public void Dispose()
-    {
-        _windowEx.Title = AppCurTitle;
-        MainTimerForSave.Stop();
-        MainTimerForSave.Dispose();
-        ActiveMP?.Dispose();
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            GC.Collect();
-        });
-    }
+   
 
     public bool IsEnablePrev => selectedChapter.ChapterNumber > 1;
     public bool IsEnableNext
@@ -333,5 +323,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void setMediaPlayer(MediaPlayer mediaPlayer)
     {
         ActiveMP = mediaPlayer;
+    }
+
+
+     public void Dispose()
+    {
+        _windowEx.Title = AppCurTitle;
+        MainTimerForSave.Stop();
+        MainTimerForSave.Dispose();
+        ActiveMP?.Dispose();
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            GC.Collect();
+        });
     }
 }
