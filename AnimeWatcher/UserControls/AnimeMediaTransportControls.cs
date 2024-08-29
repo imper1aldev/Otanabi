@@ -7,9 +7,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 namespace AnimeWatcher.UserControls;
 
 public sealed partial class AnimeMediaTransportControls : MediaTransportControls
-{
-    private VideoPlayerViewModel MViewModel => App.GetService<VideoPlayerViewModel>();
-
+{  
     public AnimeMediaTransportControls()
     {
         DefaultStyleKey = typeof(AnimeMediaTransportControls);

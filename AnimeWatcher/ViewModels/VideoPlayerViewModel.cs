@@ -40,7 +40,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private MediaSource videoUrl;
     private MediaPlayer ActiveMP;
     private string AppCurTitle = "";
-    private bool IsPaused=false;
+    private bool IsPaused = false;
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -72,7 +72,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private readonly DispatcherTimer controlsHideTimer =
-        new() { Interval = TimeSpan.FromSeconds(1), };
+        new()
+        {
+            Interval = TimeSpan.FromSeconds(1),
+        };
 
     public VideoPlayerViewModel(
         INavigationService navigationService,
@@ -100,10 +103,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             {
                 if (ActiveMP != null)
                 {
-                    await dbService.UpdateProgress(selectedHistory.Id,ActiveMP.PlaybackSession.Position.Ticks);
+                    await dbService.UpdateProgress(selectedHistory.Id, ActiveMP.PlaybackSession.Position.Ticks);
                 }
-            }
-            catch (Exception) { }
+            } catch (Exception) { }
         }
     }
 
@@ -145,7 +147,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         if (ActiveMP != null)
         {
             ActiveMP.Source = null;
-            IsPaused=true;
+            IsPaused = true;
         }
 
         await Task.Delay(200);
@@ -167,14 +169,14 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             if (ActiveMP != null)
             {
                 ActiveMP.Source = VideoUrl;
-                IsPaused=false;
+                IsPaused = false;
             }
             await Task.Delay(200);
         }
         else
         {
             IsErrorVideo = true;
-            IsPaused=true;
+            IsPaused = true;
         }
         _windowEx.Title = ChapterName;
         LoadingVideo = false;
@@ -205,7 +207,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     //end methods
 
-   
+
 
     public bool IsEnablePrev => selectedChapter.ChapterNumber > 1;
     public bool IsEnableNext
@@ -246,8 +248,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         try
         {
             ActiveMP.PlaybackSession.Position += TimeSpan.FromSeconds(79);
-        }
-        catch (Exception)
+        } catch (Exception)
         {
             logger.LogInfo("current time cannot be skipped");
         }
@@ -311,12 +312,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         if (IsPaused)
         {
             ActiveMP.Play();
-            IsPaused=false;
+            IsPaused = false;
         }
         else
         {
             ActiveMP.Pause();
-            IsPaused=true;
+            IsPaused = true;
         }
     }
 
@@ -326,14 +327,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
 
 
-     public void Dispose()
+    public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
-        MainTimerForSave.Stop();
-        MainTimerForSave.Dispose();
-        ActiveMP?.Dispose();
+
         _dispatcherQueue.TryEnqueue(() =>
         {
+            MainTimerForSave.Stop();
+            MainTimerForSave.Dispose();
+            ActiveMP.Source=null; 
             GC.Collect();
         });
     }
