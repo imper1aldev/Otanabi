@@ -35,11 +35,18 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     public HistoryViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
+        Histories.CollectionChanged += (s, e) =>
+        {
+            if (Histories.Count < 4)
+            {
+                _ = LoadHistory();
+            }
+        };
     }
 
     public void OnNavigatedFrom()
     {
-        noData=false;
+        noData = false;
         Histories.Clear();
         LoadHistory();
     }
@@ -74,7 +81,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async void PrepareVideo(History param)
     {
-        if(IsLoadingVideo)
+        if (IsLoadingVideo)
             return;
 
         IsLoadingVideo = true;
@@ -111,7 +118,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
 
     public async Task OpenPlayer(History history, Chapter selectedChapter, Anime selectedAnime)
     {
-        
+
         try
         {
             dynamic data = new ExpandoObject();
@@ -137,9 +144,9 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task DeleteHistoryById(int id)
     {
-        var hs = Histories.Where(h=>h.Id==id).First();  
+        var hs = Histories.Where(h => h.Id == id).First();
         Histories.Remove(hs);
         await dbService.DeleteFromHistory(id);
-        await LoadHistory();
+      //  await LoadHistory();
     }
 }

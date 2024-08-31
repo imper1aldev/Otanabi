@@ -45,6 +45,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private MediaPlayerElement MPE;
     private string AppCurTitle = "";
     private bool IsPaused = false;
+    private bool IsDisposed = false;
 
     [ObservableProperty]
     private bool isCachingVideo = false;
@@ -79,10 +80,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private readonly DispatcherTimer controlsHideTimer =
-        new()
-        {
-            Interval = TimeSpan.FromSeconds(1),
-        };
+        new() { Interval = TimeSpan.FromSeconds(1), };
 
     public VideoPlayerViewModel(
         INavigationService navigationService,
@@ -113,12 +111,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                     if (MPE.MediaPlayer != null)
                     {
                         await dbService.UpdateProgress(
-                             selectedHistory.Id,
-                             MPE.MediaPlayer.PlaybackSession.Position.Ticks
-                         );
+                            selectedHistory.Id,
+                            MPE.MediaPlayer.PlaybackSession.Position.Ticks
+                        );
                     }
                 });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogError("UpdateProgress error :", ex.Message);
             }
@@ -221,22 +220,30 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                 TimedMetadataTrackPresentationMode.PlatformPresented
                             );
                         };
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         logger.LogError("Could not load CC or set the CC ", e.Message.ToString());
                     }
                 }
-                MPE.SetMediaPlayer(
-                    new MediaPlayer()
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    // MPE.MediaPlayer = new MediaPlayer();
+                    if (!IsDisposed)
                     {
-                        AutoPlay = true,
-                        Source = MpItem,
-                        Volume = prevVolume,
-                        IsMuted = isMuted,
+                        MPE.SetMediaPlayer(
+                            new MediaPlayer()
+                            {
+                                AutoPlay = true,
+                                Source = MpItem,
+                                Volume = prevVolume,
+                                IsMuted = isMuted,
+                            }
+                        );
+                        MPE.Source = MpItem;
+                        MPE.MediaPlayer.Play();
                     }
-                );
-                MPE.Source = MpItem;
-                MPE.MediaPlayer.Play();
+                });
 
                 //IsCachingVideo = true;
                 IsPaused = false;
@@ -319,7 +326,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         try
         {
             MPE.MediaPlayer.PlaybackSession.Position += TimeSpan.FromSeconds(79);
-        } catch (Exception)
+        }
+        catch (Exception)
         {
             logger.LogInfo("current time cannot be skipped");
         }
@@ -401,7 +409,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
-
+        IsDisposed = true;
         _dispatcherQueue.TryEnqueue(() =>
         {
             MainTimerForSave.Stop();
