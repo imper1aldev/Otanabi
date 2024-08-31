@@ -48,9 +48,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool IsDisposed = false;
 
     [ObservableProperty]
-    private bool isCachingVideo = false;
-
-    [ObservableProperty]
     private bool isChapPanelOpen = false;
 
     [ObservableProperty]
@@ -164,18 +161,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         if (MPE.MediaPlayer != null)
         {
             prevVolume = MPE.MediaPlayer.Volume;
-            isMuted = MPE.MediaPlayer.IsMuted;
-            // ActiveMP.Dispose();
+            isMuted = MPE.MediaPlayer.IsMuted; 
             MPE.Source = null;
-            MpItem = null;
-            //VideoUrl=null;
-            IsCachingVideo = false;
+            MpItem = null; 
             IsPaused = true;
             GC.Collect();
         }
-
-        //  await Task.Delay(200);
-
+         
         IsErrorVideo = false;
         LoadingVideo = true;
         selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
@@ -243,17 +235,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         MPE.Source = MpItem;
                         MPE.MediaPlayer.Play();
                     }
-                });
-
-                //IsCachingVideo = true;
+                }); 
                 IsPaused = false;
-            }
-            // await Task.Delay(200);
+            } 
         }
         else
         {
-            IsErrorVideo = true;
-            IsCachingVideo = true;
+            IsErrorVideo = true; 
             IsPaused = true;
         }
         _windowEx.Title = ChapterName;
@@ -264,11 +252,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         Dispose();
     }
-
-    //end getters and setters
-
-
-    // relay commands
+     
 
     [RelayCommand]
     private async Task RetryLoad()
@@ -281,11 +265,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         await LoadVideo(selectedChapter);
         await Task.CompletedTask;
-    }
-
-    //end methods
-
-
+    } 
 
     public bool IsEnablePrev => selectedChapter.ChapterNumber > 1;
     public bool IsEnableNext
