@@ -152,7 +152,7 @@
                                           Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    AreTransportControlsEnabled="True" AutoPlay="True">
+                    AreTransportControlsEnabled="True">
                     <interactivity:Interaction.Behaviors>
                         <interactions:EventTriggerBehavior EventName="PointerPressed">
                             <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ClickFullCommand}" />

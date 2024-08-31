@@ -99,6 +99,9 @@
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                             </Style>
+                            <Style x:Key="MenuFly" BasedOn="{StaticResource DefaultMenuFlyoutItemStyle}" TargetType="MenuFlyoutItem">
+                                <Setter Property="Background" Value="Red" />
+                            </Style>
                             <Style x:Key="MediaSliderStyle" BasedOn="{StaticResource DefaultSliderStyle}" TargetType="Slider" />
                             <Style x:Key="MediaControlAppBarButtonStyle" BasedOn="{StaticResource DefaultAppBarButtonStyle}" TargetType="AppBarButton" />
                         </Grid.Resources>

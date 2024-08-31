@@ -2,6 +2,7 @@
 using System.Timers;
 using AnimeWatcher.Contracts.Services;
 using AnimeWatcher.Contracts.ViewModels;
+using AnimeWatcher.Converters;
 using AnimeWatcher.Core.Models;
 using AnimeWatcher.Core.Services;
 using AnimeWatcher.Models.Enums;
@@ -11,9 +12,11 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.Media.Core;
 using Windows.Media.Playback;
+using Windows.Storage.Streams;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
@@ -38,9 +41,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly SelectSourceService _selectSourceService = new();
 
     private MediaSource videoUrl;
-    private MediaPlayer ActiveMP;
+    private MediaPlaybackItem MpItem;
+    private MediaPlayerElement MPE;
     private string AppCurTitle = "";
     private bool IsPaused = false;
+
+    [ObservableProperty]
+    private bool isCachingVideo = false;
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -72,10 +79,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private readonly DispatcherTimer controlsHideTimer =
-        new()
-        {
-            Interval = TimeSpan.FromSeconds(1),
-        };
+        new() { Interval = TimeSpan.FromSeconds(1), };
 
     public VideoPlayerViewModel(
         INavigationService navigationService,
@@ -101,11 +105,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             try
             {
-                if (ActiveMP != null)
+                if (MPE.MediaPlayer != null)
                 {
-                    await dbService.UpdateProgress(selectedHistory.Id, ActiveMP.PlaybackSession.Position.Ticks);
+                    await dbService.UpdateProgress(
+                        selectedHistory.Id,
+                        MPE.MediaPlayer.PlaybackSession.Position.Ticks
+                    );
                 }
-            } catch (Exception) { }
+            }
+            catch (Exception) { }
         }
     }
 
@@ -144,13 +152,22 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private async Task LoadVideo(Chapter chapter)
     {
-        if (ActiveMP != null)
+        var prevVolume = 1.0;
+        var isMuted = false;
+        if (MPE.MediaPlayer != null)
         {
-            ActiveMP.Source = null;
+            prevVolume = MPE.MediaPlayer.Volume;
+            isMuted = MPE.MediaPlayer.IsMuted;
+            // ActiveMP.Dispose();
+            MPE.Source = null;
+            MpItem = null;
+            //VideoUrl=null;
+            IsCachingVideo = false;
             IsPaused = true;
+            GC.Collect();
         }
 
-        await Task.Delay(200);
+        //  await Task.Delay(200);
 
         IsErrorVideo = false;
         LoadingVideo = true;
@@ -165,17 +182,64 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         if (!string.IsNullOrEmpty(data.Item1))
         {
             VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
-            IsCCactive = !string.IsNullOrEmpty(activeCC);
-            if (ActiveMP != null)
+
+            if (MPE != null)
             {
-                ActiveMP.Source = VideoUrl;
+                MpItem = new MediaPlaybackItem(VideoUrl);
+                if (!string.IsNullOrEmpty(activeCC))
+                {
+                    try
+                    {
+                        var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(activeCC);
+                        var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
+                        timedTextSource.Resolved += (sender, args) =>
+                        {
+                            if (args.Error != null)
+                            {
+                                logger.LogInfo(
+                                    message: $"Error on timed text source: {args.Error.ToString}"
+                                );
+                            }
+                            foreach (var track in args.Tracks)
+                            {
+                                track.Label = track.Label == "" ? "English" : track.Label;
+                            }
+                        };
+                        MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
+                        MpItem.TimedMetadataTracksChanged += (sender, args) =>
+                        {
+                            MpItem.TimedMetadataTracks.SetPresentationMode(
+                                0,
+                                TimedMetadataTrackPresentationMode.PlatformPresented
+                            );
+                        };
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError("Could not load CC or set the CC ", e.Message.ToString());
+                    }
+                }
+                MPE.SetMediaPlayer(
+                    new MediaPlayer()
+                    {
+                        AutoPlay = true,
+                        Source = MpItem,
+                        Volume = prevVolume,
+                        IsMuted = isMuted,
+                    }
+                );
+                MPE.Source = MpItem;
+                MPE.MediaPlayer.Play();
+
+                //IsCachingVideo = true;
                 IsPaused = false;
             }
-            await Task.Delay(200);
+            // await Task.Delay(200);
         }
         else
         {
             IsErrorVideo = true;
+            IsCachingVideo = true;
             IsPaused = true;
         }
         _windowEx.Title = ChapterName;
@@ -247,8 +311,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         try
         {
-            ActiveMP.PlaybackSession.Position += TimeSpan.FromSeconds(79);
-        } catch (Exception)
+            MPE.MediaPlayer.PlaybackSession.Position += TimeSpan.FromSeconds(79);
+        }
+        catch (Exception)
         {
             logger.LogInfo("current time cannot be skipped");
         }
@@ -306,26 +371,26 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         IsChapPanelOpen = false;
     }
+
     [RelayCommand]
     private void PlayPause()
     {
         if (IsPaused)
         {
-            ActiveMP.Play();
+            MPE.MediaPlayer.Play();
             IsPaused = false;
         }
         else
         {
-            ActiveMP.Pause();
+            MPE.MediaPlayer.Pause();
             IsPaused = true;
         }
     }
 
-    public void setMediaPlayer(MediaPlayer mediaPlayer)
+    public void setMediaPlayer(MediaPlayerElement mediaPlayerElement)
     {
-        ActiveMP = mediaPlayer;
+        MPE = mediaPlayerElement;
     }
-
 
     public void Dispose()
     {
@@ -335,7 +400,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             MainTimerForSave.Stop();
             MainTimerForSave.Dispose();
-            ActiveMP.Source=null; 
+            MPE.Source = null;
+            //ActiveMP.Source = null;
+            //cant dispose the media player because it will crash the app
             GC.Collect();
         });
     }
