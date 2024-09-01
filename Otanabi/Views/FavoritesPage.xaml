@@ -1,0 +1,164 @@
+﻿<Page
+    x:Class="Otanabi.Views.FavoritesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+        xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Otanabi.Core.Models"
+    NavigationCacheMode="Enabled"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentArea"
+            Margin="20,20,20,10">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Row="0"
+                Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    HorizontalScrollBarVisibility="Auto"
+                    HorizontalScrollMode="Enabled">
+                <SelectorBar x:Name="FavoriteListBar"
+                        SelectionChanged="FavoriteListBar_SelectionChanged"/>
+            </ScrollViewer>
+            <Button Grid.Column="1"
+                    Margin="15,0,0,0"
+                    HorizontalAlignment="Right">
+                <FontIcon Glyph="&#xE713;"/>
+                <Button.Flyout>
+                    <Flyout x:Name="FavEditFlyout">
+                        <StackPanel Width="Auto">
+                            <StackPanel VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="10">
+                                <TextBlock VerticalAlignment="Center"
+                                        Text="Add new List"/>
+                                <TextBox x:Name="txtNew"
+                                        Width="200"
+                                        VerticalAlignment="Center"/>
+                                <Button Click="Button_add_fav_Click"
+                                        Content="Add"
+                                        Style="{StaticResource AccentButtonStyle}"/>
+                            </StackPanel>
+                            <Border Margin="0,30,0,0"
+                                    Background="#FFFFFFFF"
+                                    BorderBrush="#14FFFFFF"
+                                    BorderThickness="2"/>
+                            <StackPanel Margin="0,30,0,0"
+                                    VerticalAlignment="Center"
+                                    Orientation="Vertical"
+                                    Spacing="10">
+                                <StackPanel Width="Auto"
+                                        Orientation="Vertical"
+                                        Spacing="10">
+                                    <ComboBox x:Name="FavCombob"/>
+                                    <TextBox x:Name="FavTxtUpdate"/>
+                                    <Grid>
+                                        <Button HorizontalAlignment="Left"
+                                                Click="Button_update_fav_Click"
+                                                Content="Update"
+                                                Style="{StaticResource AccentButtonStyle}"/>
+                                        <Button HorizontalAlignment="Right"
+                                                Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
+                                                Click="Button_delete_fav_Click"
+                                                Content="Delete"/>
+                                    </Grid>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
+
+
+        </Grid>
+        <controls:AdaptiveGridView
+            Grid.Row="1"
+            Margin="0,20,0,0"
+            animations:Connected.ListItemElementName="itemThumbnail"
+                animations:Connected.ListItemKey="animationKeyContentGrid"
+                DesiredWidth="180"
+                IsItemClickEnabled="True"
+            ItemClickCommand="{x:Bind ViewModel.AnimeClickCommand}"
+            ItemsSource="{x:Bind ViewModel.FavoriteAnimes,
+                                 Mode=OneWay}"
+            SelectionMode="None"
+                StretchContentForSingleRow="False">
+            <animations:Implicit.ShowAnimations>
+                <animations:TranslationAnimation From="0, -10, 0"
+                        To="0"
+                        Duration="0:0:1"/>
+                <animations:OpacityAnimation From="0"
+                        To="1.0"
+                        Duration="0:0:1"/>
+            </animations:Implicit.ShowAnimations>
+            <animations:Implicit.HideAnimations>
+                <animations:OpacityAnimation To="0.0"
+                        Duration="0:0:1"/>
+                <animations:ScalarAnimation Target="Translation.Y"
+                        To="10"
+                        Duration="0:0:1">
+                    <animations:ScalarKeyFrame Key="0.1"
+                            Value="30"/>
+                    <animations:ScalarKeyFrame Key="0.5"
+                            Value="0.0"/>
+                </animations:ScalarAnimation>
+            </animations:Implicit.HideAnimations>
+            <controls:AdaptiveGridView.ItemTemplate>
+                <DataTemplate x:DataType="models:Anime">
+                    <Grid x:Name="itemThumbnail"
+                            Height="300"
+                            MaxHeight="300"
+                            Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+                        <ToolTipService.ToolTip>
+                            <ToolTip Content="{x:Bind Title}"
+                                    HorizontalOffset="20"/>
+                        </ToolTipService.ToolTip>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="50"/>
+                        </Grid.RowDefinitions>
+                        <Image Grid.Row="0"
+                                CacheMode="BitmapCache"
+                                Source="{x:Bind Cover}"
+                                Stretch="UniformToFill"/>
+                        <Border
+                            Width="80"
+                            Margin="5,0,0,5"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Bottom"
+                            Background="#4cc2ff"
+                                CornerRadius="8">
+                            <TextBlock HorizontalAlignment="Center"
+                                    Foreground="Black"
+                                    Text="{x:Bind TypeStr}"/>
+                        </Border>
+                        <TextBlock
+                            Grid.Row="1"
+                            Padding="0,3,0,3"
+                                VerticalAlignment="Center"
+                            FontSize="13"
+                            Text="{x:Bind Title}"
+                            TextAlignment="Center"
+                                TextWrapping="Wrap"/>
+                    </Grid>
+                </DataTemplate>
+            </controls:AdaptiveGridView.ItemTemplate>
+        </controls:AdaptiveGridView>
+
+
+    </Grid>
+</Page>
