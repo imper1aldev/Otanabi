@@ -1,4 +1,7 @@
-﻿using Otanabi.Activation;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.UI.Xaml;
+using Otanabi.Activation;
 using Otanabi.Contracts.Services;
 using Otanabi.Core.Contracts.Services;
 using Otanabi.Core.Database;
@@ -8,12 +11,7 @@ using Otanabi.Notifications;
 using Otanabi.Services;
 using Otanabi.ViewModels;
 using Otanabi.Views;
-
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.UI.Xaml;
 
 namespace Otanabi;
 
@@ -25,107 +23,112 @@ public partial class App : Application
     // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
     // https://docs.microsoft.com/dotnet/core/extensions/configuration
     // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host
-    {
-        get;
-    }
+    public IHost Host { get; }
 
     public static T GetService<T>()
         where T : class
     {
         if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
-            throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
+            throw new ArgumentException(
+                $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs."
+            );
         }
 
         return service;
     }
+
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly LoggerService logger = new();
     private readonly AppUpdateService _appUpdateService = new();
-    public static WindowEx MainWindow { get; } = new MainWindow();
+    public static WindowEx MainWindow { get; } = new MainWindow(); 
+    //private WindowEx m_window;
+    //public WindowEx MainWindow => m_window;
 
-    public static UIElement? AppTitlebar
-    {
-        get; set;
-    }
+
+    public static UIElement? AppTitlebar { get; set; }
 
     public App()
     {
         InitializeComponent();
 
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        Host = Microsoft.Extensions.Hosting.Host.
-        CreateDefaultBuilder().
-        UseContentRoot(AppContext.BaseDirectory).
-        ConfigureServices((context, services) =>
-        {
-            // Default Activation Handler
-            services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+        Host = Microsoft
+            .Extensions.Hosting.Host.CreateDefaultBuilder()
+            .UseContentRoot(AppContext.BaseDirectory)
+            .ConfigureServices(
+                (context, services) =>
+                {
+                    // Default Activation Handler
+                    services.AddTransient<
+                        ActivationHandler<LaunchActivatedEventArgs>,
+                        DefaultActivationHandler
+                    >();
 
-            // Other Activation Handlers
-            services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
+                    // Other Activation Handlers
+                    services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
 
-            // Services
-            services.AddSingleton<IAppNotificationService, AppNotificationService>();
-            services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
-            services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-            services.AddTransient<INavigationViewService, NavigationViewService>();
+                    // Services
+                    services.AddSingleton<IAppNotificationService, AppNotificationService>();
+                    services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
+                    services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
+                    services.AddTransient<INavigationViewService, NavigationViewService>();
 
-            services.AddSingleton<IActivationService, ActivationService>();
-            services.AddSingleton<IPageService, PageService>();
-            services.AddSingleton<INavigationService, NavigationService>();
-            services.AddSingleton<IWindowPresenterService, WindowPresenterService>();
+                    services.AddSingleton<IActivationService, ActivationService>();
+                    services.AddSingleton<IPageService, PageService>();
+                    services.AddSingleton<INavigationService, NavigationService>();
+                    services.AddSingleton<IWindowPresenterService, WindowPresenterService>();
 
-            // Core Services
-            services.AddSingleton<IFileService, FileService>();
+                    // Core Services
+                    services.AddSingleton<IFileService, FileService>();
 
-            // Views and ViewModels
-            services.AddTransient<HistoryViewModel>();
-            services.AddTransient<HistoryPage>();
-            services.AddTransient<FavoritesViewModel>();
-            services.AddTransient<FavoritesPage>();
-            services.AddTransient<VideoPlayerViewModel>();
-            services.AddTransient<VideoPlayerPage>();
-            services.AddTransient<SearchDetailViewModel>();
-            services.AddTransient<SearchDetailPage>();
-            services.AddTransient<SearchViewModel>();
-            services.AddTransient<SearchPage>();
-            services.AddTransient<SettingsViewModel>();
-            services.AddTransient<SettingsPage>();
-            services.AddTransient<ShellPage>();
-            services.AddTransient<ShellViewModel>();
+                    // Views and ViewModels
+                    services.AddTransient<HistoryViewModel>();
+                    services.AddTransient<HistoryPage>();
+                    services.AddTransient<FavoritesViewModel>();
+                    services.AddTransient<FavoritesPage>();
+                    services.AddTransient<VideoPlayerViewModel>();
+                    services.AddTransient<VideoPlayerPage>();
+                    services.AddTransient<SearchDetailViewModel>();
+                    services.AddTransient<SearchDetailPage>();
+                    services.AddTransient<SearchViewModel>();
+                    services.AddTransient<SearchPage>();
+                    services.AddTransient<SettingsViewModel>();
+                    services.AddTransient<SettingsPage>();
+                    services.AddTransient<ShellPage>();
+                    services.AddTransient<ShellViewModel>();
 
-            // Configuration
-            services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
-        }).
-        Build();
+                    // Configuration
+                    services.Configure<LocalSettingsOptions>(
+                        context.Configuration.GetSection(nameof(LocalSettingsOptions))
+                    );
+                }
+            )
+            .Build();
 
         App.GetService<IAppNotificationService>().Initialize();
 
         UnhandledException += App_UnhandledException;
-
     }
 
-    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+    private void App_UnhandledException(
+        object sender,
+        Microsoft.UI.Xaml.UnhandledExceptionEventArgs e
+    )
     {
         logger.LogFatal("App Crashed {0}", e.Message);
     }
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
-        var db = new DatabaseHandler();
-        await db.InitDb();
         await App.GetService<IActivationService>().ActivateAsync(args);
         var isNeedUpdate = await _appUpdateService.IsNeedUpdate();
+
         if (isNeedUpdate)
         {
-            var not = App.GetService<IAppNotificationService>().ShowByUpdate();
+            _ = App.GetService<IAppNotificationService>().ShowByUpdate();
         }
-
-
     }
-
-
+     
 }

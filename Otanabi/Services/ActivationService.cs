@@ -1,9 +1,8 @@
-﻿using Otanabi.Activation;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Otanabi.Activation;
 using Otanabi.Contracts.Services;
 using Otanabi.Views;
-
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.Services;
 
@@ -14,7 +13,11 @@ public class ActivationService : IActivationService
     private readonly IThemeSelectorService _themeSelectorService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
+    public ActivationService(
+        ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
+        IEnumerable<IActivationHandler> activationHandlers,
+        IThemeSelectorService themeSelectorService
+    )
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
@@ -33,19 +36,20 @@ public class ActivationService : IActivationService
             App.MainWindow.Content = _shell ?? new Frame();
         }
 
-        // Handle activation via ActivationHandlers.
-        await HandleActivationAsync(activationArgs);
-
-        // Activate the MainWindow.
-        App.MainWindow.Activate();
-
-        // Execute tasks after activation.
-        await StartupAsync();
+        var splash = new SplashScreen(App.MainWindow);
+        splash.Completed += async (s, e) =>
+        {
+            await HandleActivationAsync(activationArgs);
+            //App.MainWindow.Activate();
+            await StartupAsync();
+        };
     }
 
     private async Task HandleActivationAsync(object activationArgs)
     {
-        var activationHandler = _activationHandlers.FirstOrDefault(h => h.CanHandle(activationArgs));
+        var activationHandler = _activationHandlers.FirstOrDefault(h =>
+            h.CanHandle(activationArgs)
+        );
 
         if (activationHandler != null)
         {
