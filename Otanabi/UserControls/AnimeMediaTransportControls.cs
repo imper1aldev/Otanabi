@@ -116,7 +116,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
-        if (GetTemplateChild("FullScreenButton") is Button fullScreenButton)
+        if (GetTemplateChild("FullScreenButton") is AppBarButton fullScreenButton)
         {
             fullScreenButton.Click += (s, e) => FullScreenCommand?.Execute(null);
         }

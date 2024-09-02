@@ -96,6 +96,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MainTimerForSave.Elapsed += SaveProgressByTime;
         MainTimerForSave.AutoReset = true;
         MainTimerForSave.Enabled = true;
+
     }
 
     private async void SaveProgressByTime(object source, ElapsedEventArgs e)
@@ -157,7 +158,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private async Task LoadVideo(Chapter chapter)
     {
-        var prevVolume = 1.0;
+        var prevVolume = 0.3;
         var isMuted = false;
         if (MPE.MediaPlayer != null)
         {
@@ -166,7 +167,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             MPE.Source = null;
             MpItem = null;
             IsPaused = true;
-            GC.Collect();
+            GC.Collect(); 
         }
 
         IsErrorVideo = false;
