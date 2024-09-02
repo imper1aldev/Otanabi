@@ -10,9 +10,9 @@ public class AppUpdateService
     private readonly HttpService _http = new();
     private readonly ClassReflectionHelper reflectionHelper = new();
     private readonly string gitUrl =
-        "https://raw.githubusercontent.com/havsalazar/AnimeWatcher/master/AnimeWatcher/version.v";
+        "https://raw.githubusercontent.com/havsalazar/Otanabi/master/Otanabi/version.v";
     private readonly string gitRelease =
-        "https://api.github.com/repos/havsalazar/AnimeWatcher/releases";
+        "https://api.github.com/repos/havsalazar/Otanabi/releases";
     internal string UserAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0";
 
