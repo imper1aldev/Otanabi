@@ -1,4 +1,5 @@
 <h1 align="center">Otanabi</h1>
+<img align="center" src="https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true"
 <p align="center">
 	<em>A simple App to watch anime in English or Spanish</em>
 </p>

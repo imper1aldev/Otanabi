@@ -19,6 +19,7 @@ using Windows.Media.Playback;
 using Windows.Storage.Streams;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using Windows.Media.Streaming.Adaptive;
 
 namespace Otanabi.ViewModels;
 
@@ -182,6 +183,16 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
 
+            //var httpClient = new Windows.Web.Http.HttpClient();
+            //httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("X-CustomHeader", "This is a custom header");
+            //AdaptiveMediaSourceCreationResult result = await AdaptiveMediaSource.CreateFromUriAsync(manifestUri, httpClient);
+
+            //MPE.Source=result;
+
+
+            //if(data.Item3 != null) {
+            //    VideoUrl.CustomProperties["HttpHeaders"] = data.Item3;
+            //}
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);

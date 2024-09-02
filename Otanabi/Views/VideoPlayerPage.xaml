@@ -12,34 +12,27 @@
     xmlns:usercontrols="using:Otanabi.UserControls"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:LongToDoubleConverter x:Key="LongToDoubleConverter"/>
-        <converters1:BoolNegationConverter x:Key="BoolNegationConverter"/>
-        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters1:StringFormatConverter x:Key="StringFormatConverter"/>
+        <converters:LongToDoubleConverter x:Key="LongToDoubleConverter" />
+        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters1:StringFormatConverter x:Key="StringFormatConverter" />
     </Page.Resources>
-    <Grid x:Name="ContentArea"
-            VerticalAlignment="Stretch">
+    <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
 
-        <Grid Width="0"
-                Height="0"
-                Visibility="Visible">
-            <Button Width="0"
-                    Height="0"
-                    Command="{x:Bind ViewModel.PlayPauseCommand}">
+        <Grid Width="0" Height="0" Visibility="Visible">
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.PlayPauseCommand}">
                 <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Space"/>
+                    <KeyboardAccelerator Key="Space" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <Button Width="0"
-                    Height="0"
-                    Command="{x:Bind ViewModel.FullScreenCommand}">
+            <Button Width="0" Height="0" Command="{x:Bind ViewModel.FullScreenCommand}">
                 <Button.KeyboardAccelerators>
-                    <KeyboardAccelerator Key="Escape"/>
+                    <KeyboardAccelerator Key="Escape" />
                 </Button.KeyboardAccelerators>
             </Button>
             <!--<Button Width="0" Height="0" Command="{x:Bind ViewModel.RewindCommand}">
@@ -56,35 +49,23 @@
         </Grid>
 
         <ProgressRing
-            Width="80"
-                Height="80"
+            Width="80" Height="80"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Canvas.ZIndex="2"
-                IsActive="True"
+            Canvas.ZIndex="2" IsActive="True"
             Visibility="{x:Bind ViewModel.LoadingVideo,
                                 Mode=OneWay,
-                                Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                Converter={StaticResource BoolToVisibilityConverter}}" />
 
-        <StackPanel HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Canvas.ZIndex="2"
-                Visibility="{x:Bind ViewModel.IsErrorVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Margin="0,0,0,15"
-                    FontSize="25"
-                    Text="Video not Available"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Canvas.ZIndex="2" Visibility="{x:Bind ViewModel.IsErrorVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Margin="0,0,0,15" FontSize="25" Text="Video not Available" />
 
             <!--<FontIcon Glyph="&#xEB90;" FontSize="40" Margin="0,0,0,15"/>-->
 
-            <Button HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{x:Bind ViewModel.RetryLoadCommand}">
+            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Command="{x:Bind ViewModel.RetryLoadCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Margin="0,0,15,0"
-                            FontSize="20"
-                            Text="Retry"/>
-                    <FontIcon FontSize="20"
-                            Glyph="&#xE72C;"/>
+                    <TextBlock Margin="0,0,15,0" FontSize="20" Text="Retry" />
+                    <FontIcon FontSize="20" Glyph="&#xE72C;" />
                 </StackPanel>
             </Button>
         </StackPanel>
@@ -98,8 +79,7 @@
                                   Mode=OneWay}"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            CompactPaneLength="48"
-                DisplayMode="Overlay"
+            CompactPaneLength="48" DisplayMode="Overlay"
             IsPaneOpen="{x:Bind ViewModel.IsChapPanelOpen,
                                 Mode=OneWay}"
             OpenPaneLength="256"
@@ -108,23 +88,21 @@
             <SplitView.Pane>
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <TextBlock
                         x:Name="PaneHeader"
                         Grid.Row="1"
-                        Margin="0,50,0,0"
-                            HorizontalAlignment="Center"
+                        Margin="0,50,0,0" HorizontalAlignment="Center"
                         Style="{StaticResource BaseTextBlockStyle}"
-                        Text="Chapter List"/>
+                        Text="Chapter List" />
 
                     <ListView
                         x:Name="ChapPaneList"
                         Grid.Row="2"
-                        Margin="0,12,0,0"
-                            VerticalAlignment="Stretch"
+                        Margin="0,12,0,0" VerticalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemsSource="{x:Bind ViewModel.ChapterList,
                                              Mode=OneWay}"
@@ -133,7 +111,7 @@
                         SelectionMode="Single">
                         <interactivity:Interaction.Behaviors>
                             <interactions:EventTriggerBehavior EventName="ItemClick">
-                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClickChapCommand}"/>
+                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClickChapCommand}" />
                             </interactions:EventTriggerBehavior>
 
                         </interactivity:Interaction.Behaviors>
@@ -141,9 +119,7 @@
                             <DataTemplate x:DataType="models:Chapter">
                                 <StackPanel Padding="0,15,0,15">
                                     <!--<TextBlock Text="{Binding Path=Name}" />-->
-                                    <TextBlock VerticalAlignment="Center"
-                                            Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}"
-                                            TextWrapping="Wrap">
+                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" TextWrapping="Wrap">
                                         <TextBlock.FontSize>15</TextBlock.FontSize>
                                     </TextBlock>
                                 </StackPanel>
@@ -160,15 +136,14 @@
             </SplitView.Pane>
             <interactivity:Interaction.Behaviors>
                 <interactions:EventTriggerBehavior EventName="PaneClosed">
-                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClosePaneCommand}"/>
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.onClosePaneCommand}" />
                 </interactions:EventTriggerBehavior>
 
             </interactivity:Interaction.Behaviors>
 
-            <Grid HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <MediaPlayerElement
                     x:Name="AMediaPlayer"
@@ -177,10 +152,11 @@
                                           Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    AreTransportControlsEnabled="True">
+                    AreTransportControlsEnabled="True"
+                    PosterSource="ms-appx:///Assets/OtanabiHres.png">
                     <interactivity:Interaction.Behaviors>
                         <interactions:EventTriggerBehavior EventName="PointerPressed">
-                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ClickFullCommand}"/>
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ClickFullCommand}" />
                         </interactions:EventTriggerBehavior>
                     </interactivity:Interaction.Behaviors>
                     <MediaPlayerElement.TransportControls>
@@ -198,13 +174,12 @@
                                                    Mode=OneWay}"
                             IsPreviousTrackButtonVisible="True"
                             IsSeekBarVisible="True"
-                            IsZoomButtonVisible="False"
-                                IsZoomEnabled="True"
+                            IsZoomButtonVisible="False" IsZoomEnabled="True"
                             NextCommand="{x:Bind ViewModel.NextChapterCommand}"
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
                             SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}"
-                            Style="{StaticResource DefaultAnimeMediaTransportControlsStyle}"/>
+                            Style="{StaticResource DefaultAnimeMediaTransportControlsStyle}" />
                     </MediaPlayerElement.TransportControls>
                 </MediaPlayerElement>
             </Grid>

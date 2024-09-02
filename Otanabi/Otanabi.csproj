@@ -22,6 +22,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\OtanabiHres.png" />
+    <None Remove="Assets\Otanabi_icon.ico" />
     <None Remove="Assets\WindowIconww.ico" />
     <None Remove="SplashScreen.xaml" />
     <None Remove="styles\ControlBackground.xaml" />
@@ -32,6 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\OtanabiSplash.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\OtanabiHres.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -131,6 +136,9 @@
   <ItemGroup>
     <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
     <Content Update="Assets\Otanabi_icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Assets\WindowIconww.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Update="version.v" CopyToOutputDirectory="Always" />
