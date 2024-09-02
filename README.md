@@ -1,4 +1,5 @@
-<h1 align="center">AnimeWatcher</h1>
+<h1 align="center">Otanabi</h1>
+<img align="center" src="https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true"
 <p align="center">
 	<em>A simple App to watch anime in English or Spanish</em>
 </p>
@@ -29,20 +30,20 @@ Quick start guide to building this App locally:
 ### 2. Clone the Repository 
 
 ```shell
-git clone https://github.com/havsalazar/AnimeWatcher.git
+git clone https://github.com/havsalazar/Otanabi.git
 ```
 
 
 ### 3. Open .sln with Visual Studio and Build! :wrench:
 ```shell
-.\AnimeWatcher\AnimeWatcher.sln
+.\Otanabi\Otanabi.sln
 ```
->**Note**: Make sure to select `AnimeWatcher` for startup project in Visual Studio.
+>**Note**: Make sure to select `Otanabi` for startup project in Visual Studio.
 
 
 ## Or Download the Latest Release
 
-:point_down: [Last stable release](https://github.com/havsalazar/AnimeWatcher/releases/latest)
+:point_down: [Last stable release](https://github.com/havsalazar/Otanabi/releases/latest)
 
 
 
@@ -51,21 +52,21 @@ git clone https://github.com/havsalazar/AnimeWatcher.git
 
 ###  Watch Latest Releases or Search for anime
 
-![Search View](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Search.png?raw=true)
+![Search View](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Search.png?raw=true)
 
 ### Save your favorite anime
 
-![Favorite view](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Favorites.png?raw=true)
+![Favorite view](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Favorites.png?raw=true)
 
 ### Video Player
 
-![Video Player](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Player.png?raw=true)
+![Video Player](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Player.png?raw=true)
 
 ### History of watched episodes
 
-![History](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/History.png?raw=true)
+![History](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/History.png?raw=true)
 
 ### Dark mode Support.
 
-![Settings](https://github.com/havsalazar/AnimeWatcher/blob/dev/Screenshots/Settings.png?raw=true)
+![Settings](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true)
 
