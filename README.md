@@ -1,7 +1,8 @@
 <h1 align="center">Otanabi</h1>
-<img align="center" src="https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true"
+<img align="center" src="https://github.com/havsalazar/Otanabi/blob/master/Otanabi/Assets/OtanabiHres.png?raw=true"
+<br>
 <p align="center">
-	<em>A simple App to watch anime in English or Spanish</em>
+	<em>A simple App for windows to watch anime in English or Spanish</em>
 </p>
 
 
@@ -24,7 +25,7 @@ Quick start guide to building this App locally:
 - .NET Desktop Development.
 - Windows App SDK C# Templates
 - Windows 10 SDK (10.0.19041.0)
-- [.NET SDK 8](https://dotnet.microsoft.com/en-us/download/dotnet)
+- [.NET SDK 7](https://dotnet.microsoft.com/en-us/download/dotnet)
 - [Template Studio for WinUI](https://marketplace.visualstudio.com/items?itemName=TemplateStudio.TemplateStudioForWinUICs)
 
 ### 2. Clone the Repository 
