@@ -20,7 +20,7 @@ public class ServerConventions
             new Convention
             {
                 Name = "Streamtape",
-                PossibleNames = new string[] { "stape", "Stape" }
+                PossibleNames = new string[] { "stape", "Stape","Streamtape","streamtape" }
             },
             new Convention { Name = "Juro", PossibleNames = new string[] { "juro" } },
             //new Convention
