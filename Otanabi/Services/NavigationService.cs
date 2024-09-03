@@ -56,6 +56,7 @@ public class NavigationService : INavigationService
         if (_frame != null)
         {
             _frame.Navigated += OnNavigated;
+            _frame.NavigationFailed += OnNavigationError;
         }
     }
 
@@ -64,6 +65,7 @@ public class NavigationService : INavigationService
         if (_frame != null)
         {
             _frame.Navigated -= OnNavigated;
+            _frame.NavigationFailed -= OnNavigationError;
         }
     }
 

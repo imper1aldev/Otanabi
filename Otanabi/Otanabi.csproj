@@ -28,7 +28,6 @@
     <None Remove="SplashScreen.xaml" />
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
-    <None Remove="Styles\Player.xaml" />
 
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>

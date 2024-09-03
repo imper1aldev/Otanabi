@@ -77,6 +77,7 @@
             Grid.Row="0"
             Grid.RowSpan="{x:Bind ViewModel.RowSpan,
                                   Mode=OneWay}"
+            Width="Auto" Height="Auto"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             CompactPaneLength="48" DisplayMode="Overlay"
@@ -150,6 +151,7 @@
                     Grid.Row="0"
                     Grid.RowSpan="{x:Bind ViewModel.RowSpan,
                                           Mode=OneWay}"
+                    Width="Auto" Height="Auto"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     AreTransportControlsEnabled="True"
@@ -163,6 +165,9 @@
                         <usercontrols:AnimeMediaTransportControls
                             FullScreenCommand="{x:Bind ViewModel.FullScreenCommand}"
                             IsCompact="True"
+                            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen,
+                                                  Mode=OneWay,
+                                                  Converter={StaticResource BoolNegationConverter}}"
                             IsNextEnabled="{x:Bind ViewModel.IsEnableNext,
                                                    Mode=OneWay}"
                             IsNextTrackButtonVisible="True"
@@ -178,8 +183,7 @@
                             NextCommand="{x:Bind ViewModel.NextChapterCommand}"
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
-                            SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}"
-                            Style="{StaticResource DefaultAnimeMediaTransportControlsStyle}" />
+                            SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}" />
                     </MediaPlayerElement.TransportControls>
                 </MediaPlayerElement>
             </Grid>

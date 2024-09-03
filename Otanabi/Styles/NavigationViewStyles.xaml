@@ -1,9 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls">
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals" xmlns:controls="using:Microsoft.UI.Xaml.Controls">
     <Style x:Key="NavigationBackButtonNormalStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource NavigationViewBackButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
@@ -20,24 +16,19 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Grid x:Name="RootGrid"
-                          Background="{TemplateBinding Background}"
-                          CornerRadius="{TemplateBinding CornerRadius}">
-                        <controls:AnimatedIcon xmlns:local="using:Microsoft.UI.Xaml.Controls"
-                                               x:Name="Content"
-                                               Width="16"
-                                               Height="16"
-                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                               VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                               local:AnimatedIcon.State="Normal"
-                                               AutomationProperties.AccessibilityView="Raw"
-                                               MirroredWhenRightToLeft="True">
+                    <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                        <controls:AnimatedIcon
+                            xmlns:local="using:Microsoft.UI.Xaml.Controls"
+                            x:Name="Content"
+                            Width="16" Height="16"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            local:AnimatedIcon.State="Normal"
+                            AutomationProperties.AccessibilityView="Raw"
+                            MirroredWhenRightToLeft="True">
                             <animatedvisuals:AnimatedBackVisualSource />
                             <controls:AnimatedIcon.FallbackIconSource>
-                                <controls:FontIconSource FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}"
-                                                         FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}"
-                                                         Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}"
-                                                         MirroredWhenRightToLeft="True" />
+                                <controls:FontIconSource FontFamily="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontFamily}" FontSize="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FontSize}" Glyph="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" MirroredWhenRightToLeft="True" />
                             </controls:AnimatedIcon.FallbackIconSource>
                         </controls:AnimatedIcon>
                         <VisualStateManager.VisualStateGroups>
@@ -83,9 +74,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="NavigationBackButtonSmallStyle"
-           BasedOn="{StaticResource NavigationBackButtonNormalStyle}"
-           TargetType="Button">
+    <Style x:Key="NavigationBackButtonSmallStyle" BasedOn="{StaticResource NavigationBackButtonNormalStyle}" TargetType="Button">
         <Setter Property="Margin" Value="4,2,0,2" />
     </Style>
 </ResourceDictionary>
