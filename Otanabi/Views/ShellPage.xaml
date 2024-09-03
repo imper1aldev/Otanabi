@@ -15,8 +15,8 @@
 
 
     <Page.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-        <converters1:BoolNegationConverter x:Key="BoolNegationConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
     </Page.Resources>
 
     <Grid>
@@ -30,12 +30,8 @@
             Visibility="{x:Bind ViewModel.IsNotFullScreen,
                                 Mode=OneWay,
                                 Converter={StaticResource BoolToVisibilityConverter}}">
-            <StackPanel Orientation="Horizontal"
-                    Spacing="16">
-                <TextBlock x:Name="AppTitleBarText"
-                        VerticalAlignment="Center"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        TextWrapping="NoWrap"/>
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap" />
             </StackPanel>
         </Grid>
         <usercontrols:CustomNavigationView
@@ -57,34 +53,28 @@
             SelectedItem="{x:Bind ViewModel.Selected,
                                   Mode=OneWay}">
             <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Shell_Favorites"
-                        helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.FavoritesViewModel">
+                <NavigationViewItem x:Uid="Shell_Favorites" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.FavoritesViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                Glyph="&#xE728;"/>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE728;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Search"
-                        helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel"
-                        Content="Search">
+                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel" Content="Search">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xF6FA;"/>
+                        <FontIcon Glyph="&#xF6FA;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
-                <NavigationViewItem x:Uid="Shell_History"
-                        helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.HistoryViewModel">
+                <NavigationViewItem x:Uid="Shell_History" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.HistoryViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                Glyph="&#xE81C;"/>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE81C;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
             <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior/>
+                <behaviors:NavigationViewHeaderBehavior />
             </i:Interaction.Behaviors>
             <Grid>
-                <Frame x:Name="NavigationFrame"/>
+                <Frame x:Name="NavigationFrame" />
             </Grid>
         </usercontrols:CustomNavigationView>
     </Grid>
