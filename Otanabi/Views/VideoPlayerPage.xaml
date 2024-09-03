@@ -165,6 +165,9 @@
                         <usercontrols:AnimeMediaTransportControls
                             FullScreenCommand="{x:Bind ViewModel.FullScreenCommand}"
                             IsCompact="True"
+                            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen,
+                                                  Mode=OneWay,
+                                                  Converter={StaticResource BoolNegationConverter}}"
                             IsNextEnabled="{x:Bind ViewModel.IsEnableNext,
                                                    Mode=OneWay}"
                             IsNextTrackButtonVisible="True"

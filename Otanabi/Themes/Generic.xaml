@@ -20,7 +20,7 @@
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="False" />
                             </Style>
-                            <Style x:Key="C1AppBarButtonStyle" TargetType="AppBarButton">
+                            <Style x:Key="SpecialAppBarButtonStyle" TargetType="AppBarButton">
                                 <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
                                 <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
                                 <Setter Property="AllowFocusOnInteraction" Value="False" />
@@ -35,13 +35,59 @@
                                                     <Grid.RowDefinitions>
                                                         <RowDefinition Height="*" />
                                                     </Grid.RowDefinitions>
-                                                    <FontIcon VerticalAlignment="Center" Glyph="&#xEC57;" />
+                                                    <!--<FontIcon Glyph="&#xE927;" />-->
+                                                    <Viewbox
+                                                        x:Name="ContentViewbox"
+                                                        Height="18"
+                                                        Margin="0,2,0,4" HorizontalAlignment="Stretch"
+                                                        AutomationProperties.AccessibilityView="Raw">
+                                                        <ContentPresenter x:Name="Content" Content="{TemplateBinding Icon}" Foreground="{TemplateBinding Foreground}" />
+                                                    </Viewbox>
+                                                </Grid>
+                                                <VisualStateManager.VisualStateGroups>
+                                                    <VisualStateGroup x:Name="CommonStates">
+                                                        <VisualState x:Name="Normal" />
+                                                        <VisualState x:Name="PointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarButtonBackgroundPointerOver}" />
+                                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarButtonBorderBrushPointerOver}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                        <VisualState x:Name="Disabled">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="Root.Background" Value="{ThemeResource AppBarToggleButtonBackgroundDisabled}" />
+                                                                <Setter Target="Root.BorderBrush" Value="{ThemeResource AppBarToggleButtonBorderBrushDisabled}" />
+                                                                <Setter Target="Content.Foreground" Value="{ThemeResource AppBarToggleButtonForegroundDisabled}" />
+                                                            </VisualState.Setters>
+                                                        </VisualState>
+                                                    </VisualStateGroup>
+                                                </VisualStateManager.VisualStateGroups>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                            <Style x:Key="CCAppBarButtonStyle" TargetType="AppBarButton">
+                                <Setter Property="Width" Value="{ThemeResource MTCMediaButtonWidth}" />
+                                <Setter Property="Height" Value="{ThemeResource MTCMediaButtonHeight}" />
+                                <Setter Property="AllowFocusOnInteraction" Value="False" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="AppBarButton">
+                                            <Grid x:Name="Root" MinWidth="48" MaxHeight="48" Background="Transparent">
+                                                <Grid x:Name="ContentRoot" MaxHeight="48">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*" />
+                                                    </Grid.RowDefinitions>
+                                                    <FontIcon Glyph="&#xE7F0;" />
                                                 </Grid>
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
                                 </Setter>
-                                
                             </Style>
                             <!--  New CommandBar Style  -->
                             <Style x:Key="CommandBarStyle" TargetType="CommandBar">
@@ -440,7 +486,8 @@
                                                 x:Name="VolumeMuteButton"
                                                 Width="48" Height="48"
                                                 LabelPosition="Collapsed"
-                                                MediaTransportControlsHelper.DropoutOrder="19">
+                                                MediaTransportControlsHelper.DropoutOrder="19"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}">
                                                 <AppBarButton.Flyout>
                                                     <Flyout x:Name="VolumeFlyout" FlyoutPresenterStyle="{StaticResource FlyoutStyle}">
                                                         <StackPanel Orientation="Horizontal">
@@ -477,12 +524,12 @@
                                                     <FontIcon x:Name="VolumeMuteSymbol" Glyph="&#xE995;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name="SkipIntroButton" MediaTransportControlsHelper.DropoutOrder="5" Style="{StaticResource AppBarButtonStyle}" ToolTipService.ToolTip="Skip Intro">
+                                            <AppBarButton x:Name="SkipIntroButton" MediaTransportControlsHelper.DropoutOrder="5" Style="{StaticResource SpecialAppBarButtonStyle}" ToolTipService.ToolTip="Skip Intro">
                                                 <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xE78A;" />
+                                                    <FontIcon Glyph="&#xE927;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
-                                            <AppBarButton x:Name="CCSelectionButton" MediaTransportControlsHelper.DropoutOrder="15" Style="{StaticResource AppBarButtonStyle}" Visibility="Collapsed">
+                                            <AppBarButton x:Name="CCSelectionButton" MediaTransportControlsHelper.DropoutOrder="15" Style="{StaticResource SpecialAppBarButtonStyle}" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xED1E;" />
                                                 </AppBarButton.Icon>
@@ -493,7 +540,7 @@
                                                 MediaTransportControlsHelper.DropoutOrder="10"
                                                 Visibility="Collapsed">
                                                 <AppBarButton.Style>
-                                                    <Style BasedOn="{StaticResource C1AppBarButtonStyle}" TargetType="AppBarButton" />
+                                                    <Style BasedOn="{StaticResource SpecialAppBarButtonStyle}" TargetType="AppBarButton" />
                                                 </AppBarButton.Style>
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xEC57;" />
@@ -522,7 +569,7 @@
                                                 x:Name="PreviousTrackButton"
                                                 Icon="Previous"
                                                 MediaTransportControlsHelper.DropoutOrder="3"
-                                                Style="{StaticResource AppBarButtonStyle}"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
                                                 Visibility="Collapsed" />
                                             <AppBarButton x:Name="RewindButton" MediaTransportControlsHelper.DropoutOrder="1" Style="{StaticResource AppBarButtonStyle}" Visibility="Collapsed">
                                                 <AppBarButton.Icon>
@@ -543,7 +590,7 @@
                                                 x:Name="NextTrackButton"
                                                 Icon="Next"
                                                 MediaTransportControlsHelper.DropoutOrder="3"
-                                                Style="{StaticResource AppBarButtonStyle}"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
                                                 Visibility="Collapsed" />
 
                                             <AppBarButton x:Name="SkipForwardButton" MediaTransportControlsHelper.DropoutOrder="5" Style="{StaticResource AppBarButtonStyle}" Visibility="Collapsed">
@@ -553,16 +600,22 @@
                                             </AppBarButton>
 
                                             <AppBarSeparator x:Name="RightSeparator" />
-                                            <AppBarElementContainer VerticalContentAlignment="Center" MediaTransportControlsHelper.DropoutOrder="17" ToolTipService.ToolTip="Open Chapter List">
+                                            <AppBarElementContainer Margin="0,0,5,0" VerticalContentAlignment="Center" MediaTransportControlsHelper.DropoutOrder="17" ToolTipService.ToolTip="Open Chapter List">
                                                 <ToggleButton x:Name="OpenPanelButton" IsChecked="{Binding IsPanelOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
                                                     <FontIcon Glyph="&#xE8A0;" />
                                                 </ToggleButton>
                                             </AppBarElementContainer>
-                                            <AppBarButton x:Name="FullScreenButton" MediaTransportControlsHelper.DropoutOrder="17" Style="{StaticResource AppBarButtonStyle}" ToolTipService.ToolTip="FullScreen">
+                                            <!--<AppBarButton x:Name="FullScreenButton" MediaTransportControlsHelper.DropoutOrder="17" Style="{StaticResource AppBarButtonStyle}" ToolTipService.ToolTip="FullScreen">
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xE740;" />
                                                 </AppBarButton.Icon>
-                                            </AppBarButton>
+                                            </AppBarButton>-->
+                                            <local2:AppBarWindowPresenterStateButton
+                                                x:Name="FullScreenButton"
+                                                IsFullScreen="False"
+                                                MediaTransportControlsHelper.DropoutOrder="17"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Toggle FullScreen" />
                                         </CommandBar.PrimaryCommands>
                                     </CommandBar>
                                 </Border>

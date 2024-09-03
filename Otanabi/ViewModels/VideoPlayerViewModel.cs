@@ -89,6 +89,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService = windowPresenterService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+        _windowPresenterService = windowPresenterService;
+        _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
+
         _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
         //each 4 seconds it will save the current play time
@@ -107,7 +110,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             {
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
-                    if (MPE.MediaPlayer != null)
+                    if (MPE!=null && MPE.MediaPlayer != null)
                     {
                         await dbService.UpdateProgress(
                             selectedHistory.Id,
@@ -158,6 +161,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     private async Task LoadVideo(Chapter chapter)
     {
+        OnPropertyChanged(nameof(IsEnableNext));
+        OnPropertyChanged(nameof(IsEnablePrev));
+
         var prevVolume = 0.3;
         var isMuted = false;
         if (MPE.MediaPlayer != null)
@@ -397,11 +403,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         MPE = mediaPlayerElement;
     }
-
+    private void OnWindowPresenterChanged(object? sender, EventArgs e)
+    {
+        OnPropertyChanged(nameof(IsNotFullScreen));
+    }
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
         IsDisposed = true;
+        _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
         _dispatcherQueue.TryEnqueue(() =>
         {
             MainTimerForSave.Stop();
