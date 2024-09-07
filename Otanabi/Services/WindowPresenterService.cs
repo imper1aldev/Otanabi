@@ -25,12 +25,12 @@ public class WindowPresenterService : IWindowPresenterService
     public event EventHandler? WindowPresenterChanged;
 
     public bool IsFullScreen => _appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
+    public bool IsCompactOverlay =>_appWindow.Presenter.Kind == AppWindowPresenterKind.CompactOverlay;
 
     private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
     {
         if (args.DidPresenterChange)
-        {
-            //Debug.WriteLine("Presenter changed to {0}", sender.Presenter.Kind);
+        { 
             WindowPresenterChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -38,14 +38,23 @@ public class WindowPresenterService : IWindowPresenterService
     public void ToggleFullScreen()
     {
         if (IsFullScreen)
-        {
-            //Debug.WriteLine("Exiting fullscreen");
+        { 
             _appWindow.SetPresenter(AppWindowPresenterKind.Default);
         }
         else
-        {
-            //Debug.WriteLine("Entering fullscreen");
+        { 
             _appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        }
+    }
+    public void ToggleCompactOverlay()
+    {
+        if (IsCompactOverlay)
+        { 
+            _appWindow.SetPresenter(AppWindowPresenterKind.Default);
+        }
+        else
+        { 
+            _appWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         }
     }
 }

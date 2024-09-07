@@ -9,4 +9,5 @@ public interface IWindowPresenterService
     }
 
     void ToggleFullScreen();
+    void ToggleCompactOverlay();
 }

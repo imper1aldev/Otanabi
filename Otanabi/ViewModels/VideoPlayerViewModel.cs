@@ -20,6 +20,7 @@ using Windows.Storage.Streams;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using Windows.Media.Streaming.Adaptive;
+using Microsoft.UI.Text;
 
 namespace Otanabi.ViewModels;
 
@@ -78,7 +79,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private readonly DispatcherTimer controlsHideTimer =
-        new() { Interval = TimeSpan.FromSeconds(1), };
+        new()
+        {
+            Interval = TimeSpan.FromSeconds(1),
+        };
 
     public VideoPlayerViewModel(
         INavigationService navigationService,
@@ -110,7 +114,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             {
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
-                    if (MPE!=null && MPE.MediaPlayer != null)
+                    if (MPE != null && MPE.MediaPlayer != null)
                     {
                         await dbService.UpdateProgress(
                             selectedHistory.Id,
@@ -118,8 +122,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         );
                     }
                 });
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 logger.LogError("UpdateProgress error :", ex.Message);
             }
@@ -173,7 +176,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             MPE.Source = null;
             MpItem = null;
             IsPaused = true;
-            GC.Collect(); 
+            GC.Collect();
         }
 
         IsErrorVideo = false;
@@ -228,10 +231,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                             MpItem.TimedMetadataTracks.SetPresentationMode(
                                 0,
                                 TimedMetadataTrackPresentationMode.PlatformPresented
-                            );
+                            ); 
                         };
-                    }
-                    catch (Exception e)
+                    } catch (Exception e)
                     {
                         logger.LogError("Could not load CC or set the CC ", e.Message.ToString());
                     }
@@ -247,10 +249,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                 AutoPlay = true,
                                 Source = MpItem,
                                 Volume = prevVolume,
-                                IsMuted = isMuted,
+                                IsMuted = isMuted
                             }
                         );
                         MPE.Source = MpItem;
+
                         MPE.MediaPlayer.Play();
                     }
                 });
@@ -324,8 +327,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         try
         {
             MPE.MediaPlayer.PlaybackSession.Position += TimeSpan.FromSeconds(79);
-        }
-        catch (Exception)
+        } catch (Exception)
         {
             logger.LogInfo("current time cannot be skipped");
         }

@@ -13,7 +13,7 @@ public sealed class StreamToBitmap : IValueConverter
         if (value is IRandomAccessStream rand)
             strm = rand.CloneStream();
         else if (value is IRandomAccessStreamReference randRef)
-            strm = randRef.OpenReadAsync().Get();
+            strm = randRef.OpenReadAsync().AsTask().GetAwaiter().GetResult();
         else
             throw new ArgumentException($"The provided value must be of type {typeof(IRandomAccessStream)}.", nameof(value));
         var img = new BitmapImage();
