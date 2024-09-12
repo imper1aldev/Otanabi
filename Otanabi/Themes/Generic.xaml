@@ -12,7 +12,7 @@
         <Setter Property="FlowDirection" Value="LeftToRight" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="Margin" Value="12" />
-        <Setter Property="MaxWidth" Value="720" />
+        <Setter Property="MaxWidth" Value="820" />
         <Setter Property="MinWidth" Value="296" />
         <Setter Property="IsTextScaleFactorEnabled" Value="False" />
         <Setter Property="CornerRadius" Value="8,8,8,8" />
@@ -462,9 +462,9 @@
                                 <Setter Property="MaxHeight" Value="80" />
                                 <Setter Property="CornerRadius" Value="8,8,8,8" />
                             </Style>
-                            <Style TargetType="MenuFlyoutItem">
+                            <!--<Style TargetType="MenuFlyoutItem">
                                 <Setter Property="Background" Value="Red" />
-                            </Style>
+                            </Style>-->
                         </Grid.Resources>
                         <Border x:Name="ControlPanel_ControlPanelVisibilityStates_Border">
                             <Grid
@@ -518,6 +518,7 @@
                                             MinWidth="80"
                                             Margin="12,0"
                                             VerticalAlignment="Center"
+                                            AllowFocusOnInteraction="False"
                                             IsThumbToolTipEnabled="False" />
                                         <ProgressBar
                                             x:Name="BufferingProgressBar"

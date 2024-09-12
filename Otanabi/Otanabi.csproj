@@ -26,7 +26,7 @@
     <Product>Otanabi</Product>
     <Company>None</Company>
     <Authors>havsalazar</Authors>
-    <Version>0.3.7</Version>
+    <Version>0.3.8</Version>
     <PackageId>Otanabi</PackageId>
     <Title>Otanabi</Title>
     <RepositoryType>git</RepositoryType>
@@ -64,6 +64,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.0.240109" />
+    <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240821" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />

@@ -2,13 +2,16 @@
     x:Class="Otanabi.Views.VideoPlayerPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.Animations"
     xmlns:converters="using:Otanabi.Converters"
     xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
     xmlns:models="using:Otanabi.Core.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:usercontrols="using:Otanabi.UserControls"
     mc:Ignorable="d">
     <Page.Resources>
@@ -16,6 +19,8 @@
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
         <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters1:StringFormatConverter x:Key="StringFormatConverter" />
+        <media:AttachedCardShadow x:Key="CommonShadow" Offset="4" />
+
     </Page.Resources>
     <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
@@ -24,47 +29,135 @@
         </Grid.RowDefinitions>
 
 
-        <Grid Width="0" Height="0" Visibility="Visible">
-            <Button Width="0" Height="0" Command="{x:Bind ViewModel.PlayPauseCommand}">
+        <Grid
+            Width="0"
+            Height="0"
+            Visibility="Visible">
+            <Button
+                Width="0"
+                Height="0"
+                Command="{x:Bind ViewModel.PlayPauseCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Space" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <Button Width="0" Height="0" Command="{x:Bind ViewModel.FullScreenCommand}">
+            <Button
+                Width="0"
+                Height="0"
+                Command="{x:Bind ViewModel.FullScreenCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Escape" />
                 </Button.KeyboardAccelerators>
             </Button>
-            <!--<Button Width="0" Height="0" Command="{x:Bind ViewModel.RewindCommand}">
+            <Button
+                Width="0"
+                Height="0"
+                Command="{x:Bind ViewModel.RewindCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Left" />
                 </Button.KeyboardAccelerators>
-            </Button>-->
-            <!--<Button Width="0" Height="0" Command="{x:Bind ViewModel.FastForwardCommand}">
+            </Button>
+            <Button
+                Width="0"
+                Height="0"
+                Command="{x:Bind ViewModel.FastForwardCommand}">
                 <Button.KeyboardAccelerators>
                     <KeyboardAccelerator Key="Right" />
                 </Button.KeyboardAccelerators>
-            </Button>-->
+            </Button>
+        </Grid>
+
+        <Grid Width="auto" Canvas.ZIndex="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border
+                x:Name="RewindIconBox"
+                Grid.Column="0"
+                Margin="15,0,15,0"
+                Padding="10,8,16,8"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                ui:Effects.Shadow="{StaticResource CommonShadow}"
+                Background="#c42b2c2c"
+                CornerRadius="8"
+                Visibility="{x:Bind ViewModel.RewindVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <animations:Implicit.ShowAnimations>
+                    <animations:OpacityAnimation
+                        From="0"
+                        To="1.0"
+                        Duration="0:0:0.4" />
+                </animations:Implicit.ShowAnimations>
+                <animations:Implicit.HideAnimations>
+                    <animations:OpacityAnimation
+                        From="1.0"
+                        To="0"
+                        Duration="0:0:0.4" />
+                </animations:Implicit.HideAnimations>
+                <FontIcon FontSize="50" Glyph="&#xEB9E;" />
+            </Border>
+            <Border
+                x:Name="FastIconBox"
+                Grid.Column="1"
+                Margin="15,0,15,0"
+                Padding="16,8,10,8"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                ui:Effects.Shadow="{StaticResource CommonShadow}"
+                Background="#c42b2c2c"
+                CornerRadius="8"
+                Visibility="{x:Bind ViewModel.FastVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <animations:Implicit.ShowAnimations>
+                    <animations:OpacityAnimation
+                        From="0"
+                        To="1.0"
+                        Duration="0:0:0.4" />
+                </animations:Implicit.ShowAnimations>
+                <animations:Implicit.HideAnimations>
+                    <animations:OpacityAnimation
+                        From="1.0"
+                        To="0"
+                        Duration="0:0:0.4" />
+                </animations:Implicit.HideAnimations>
+                <FontIcon FontSize="50" Glyph="&#xEB9D;" />
+
+            </Border>
 
         </Grid>
 
+
         <ProgressRing
-            Width="80" Height="80"
+            Width="80"
+            Height="80"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Canvas.ZIndex="2" IsActive="True"
-            Visibility="{x:Bind ViewModel.LoadingVideo,
-                                Mode=OneWay,
-                                Converter={StaticResource BoolToVisibilityConverter}}" />
+            Canvas.ZIndex="2"
+            IsActive="True"
+            Visibility="{x:Bind ViewModel.LoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Canvas.ZIndex="2" Visibility="{x:Bind ViewModel.IsErrorVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Margin="0,0,0,15" FontSize="25" Text="Video not Available" />
+        <StackPanel
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Canvas.ZIndex="2"
+            Visibility="{x:Bind ViewModel.IsErrorVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock
+                Margin="0,0,0,15"
+                FontSize="25"
+                Text="Video not Available" />
 
             <!--<FontIcon Glyph="&#xEB90;" FontSize="40" Margin="0,0,0,15"/>-->
 
-            <Button HorizontalAlignment="Center" VerticalAlignment="Center" Command="{x:Bind ViewModel.RetryLoadCommand}">
+            <Button
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{x:Bind ViewModel.RetryLoadCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Margin="0,0,15,0" FontSize="20" Text="Retry" />
+                    <TextBlock
+                        Margin="0,0,15,0"
+                        FontSize="20"
+                        Text="Retry" />
                     <FontIcon FontSize="20" Glyph="&#xE72C;" />
                 </StackPanel>
             </Button>
@@ -75,14 +168,14 @@
         <SplitView
             x:Name="splitView"
             Grid.Row="0"
-            Grid.RowSpan="{x:Bind ViewModel.RowSpan,
-                                  Mode=OneWay}"
-            Width="Auto" Height="Auto"
+            Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
+            Width="Auto"
+            Height="Auto"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
-            CompactPaneLength="48" DisplayMode="Overlay"
-            IsPaneOpen="{x:Bind ViewModel.IsChapPanelOpen,
-                                Mode=OneWay}"
+            CompactPaneLength="48"
+            DisplayMode="Overlay"
+            IsPaneOpen="{x:Bind ViewModel.IsChapPanelOpen, Mode=OneWay}"
             OpenPaneLength="256"
             PaneBackground="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
             PanePlacement="Right">
@@ -96,19 +189,19 @@
                     <TextBlock
                         x:Name="PaneHeader"
                         Grid.Row="1"
-                        Margin="0,50,0,0" HorizontalAlignment="Center"
+                        Margin="0,50,0,0"
+                        HorizontalAlignment="Center"
                         Style="{StaticResource BaseTextBlockStyle}"
                         Text="Chapter List" />
 
                     <ListView
                         x:Name="ChapPaneList"
                         Grid.Row="2"
-                        Margin="0,12,0,0" VerticalAlignment="Stretch"
+                        Margin="0,12,0,0"
+                        VerticalAlignment="Stretch"
                         IsItemClickEnabled="True"
-                        ItemsSource="{x:Bind ViewModel.ChapterList,
-                                             Mode=OneWay}"
-                        SelectedIndex="{x:Bind ViewModel.SelectedIndex,
-                                               Mode=OneWay}"
+                        ItemsSource="{x:Bind ViewModel.ChapterList, Mode=OneWay}"
+                        SelectedIndex="{x:Bind ViewModel.SelectedIndex, Mode=OneWay}"
                         SelectionMode="Single">
                         <interactivity:Interaction.Behaviors>
                             <interactions:EventTriggerBehavior EventName="ItemClick">
@@ -120,7 +213,10 @@
                             <DataTemplate x:DataType="models:Chapter">
                                 <StackPanel Padding="0,15,0,15">
                                     <!--<TextBlock Text="{Binding Path=Name}" />-->
-                                    <TextBlock VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" TextWrapping="Wrap">
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}"
+                                        TextWrapping="Wrap">
                                         <TextBlock.FontSize>15</TextBlock.FontSize>
                                     </TextBlock>
                                 </StackPanel>
@@ -149,9 +245,9 @@
                 <MediaPlayerElement
                     x:Name="AMediaPlayer"
                     Grid.Row="0"
-                    Grid.RowSpan="{x:Bind ViewModel.RowSpan,
-                                          Mode=OneWay}"
-                    Width="Auto" Height="Auto"
+                    Grid.RowSpan="{x:Bind ViewModel.RowSpan, Mode=OneWay}"
+                    Width="Auto"
+                    Height="Auto"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
                     AreTransportControlsEnabled="True"
@@ -163,23 +259,20 @@
                     </interactivity:Interaction.Behaviors>
                     <MediaPlayerElement.TransportControls>
                         <usercontrols:AnimeMediaTransportControls
+                            FastPlayFallbackBehaviour="Skip"
                             FullScreenCommand="{x:Bind ViewModel.FullScreenCommand}"
                             IsCompact="True"
-                            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen,
-                                                  Mode=OneWay,
-                                                  Converter={StaticResource BoolNegationConverter}}"
-                            IsNextEnabled="{x:Bind ViewModel.IsEnableNext,
-                                                   Mode=OneWay}"
+                            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                            IsNextEnabled="{x:Bind ViewModel.IsEnableNext, Mode=OneWay}"
                             IsNextTrackButtonVisible="True"
-                            IsPanelOpen="{x:Bind ViewModel.IsChapPanelOpen,
-                                                 Mode=OneWay}"
+                            IsPanelOpen="{x:Bind ViewModel.IsChapPanelOpen, Mode=OneWay}"
                             IsPlaybackRateButtonVisible="True"
                             IsPlaybackRateEnabled="True"
-                            IsPrevEnabled="{x:Bind ViewModel.IsEnablePrev,
-                                                   Mode=OneWay}"
+                            IsPrevEnabled="{x:Bind ViewModel.IsEnablePrev, Mode=OneWay}"
                             IsPreviousTrackButtonVisible="True"
                             IsSeekBarVisible="True"
-                            IsZoomButtonVisible="False" IsZoomEnabled="True"
+                            IsZoomButtonVisible="False"
+                            IsZoomEnabled="True"
                             NextCommand="{x:Bind ViewModel.NextChapterCommand}"
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
