@@ -86,9 +86,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private const int DoubleClickThreshold = 200;
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
-
-    private InputSystemCursor inputCursor;
-    private readonly DispatcherTimer pointerHideTimer = new ( ){ Interval = TimeSpan.FromSeconds(2) };
+     
 
 
     public VideoPlayerViewModel(
@@ -122,9 +120,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         FastTimer.Elapsed += HideFast;
 
         /* END*/
-
-        //pointer hide timer
-        pointerHideTimer.Tick += Timer_Tick;
+         
 
     }
 
@@ -571,45 +567,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(IsNotFullScreen));
     }
 
-
-    [RelayCommand]
-    private void PointerMoved(PointerRoutedEventArgs? args)
-    {
-        //
-        //inputCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
-        //OnChangePointer(this,inputCursor);
-
-        if (inputCursor == null)
-        {
-            ShowPointer();
-        }else
-        {
-            pointerHideTimer.Stop();
-            pointerHideTimer.Start();
-        }
-    }
-    private void ShowPointer()
-    {
-        inputCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
-        OnChangePointer(this, inputCursor);
-    }
-    private void HidePointer()
-    {
-        inputCursor = null;
-        OnClearPointer(this, null);
-    }
-    private void Timer_Tick(object? sender, object e)
-    {
-        HidePointer();
-        pointerHideTimer.Stop();
-    }
+     
 
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
         IsDisposed = true;
-        _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
-        pointerHideTimer.Tick -= Timer_Tick;
+        _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged; 
         _dispatcherQueue.TryEnqueue(() =>
         {
             MainTimerForSave.Stop();
@@ -623,7 +587,5 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             //cant dispose the media player because it will crash the app
             GC.Collect();
         });
-    }
-    public event EventHandler<InputSystemCursor> OnChangePointer;
-    public event EventHandler OnClearPointer;
+    } 
 }

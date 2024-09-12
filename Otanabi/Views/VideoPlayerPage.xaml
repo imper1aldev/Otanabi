@@ -23,11 +23,6 @@
 
     </Page.Resources>
     <usercontrols:MouseGrid x:Name="ContentArea" VerticalAlignment="Stretch">
-        <interactivity:Interaction.Behaviors>
-            <interactions:EventTriggerBehavior EventName="PointerMoved">
-                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}" />
-            </interactions:EventTriggerBehavior>
-        </interactivity:Interaction.Behaviors>
 
 
         <Grid.RowDefinitions>

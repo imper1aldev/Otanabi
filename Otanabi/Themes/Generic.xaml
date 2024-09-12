@@ -15,7 +15,7 @@
         <Setter Property="MaxWidth" Value="820" />
         <Setter Property="MinWidth" Value="296" />
         <Setter Property="IsTextScaleFactorEnabled" Value="False" />
-        <Setter Property="CornerRadius" Value="8,8,8,8" /> 
+        <Setter Property="CornerRadius" Value="8,8,8,8" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local2:AnimeMediaTransportControls">
@@ -558,6 +558,7 @@
                                         x:Name="PlayPauseButtonOnLeft"
                                         Margin="0"
                                         VerticalAlignment="Center"
+                                        AllowFocusOnInteraction="False"
                                         Style="{StaticResource AppBarButtonStyle}">
                                         <AppBarButton.Icon>
                                             <SymbolIcon x:Name="PlayPauseSymbolLeft" Symbol="Play" />
@@ -589,6 +590,7 @@
                                                                 Width="40"
                                                                 Height="40"
                                                                 Margin="0,2,0,0"
+                                                                AllowFocusOnInteraction="False"
                                                                 Style="{StaticResource SpecialAppBarButtonStyle}">
                                                                 <AppBarButton.Icon>
                                                                     <FontIcon x:Name="AudioMuteSymbol" Glyph="&#xE995;" />
@@ -600,6 +602,7 @@
                                                                 Margin="0"
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
+                                                                AllowFocusOnInteraction="False"
                                                                 IsThumbToolTipEnabled="True"
                                                                 Value="50" />
                                                             <TextBlock
@@ -619,6 +622,7 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="SkipIntroButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="5"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
                                                 ToolTipService.ToolTip="Skip Intro">
@@ -628,6 +632,7 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="CCSelectionButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="15"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -639,6 +644,7 @@
                                                 x:Name="PlaybackRateButton"
                                                 Width="48"
                                                 Height="48"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="10"
                                                 Visibility="Collapsed">
                                                 <AppBarButton.Style>
@@ -652,6 +658,7 @@
                                             <AppBarSeparator x:Name="SkipIntroSeparator" />
                                             <AppBarButton
                                                 x:Name="AudioTracksSelectionButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="13"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -666,12 +673,14 @@
                                                 Margin="0,0" />
                                             <AppBarButton
                                                 x:Name="StopButton"
+                                                AllowFocusOnInteraction="False"
                                                 Icon="Stop"
                                                 MediaTransportControlsHelper.DropoutOrder="7"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed" />
                                             <AppBarButton
                                                 x:Name="SkipBackwardButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="5"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -681,12 +690,14 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="PreviousTrackButton"
+                                                AllowFocusOnInteraction="False"
                                                 Icon="Previous"
                                                 MediaTransportControlsHelper.DropoutOrder="3"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
                                                 Visibility="Collapsed" />
                                             <AppBarButton
                                                 x:Name="RewindButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="1"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -696,6 +707,7 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="PlayPauseButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="23"
                                                 Style="{StaticResource AppBarButtonStyle}">
                                                 <AppBarButton.Icon>
@@ -704,6 +716,7 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="FastForwardButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="1"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -713,6 +726,7 @@
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="NextTrackButton"
+                                                AllowFocusOnInteraction="False"
                                                 Icon="Next"
                                                 MediaTransportControlsHelper.DropoutOrder="3"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
@@ -720,6 +734,7 @@
 
                                             <AppBarButton
                                                 x:Name="SkipForwardButton"
+                                                AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="5"
                                                 Style="{StaticResource AppBarButtonStyle}"
                                                 Visibility="Collapsed">
@@ -734,7 +749,10 @@
                                                 VerticalContentAlignment="Center"
                                                 MediaTransportControlsHelper.DropoutOrder="17"
                                                 ToolTipService.ToolTip="Open Chapter List">
-                                                <ToggleButton x:Name="OpenPanelButton" IsChecked="{Binding IsPanelOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                                <ToggleButton
+                                                    x:Name="OpenPanelButton"
+                                                    AllowFocusOnInteraction="False"
+                                                    IsChecked="{Binding IsPanelOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
                                                     <FontIcon Glyph="&#xE8A0;" />
                                                 </ToggleButton>
                                             </AppBarElementContainer>
@@ -745,6 +763,7 @@
                                             </AppBarButton>-->
                                             <local2:AppBarWindowPresenterStateButton
                                                 x:Name="FullScreenButton"
+                                                AllowFocusOnInteraction="False"
                                                 IsFullScreen="False"
                                                 MediaTransportControlsHelper.DropoutOrder="17"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
