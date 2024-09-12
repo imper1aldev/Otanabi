@@ -22,7 +22,14 @@
         <media:AttachedCardShadow x:Key="CommonShadow" Offset="4" />
 
     </Page.Resources>
-    <Grid x:Name="ContentArea" VerticalAlignment="Stretch">
+    <usercontrols:MouseGrid x:Name="ContentArea" VerticalAlignment="Stretch">
+        <interactivity:Interaction.Behaviors>
+            <interactions:EventTriggerBehavior EventName="PointerMoved">
+                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PointerMovedCommand}" />
+            </interactions:EventTriggerBehavior>
+        </interactivity:Interaction.Behaviors>
+
+
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -281,5 +288,5 @@
                 </MediaPlayerElement>
             </Grid>
         </SplitView>
-    </Grid>
+    </usercontrols:MouseGrid>
 </Page>

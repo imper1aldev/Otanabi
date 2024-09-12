@@ -2,6 +2,7 @@
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -23,13 +24,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
     private readonly IWindowPresenterService _windowPresenterService;
-    private readonly LoggerService logger = new();
+    private readonly WindowEx _windowEx;
+
     private Chapter selectedChapter;
     private History selectedHistory;
     private Provider selectedProvider;
-    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
-
-    //private List<Chapter> chapterList;
 
     private static System.Timers.Timer? MainTimerForSave;
     private static System.Timers.Timer? RewindTimer;
@@ -39,16 +38,22 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool IsRewindTimerRunning = false;
     private readonly int forwardTime = 1000;
 
+    private const int rewindOffset10s = 10;
+    private const int rewindOffset3s = 3;
+    private const int rewindOffset60s = 60;
+
     private readonly DatabaseService dbService = new();
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly SelectSourceService _selectSourceService = new();
+    private readonly LoggerService logger = new();
 
     private MediaSource videoUrl;
     private MediaPlaybackItem MpItem;
     private MediaPlayerElement MPE;
-    private string AppCurTitle = "";
+    private readonly string AppCurTitle = "";
     private bool IsPaused = false;
     private bool IsDisposed = false;
+    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -71,6 +76,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [ObservableProperty]
     private bool rewindVisible = false;
 
+    [ObservableProperty]
+    private bool loadingVideo = false;
+
     private string animeTitle = "";
     private string activeCC = "";
 
@@ -79,21 +87,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
-    private const int rewindOffset10s = 10;
-    private const int rewindOffset3s = 3;
-    private const int rewindOffset60s = 60;
+    private InputSystemCursor inputCursor;
+    private readonly DispatcherTimer pointerHideTimer = new ( ){ Interval = TimeSpan.FromSeconds(2) };
 
-    private WindowEx _windowEx;
-
-    //this thing will block the interface to prevent problems
-    [ObservableProperty]
-    private bool loadingVideo = false;
-
-    private readonly DispatcherTimer controlsHideTimer =
-        new()
-        {
-            Interval = TimeSpan.FromSeconds(1),
-        };
 
     public VideoPlayerViewModel(
         INavigationService navigationService,
@@ -126,6 +122,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         FastTimer.Elapsed += HideFast;
 
         /* END*/
+
+        //pointer hide timer
+        pointerHideTimer.Tick += Timer_Tick;
+
     }
 
     private void HideRewind(object source, ElapsedEventArgs e)
@@ -571,11 +571,45 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(IsNotFullScreen));
     }
 
+
+    [RelayCommand]
+    private void PointerMoved(PointerRoutedEventArgs? args)
+    {
+        //
+        //inputCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
+        //OnChangePointer(this,inputCursor);
+
+        if (inputCursor == null)
+        {
+            ShowPointer();
+        }else
+        {
+            pointerHideTimer.Stop();
+            pointerHideTimer.Start();
+        }
+    }
+    private void ShowPointer()
+    {
+        inputCursor = InputSystemCursor.Create(InputSystemCursorShape.Arrow);
+        OnChangePointer(this, inputCursor);
+    }
+    private void HidePointer()
+    {
+        inputCursor = null;
+        OnClearPointer(this, null);
+    }
+    private void Timer_Tick(object? sender, object e)
+    {
+        HidePointer();
+        pointerHideTimer.Stop();
+    }
+
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
         IsDisposed = true;
         _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
+        pointerHideTimer.Tick -= Timer_Tick;
         _dispatcherQueue.TryEnqueue(() =>
         {
             MainTimerForSave.Stop();
@@ -590,4 +624,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             GC.Collect();
         });
     }
+    public event EventHandler<InputSystemCursor> OnChangePointer;
+    public event EventHandler OnClearPointer;
 }
