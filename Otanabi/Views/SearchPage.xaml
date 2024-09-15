@@ -31,17 +31,20 @@
                 <RowDefinition />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="200" />
                 <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
 
             <AutoSuggestBox
-                Grid.Row="0" Grid.Column="0"
+                Grid.Row="0"
+                Grid.Column="0"
                 Height="50"
-                Margin="0,0,15,0" VerticalAlignment="Top"
+                Margin="0,0,15,0"
+                VerticalAlignment="Top"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
+                AllowFocusOnInteraction="True"
                 PlaceholderText="Search... (press Enter to search) "
                 QueryIcon="Find"
                 QuerySubmitted="{x:Bind ViewModel.OnAutoComplete}">
@@ -49,9 +52,20 @@
                     <x:Double x:Key="AutoSuggestBoxIconFontSize">20</x:Double>
                 </AutoSuggestBox.Resources>
             </AutoSuggestBox>
+            <!--<Border
+                Grid.Row="0"
+                Grid.Column="0"
+                Height="50">
+                <StackPanel HorizontalAlignment="Stretch" Orientation="Horizontal">
+                    <TextBox AllowFocusOnInteraction="True" PlaceholderText="Search... (press Enter to search)" />
+                </StackPanel>
+            </Border>-->
+
             <Button
-                Grid.Row="0" Grid.Column="1"
-                Width="200" Height="50"
+                Grid.Row="0"
+                Grid.Column="1"
+                Width="200"
+                Height="50"
                 Margin="0,0,15,0"
                 Content="Filters">
                 <Button.Flyout>
@@ -63,11 +77,19 @@
                                     <TextBlock Text="Reset" />
                                 </StackPanel>
                             </Button>
-                            <ItemsRepeater x:Name="itemsRepeater" Margin="0,15,0,0" HorizontalAlignment="Left" ItemsSource="{x:Bind ViewModel.Tags, Mode=OneWay}">
+                            <ItemsRepeater
+                                x:Name="itemsRepeater"
+                                Margin="0,15,0,0"
+                                HorizontalAlignment="Left"
+                                ItemsSource="{x:Bind ViewModel.Tags, Mode=OneWay}">
                                 <ItemsRepeater.ItemTemplate>
                                     <DataTemplate x:DataType="models:Tag">
                                         <StackPanel Orientation="Vertical">
-                                            <CheckBox Margin="5" HorizontalAlignment="Left" Content="{Binding Name}" IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                            <CheckBox
+                                                Margin="5"
+                                                HorizontalAlignment="Left"
+                                                Content="{Binding Name}"
+                                                IsChecked="{Binding IsChecked, Mode=TwoWay}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </ItemsRepeater.ItemTemplate>
@@ -77,14 +99,15 @@
                 </Button.Flyout>
             </Button>
             <ComboBox
-                Grid.Row="0" Grid.Column="2"
-                Width="150" Height="50"
+                Grid.Row="0"
+                Grid.Column="2"
+                Width="150"
+                Height="50"
                 HorizontalAlignment="Right"
+                AllowFocusOnInteraction="True"
                 DisplayMemberPath="Name"
-                ItemsSource="{x:Bind ViewModel.Providers,
-                                     Mode=OneWay}"
-                SelectedItem="{x:Bind ViewModel.SelectedProvider,
-                                      Mode=TwoWay}">
+                ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                 <interactivity:Interaction.Behaviors>
                     <interactions:EventTriggerBehavior EventName="SelectionChanged">
                         <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ProviderChangedCommand}" />
@@ -95,16 +118,18 @@
         </Grid>
 
 
-        <ProgressBar Grid.Row="2" IsIndeterminate="True" Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+        <ProgressBar
+            Grid.Row="2"
+            IsIndeterminate="True"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
 
         <TextBlock
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            FontSize="38" Text="No results found"
-            Visibility="{x:Bind ViewModel.NoResults,
-                                Mode=OneWay,
-                                Converter={StaticResource BoolToVisibilityConverter}}" />
+            FontSize="38"
+            Text="No results found"
+            Visibility="{x:Bind ViewModel.NoResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
 
         <c:AdaptiveGridView
             x:Name="AnimeGrid"
@@ -112,19 +137,28 @@
             Margin="0,10,0,50"
             animations:Connected.ListItemElementName="itemThumbnail"
             animations:Connected.ListItemKey="animationKeyContentGrid"
-            DesiredWidth="180" IsItemClickEnabled="True"
+            DesiredWidth="180"
+            IsItemClickEnabled="True"
             ItemClickCommand="{x:Bind ViewModel.ItemClickCommand}"
-            ItemsSource="{x:Bind ViewModel.Source,
-                                 Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}"
             SelectionMode="Single"
             StretchContentForSingleRow="False">
             <animations:Implicit.ShowAnimations>
-                <animations:TranslationAnimation From="0, -10, 0" To="0" Duration="0:0:1" />
-                <animations:OpacityAnimation From="0" To="1.0" Duration="0:0:1" />
+                <animations:TranslationAnimation
+                    From="0, -10, 0"
+                    To="0"
+                    Duration="0:0:1" />
+                <animations:OpacityAnimation
+                    From="0"
+                    To="1.0"
+                    Duration="0:0:1" />
             </animations:Implicit.ShowAnimations>
             <animations:Implicit.HideAnimations>
                 <animations:OpacityAnimation To="0.0" Duration="0:0:1" />
-                <animations:ScalarAnimation Target="Translation.Y" To="10" Duration="0:0:1">
+                <animations:ScalarAnimation
+                    Target="Translation.Y"
+                    To="10"
+                    Duration="0:0:1">
                     <animations:ScalarKeyFrame Key="0.1" Value="30" />
                     <animations:ScalarKeyFrame Key="0.5" Value="0.0" />
                 </animations:ScalarAnimation>
@@ -132,7 +166,11 @@
             <c:AdaptiveGridView.ItemTemplate>
                 <DataTemplate x:DataType="models:Anime">
 
-                    <Grid x:Name="itemThumbnail" Height="300" MaxHeight="300" Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
+                    <Grid
+                        x:Name="itemThumbnail"
+                        Height="300"
+                        MaxHeight="300"
+                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
                         <!--<Grid.ContextFlyout>
                             <MenuFlyout>
                                 <MenuFlyoutItem Text="Add To Favorites"
@@ -150,31 +188,50 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="50" />
                         </Grid.RowDefinitions>
-                        <Image Grid.Row="0" CacheMode="BitmapCache" Source="{x:Bind Cover}" Stretch="UniformToFill" />
+                        <Image
+                            Grid.Row="0"
+                            CacheMode="BitmapCache"
+                            Source="{x:Bind Cover}"
+                            Stretch="UniformToFill" />
                         <Border
                             Width="80"
-                            Margin="5,0,0,5" HorizontalAlignment="Left"
+                            Margin="5,0,0,5"
+                            HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
-                            Background="#4cc2ff" CornerRadius="8">
-                            <TextBlock HorizontalAlignment="Center" Foreground="Black" Text="{x:Bind TypeStr}" />
+                            Background="#4cc2ff"
+                            CornerRadius="8">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="Black"
+                                Text="{x:Bind TypeStr}" />
                         </Border>
                         <TextBlock
                             Grid.Row="1"
-                            Padding="0,3,0,3" VerticalAlignment="Center"
+                            Padding="0,3,0,3"
+                            VerticalAlignment="Center"
                             FontSize="13"
                             Text="{x:Bind Title}"
-                            TextAlignment="Center" TextWrapping="Wrap" />
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
                     </Grid>
                 </DataTemplate>
             </c:AdaptiveGridView.ItemTemplate>
         </c:AdaptiveGridView>
 
-        <Grid Grid.Row="3" Margin="0,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+        <Grid
+            Grid.Row="3"
+            Margin="0,0,0,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <ScrollView Grid.Row="0" />
-            <Button Grid.Row="0" Command="{x:Bind ViewModel.LoadMoreCommand}" Content="Load More Content" IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
+            <Button
+                Grid.Row="0"
+                Command="{x:Bind ViewModel.LoadMoreCommand}"
+                Content="Load More Content"
+                IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
         </Grid>
     </Grid>
 </Page>

@@ -16,8 +16,8 @@ public sealed partial class FavoritesPage : Page
 
     public FavoritesPage()
     {
-        ViewModel = App.GetService<FavoritesViewModel>();
         InitializeComponent();
+        ViewModel = App.GetService<FavoritesViewModel>();
     }
 
 
@@ -90,7 +90,6 @@ public sealed partial class FavoritesPage : Page
         txtNew.Text = "";
         FavCombob.SelectedValue = null;
         FavCombob.Items.Clear();
-        FavEditFlyout.Hide();
 
     }
 
@@ -109,6 +108,13 @@ public sealed partial class FavoritesPage : Page
                 await loadFavoriteList();
             }
         }
+
+    }
+
+    private async void OpenConfigDialog(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        ConfigFavsDialog.XamlRoot=this.XamlRoot;
+        var result = await ConfigFavsDialog.ShowAsync();
 
     }
 }

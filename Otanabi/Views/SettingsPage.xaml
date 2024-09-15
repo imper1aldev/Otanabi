@@ -16,7 +16,10 @@
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
-        <Style x:Key="SettingsSectionHeaderTextBlockStyle" BasedOn="{StaticResource BodyStrongTextBlockStyle}" TargetType="TextBlock">
+        <Style
+            x:Key="SettingsSectionHeaderTextBlockStyle"
+            BasedOn="{StaticResource BodyStrongTextBlockStyle}"
+            TargetType="TextBlock">
             <Style.Setters>
                 <Setter Property="Margin" Value="1,30,0,6" />
             </Style.Setters>
@@ -26,11 +29,19 @@
     <Grid Margin="20,20,20,10">
         <StackPanel x:Name="ContentArea">
 
-            <controls:SettingsCard Margin="0,10,0,0" Description="Select which app theme to display" Header="App theme">
+            <controls:SettingsCard
+                Margin="0,10,0,0"
+                Description="Select which app theme to display"
+                Header="App theme">
                 <controls:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE790;" />
                 </controls:SettingsCard.HeaderIcon>
-                <ComboBox x:Name="themeMode" Width="180" Height="50" SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=OneWay}">
+                <ComboBox
+                    x:Name="themeMode"
+                    Width="180"
+                    Height="50"
+                    AllowFocusOnInteraction="True"
+                    SelectedIndex="{x:Bind ViewModel.SelectedThemeIndex, Mode=OneWay}">
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
                             <core:InvokeCommandAction Command="{x:Bind ViewModel.SwitchThemeCommand}" CommandParameter="{Binding ElementName=themeMode}" />
@@ -51,13 +62,13 @@
                 Header="Default Provider"
                 HeaderIcon="{ui:FontIcon Glyph=&#xF6FA;}">
                 <ComboBox
-                    Width="180" Height="50"
+                    Width="180"
+                    Height="50"
                     HorizontalAlignment="Right"
+                    AllowFocusOnInteraction="True"
                     DisplayMemberPath="Name"
-                    ItemsSource="{x:Bind ViewModel.Providers,
-                                         Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.SelectedProvider,
-                                          Mode=TwoWay}">
+                    ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
                             <core:InvokeCommandAction Command="{x:Bind ViewModel.ChangedProviderCommand}" />
@@ -67,13 +78,25 @@
             </controls:SettingsCard>
 
 
-            <TextBlock Margin="0,10,0,0" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="About" />
+            <TextBlock
+                Margin="0,10,0,0"
+                Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
+                Text="About" />
 
-            <controls:SettingsExpander Margin="0,10,0,0" Header="{x:Bind ViewModel.AppName, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xECC5;}">
-                <TextBlock IsTextSelectionEnabled="True" Style="{ThemeResource BodyTextBlockStyle}" Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" />
+            <controls:SettingsExpander
+                Margin="0,10,0,0"
+                Header="{x:Bind ViewModel.AppName, Mode=OneWay}"
+                HeaderIcon="{ui:FontIcon Glyph=&#xECC5;}">
+                <TextBlock
+                    IsTextSelectionEnabled="True"
+                    Style="{ThemeResource BodyTextBlockStyle}"
+                    Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" />
 
                 <controls:SettingsExpander.Items>
-                    <controls:SettingsCard x:Name="CheckUpdate" Description="{x:Bind ViewModel.VersionMessage, Mode=OneWay}" Header="Check For Application Updates">
+                    <controls:SettingsCard
+                        x:Name="CheckUpdate"
+                        Description="{x:Bind ViewModel.VersionMessage, Mode=OneWay}"
+                        Header="Check For Application Updates">
                         <Button Command="{x:Bind ViewModel.CheckUpdatesCommand}">
                             <FontIcon Glyph="&#xECC5;" />
                         </Button>
