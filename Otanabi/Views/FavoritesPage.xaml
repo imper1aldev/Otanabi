@@ -5,9 +5,11 @@
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Otanabi.Core.Models"
-    NavigationCacheMode="Enabled"
+    xmlns:usercontrols="using:Otanabi.UserControls"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea" Margin="20,20,20,10">
@@ -30,7 +32,13 @@
                 HorizontalAlignment="Left"
                 HorizontalScrollBarVisibility="Auto"
                 HorizontalScrollMode="Enabled">
-                <SelectorBar x:Name="FavoriteListBar" SelectionChanged="FavoriteListBar_SelectionChanged" />
+                <usercontrols:FavSelectorBar x:Name="FavoriteListBar" ItemSource="{x:Bind ViewModel.FavBarItems, Mode=OneWay}">
+                    <interactivity:Interaction.Behaviors>
+                        <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.GetAnimesByFavListCommand}" CommandParameter="{Binding ElementName=FavoriteListBar}" />
+                        </interactions:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                </usercontrols:FavSelectorBar>
             </ScrollViewer>
             <Button
                 Grid.Column="1"
@@ -125,11 +133,13 @@
                     <TextBlock VerticalAlignment="Center" Text="Add new List" />
                     <TextBox
                         x:Name="txtNew"
-                        Width="200"
+                        Width="250"
                         VerticalAlignment="Center"
-                        AllowFocusOnInteraction="True" />
+                        AllowFocusOnInteraction="True"
+                        Text="{x:Bind ViewModel.NewFavName, Mode=TwoWay}" />
                     <Button
-                        Click="Button_add_fav_Click"
+                        AllowFocusOnInteraction="True"
+                        Command="{x:Bind ViewModel.AddFavoriteCommand}"
                         Content="Add"
                         Style="{StaticResource AccentButtonStyle}" />
                 </StackPanel>
@@ -162,25 +172,41 @@
                                 x:Name="FavCombob"
                                 Grid.Row="0"
                                 Grid.Column="0"
-                                AllowFocusOnInteraction="True" />
+                                Width="400"
+                                HorizontalAlignment="Left"
+                                HorizontalContentAlignment="Stretch"
+                                AllowFocusOnInteraction="True"
+                                DisplayMemberPath="Name"
+                                ItemsSource="{x:Bind ViewModel.FavoriteList}"
+                                SelectedItem="{x:Bind ViewModel.SelectedToUpdate, Mode=TwoWay}">
+
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.SetUpdatedNameCommand}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
+                            </ComboBox>
                             <TextBox
                                 x:Name="FavTxtUpdate"
                                 Grid.Row="1"
                                 Grid.Column="0"
-                                AllowFocusOnInteraction="True" />
+                                Margin="0,30,0,0"
+                                AllowFocusOnInteraction="True"
+                                Text="{x:Bind ViewModel.UpdateFavName, Mode=TwoWay}" />
 
                         </Grid>
 
-                        <Grid>
+                        <Grid Margin="0,15,0,0">
                             <Button
                                 HorizontalAlignment="Left"
-                                Click="Button_update_fav_Click"
+                                Command="{x:Bind ViewModel.UpdateFavoriteCommand}"
+                                CommandParameter="{Binding ElementName=FavTxtUpdate, Path=Text}"
                                 Content="Update"
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 HorizontalAlignment="Right"
                                 Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
-                                Click="Button_delete_fav_Click"
+                                Command="{x:Bind ViewModel.DeleteFavoriteCommand}"
                                 Content="Delete" />
                         </Grid>
                     </StackPanel>
