@@ -9,8 +9,8 @@
     <ApplicationIcon>Assets/Otanabi_icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
-    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <PublishProfile>Properties\PublishProfiles\win-$(Platform).pubxml</PublishProfile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable> 
     <UseWinUI>true</UseWinUI>
@@ -40,6 +40,7 @@
     <None Remove="SplashScreen.xaml" />
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
+    <None Remove="UserControls\AnimePaneControl.xaml" />
 
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>
@@ -84,6 +85,9 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <Page Update="UserControls\AnimePaneControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="SplashScreen.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page> 
@@ -107,7 +111,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    </Compile> 
   </ItemGroup>
 
   <ItemGroup>

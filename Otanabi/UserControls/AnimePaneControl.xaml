@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Otanabi.UserControls.AnimePaneControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    xmlns:converteres="using:Otanabi.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:local="using:Otanabi.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Otanabi.Core.Models"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converteres:TruncateConverter x:Key="truncateConverter" />
+        <Border x:Key="HoverBg" Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}" />
+        <Border x:Key="NormalBg" Background="Transparent" />
+
+    </UserControl.Resources>
+    <Grid>
+        <ScrollViewer Padding="0,0,16,0" IsVerticalScrollChainingEnabled="False">
+            <ItemsRepeater ItemsSource="{x:Bind Items, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        MinColumnSpacing="10"
+                        MinItemHeight="270"
+                        MinItemWidth="160"
+                        MinRowSpacing="8" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:Anime">
+                        <Grid x:Name="Root">
+                            <Border
+                                x:Name="Card"
+                                PointerEntered="Card_PointerEntered"
+                                PointerExited="Card_PointerExited">
+                                <Grid>
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip Content="{x:Bind Title}" HorizontalOffset="20" />
+                                    </ToolTipService.ToolTip>
+                                    <Image
+                                        Width="160"
+                                        Height="227"
+                                        VerticalAlignment="Top"
+                                        Source="{x:Bind Cover}" />
+                                    <Border
+                                        Width="50"
+                                        Margin="5,0,0,5"
+                                        HorizontalAlignment="Left"
+                                        VerticalAlignment="Top"
+                                        Background="{ThemeResource SystemAccentColor}"
+                                        CornerRadius="8"
+                                        Opacity="0.8">
+                                        <TextBlock
+                                            HorizontalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                            Text="{x:Bind TypeStr}" />
+                                    </Border>
+                                    <Border Height="43" VerticalAlignment="Bottom">
+                                        <TextBlock
+                                            Padding="6,6,6,6"
+                                            VerticalAlignment="Center"
+                                            FontSize="13"
+                                            Text="{x:Bind Title, Converter={StaticResource truncateConverter}, ConverterParameter=35}"
+                                            TextAlignment="Center"
+                                            TextWrapping="Wrap" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="Card.Background" Value="Blue" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>

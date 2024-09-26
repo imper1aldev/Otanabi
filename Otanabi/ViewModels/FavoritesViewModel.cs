@@ -100,7 +100,7 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
             SelectorBarItem newItem =
                 new()
                 {
-                    Text = $"{f.Name} -{f.Id}",
+                    Text = $"{f.Name}",
                     IsSelected = counter == 1 ? true : false,
                     Tag = f.Id
                 };
