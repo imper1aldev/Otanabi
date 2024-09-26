@@ -15,9 +15,9 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <converteres:TruncateConverter x:Key="truncateConverter" />
+        <!--  Workaround for change ThemeResources from code  -->
         <Border x:Key="HoverBg" Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}" />
         <Border x:Key="NormalBg" Background="Transparent" />
-
     </UserControl.Resources>
     <Grid>
         <ScrollViewer Padding="0,0,16,0" IsVerticalScrollChainingEnabled="False">

@@ -1,15 +1,10 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Xml.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Otanabi.Core.Models;
 using Windows.UI;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Otanabi.UserControls;
 
@@ -45,17 +40,14 @@ public sealed partial class AnimePaneControl : UserControl
         }
     }
 
-    private void Card_PointerEntered(
-        object sender,
-        Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e
-    )
+    private void Card_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
         if (sender is Border border)
         {
             var bg = (Border)this.Resources["HoverBg"];
             border.Background = bg.Background;
             var prev = (Grid)border.Parent;
-           border.TabIndex=2;
+            border.TabIndex = 2;
             var dd = typeof(Border);
             SetScaleAnimation(border, 1, 1.025, 0.2);
         }
@@ -66,7 +58,7 @@ public sealed partial class AnimePaneControl : UserControl
         if (sender is Border border)
         {
             var bg = (Border)this.Resources["NormalBg"];
-            border.Background = bg.Background; 
+            border.Background = bg.Background;
             SetScaleAnimation(border, 1.025, 1, 0.2);
         }
     }
@@ -87,10 +79,7 @@ public sealed partial class AnimePaneControl : UserControl
             AutoReverse = false
         };
         Storyboard.SetTarget(scaleXAnimation, target);
-        Storyboard.SetTargetProperty(
-            scaleXAnimation,
-            "(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-        );
+        Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
         storyboard.Children.Add(scaleXAnimation);
 
         // Define the animation for ScaleY
@@ -101,14 +90,11 @@ public sealed partial class AnimePaneControl : UserControl
             Duration = new Duration(TimeSpan.FromSeconds(duration)),
             AutoReverse = false
         };
-         
+
         Storyboard.SetTarget(scaleYAnimation, target);
-        Storyboard.SetTargetProperty(
-            scaleYAnimation,
-            "(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-        );
+        Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
         storyboard.Children.Add(scaleYAnimation);
-         
+
         // Start the animation
         storyboard.Begin();
     }
