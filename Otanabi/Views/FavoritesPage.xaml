@@ -50,8 +50,6 @@
                 Click="OpenConfigDialog">
                 <FontIcon Glyph="&#xE713;" />
             </Button>
-
-
         </Grid>
         <!--<controls:AdaptiveGridView
             Grid.Row="1"
@@ -128,7 +126,17 @@
             </controls:AdaptiveGridView.ItemTemplate>
         </controls:AdaptiveGridView>-->
 
-        <usercontrols:AnimePaneControl Grid.Row="1" ItemsSource="{x:Bind ViewModel.FavoriteAnimes, Mode=OneWay}" />
+        <usercontrols:AnimePaneControl
+            x:Name="AnimePanel"
+            Grid.Row="1"
+            FavoriteListId="{x:Bind ViewModel.CurrentFavId, Mode=OneWay}"
+            ItemsSource="{x:Bind ViewModel.FavoriteAnimes, Mode=OneWay}">
+            <interactivity:Interaction.Behaviors>
+                <interactions:EventTriggerBehavior EventName="AnimeSelected">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.AnimeClickCommand}" />
+                </interactions:EventTriggerBehavior>
+            </interactivity:Interaction.Behaviors>
+        </usercontrols:AnimePaneControl>
 
         <ContentDialog x:Name="ConfigFavsDialog" CloseButtonText="Close">
             <StackPanel Width="Auto">

@@ -15,6 +15,59 @@
     mc:Ignorable="d">
     <UserControl.Resources>
         <converteres:TruncateConverter x:Key="truncateConverter" />
+
+        <Style x:Key="BaseButton" TargetType="Button">
+            <Setter Property="Background" Value="#8b000000" />
+            <Setter Property="CornerRadius" Value="8,8,8,8" />
+            <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ButtonRevealBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{ThemeResource ButtonRevealBorderThemeThickness}" />
+            <Setter Property="Padding" Value="{ThemeResource ButtonPadding}" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+            <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+            <Setter Property="FocusVisualMargin" Value="-3" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="RootGrid">
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                AutomationProperties.AccessibilityView="Raw"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                CornerRadius="8,8,8,8" />
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentPresenter.Background" Value="#8b000000" />
+                                            <Setter Target="ContentPresenter.Foreground" Value="White" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="PointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentPresenter.Background" Value="#c5000000" />
+                                            <Setter Target="ContentPresenter.Foreground" Value="White" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
         <!--  Workaround for change ThemeResources from code  -->
         <Border x:Key="HoverBg" Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}" />
         <Border x:Key="NormalBg" Background="Transparent" />
@@ -32,11 +85,16 @@
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="models:Anime">
-                        <Grid x:Name="Root">
+                        <Grid
+                            x:Name="Root"
+                            AllowFocusOnInteraction="True"
+                            DataContext="{x:Bind}">
                             <Border
                                 x:Name="Card"
+                                DataContext="{x:Bind}"
                                 PointerEntered="Card_PointerEntered"
-                                PointerExited="Card_PointerExited">
+                                PointerExited="Card_PointerExited"
+                                PointerPressed="Card_PointerPressed">
                                 <Grid>
                                     <ToolTipService.ToolTip>
                                         <ToolTip Content="{x:Bind Title}" HorizontalOffset="20" />
@@ -58,6 +116,16 @@
                                             HorizontalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                             Text="{x:Bind TypeStr}" />
+                                    </Border>
+                                    <Border HorizontalAlignment="Right" VerticalAlignment="Top">
+                                        <Button
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Click="SubMenuOpen"
+                                            DataContext="{x:Bind}"
+                                            Style="{StaticResource BaseButton}">
+                                            <FontIcon Glyph="&#xE712;" />
+                                        </Button>
                                     </Border>
                                     <Border Height="43" VerticalAlignment="Bottom">
                                         <TextBlock

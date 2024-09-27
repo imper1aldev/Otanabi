@@ -1,14 +1,12 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.ViewModels;
 
@@ -38,9 +36,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private Tag[] OriginalTags = Array.Empty<Tag>();
 
-    public SearchViewModel(
-        INavigationService navigationService, ILocalSettingsService localSettingsService
-        )
+    public SearchViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
     {
         _navigationService = navigationService;
         _localSettingsService = localSettingsService;
@@ -64,8 +60,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             await LoadMainAnimePage();
             LoadTags();
         }
-
     }
+
     private async Task GetProviders()
     {
         var provs = _searchAnimeService.GetProviders();
@@ -77,11 +73,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         await Task.CompletedTask;
     }
 
-
-
     public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-
         Source.Clear();
         var queryText = args.QueryText.ToString();
         currQuery = queryText;
@@ -89,8 +82,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         if (currQuery == "")
             await LoadMainAnimePage();
         else
-            await SearchManga(queryText);
+            await Search(queryText);
     }
+
     public async Task LoadMainAnimePage()
     {
         IsLoading = true;
@@ -107,9 +101,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         {
             Source.Add(item);
         }
+        OnPropertyChanged(nameof(Source));
         IsLoading = false;
     }
-    public async Task SearchManga(string query)
+
+    public async Task Search(string query)
     {
         NoResults = false;
         IsLoading = true;
@@ -125,8 +121,10 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         {
             Source.Add(item);
         }
+        OnPropertyChanged(nameof(Source));
         IsLoading = false;
     }
+
     private void LoadTags()
     {
         var filters = _searchAnimeService.GetTags(SelectedProvider);
@@ -138,11 +136,10 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             }
             OriginalTags = (Tag[])filters.Clone();
         }
+    }
 
-    }
-    public void OnNavigatedFrom()
-    {
-    }
+    public void OnNavigatedFrom() { }
+
     private void ResetData()
     {
         Source.Clear();
@@ -159,6 +156,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem);
         }
     }
+
     [RelayCommand]
     private async Task LoadMore()
     {
@@ -171,9 +169,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         if (currQuery == "")
             await LoadMainAnimePage();
         else
-            await SearchManga(currQuery);
-
+            await Search(currQuery);
     }
+
     [RelayCommand]
     private async Task OnProviderChanged()
     {
@@ -181,6 +179,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         LoadTags();
         await LoadMainAnimePage();
     }
+
     [RelayCommand]
     private void ResetFilterBox()
     {

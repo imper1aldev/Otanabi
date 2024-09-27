@@ -16,11 +16,12 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
     private readonly DatabaseService dbService = new();
     public ObservableCollection<Anime> FavoriteAnimes { get; } = new ObservableCollection<Anime>();
 
-    public ObservableCollection<SelectorBarItem> FavBarItems { get; } =
-        new ObservableCollection<SelectorBarItem>();
+    public ObservableCollection<SelectorBarItem> FavBarItems { get; } = new ObservableCollection<SelectorBarItem>();
 
-    public ObservableCollection<FavoriteList> FavoriteList { get; } =
-        new ObservableCollection<FavoriteList>();
+    public ObservableCollection<FavoriteList> FavoriteList { get; } = new ObservableCollection<FavoriteList>();
+
+    [ObservableProperty]
+    private int _currentFavId = 0;
 
     [ObservableProperty]
     private string _newFavName = string.Empty;
@@ -43,6 +44,8 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
         await LoadFavoriteList(true);
     }
 
+    public event EventHandler FavoreListChanged;
+
     [RelayCommand]
     public async Task GetAnimesByFavList(object param)
     {
@@ -58,7 +61,7 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
             {
                 if (FavoriteList.Count > 0)
                 {
-                   await GetAnimesByFavList(FavoriteList.First().Id);
+                    await GetAnimesByFavList(FavoriteList.First().Id);
                 }
             }
         }
@@ -72,6 +75,8 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
             return;
         }
         var data = await dbService.GetFavAnimeByList(favId);
+        CurrentFavId = favId;
+        OnPropertyChanged(nameof(CurrentFavId));
         foreach (var anime in data)
         {
             FavoriteAnimes.Add(anime);
@@ -80,9 +85,9 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private void AnimeClick(Anime anime)
+    private void AnimeClick(object param)
     {
-        if (anime != null)
+        if (param != null && param is Anime anime)
         {
             _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, anime);
         }
@@ -100,9 +105,9 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
             SelectorBarItem newItem =
                 new()
                 {
-                    Text = $"{f.Name}",
+                    Text = $"{f.Name} {f.Id}",
                     IsSelected = counter == 1 ? true : false,
-                    Tag = f.Id
+                    Tag = f.Id,
                 };
             FavBarItems.Add(newItem);
             FavoriteList.Add(f);
@@ -110,12 +115,14 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
         if (firstLoad)
         {
             await GetAnimesByFavList(fList[0].Id);
-        }else
+        }
+        else
         {
             OnPropertyChanged(nameof(FavBarItems));
-            var id = FavBarItems.First(x=>x.IsSelected==true).Tag;
+            var id = FavBarItems.First(x => x.IsSelected == true).Tag;
             await GetAnimesByFavList((id));
         }
+        FavoreListChanged?.Invoke(this, EventArgs.Empty);
     }
 
     [RelayCommand]
@@ -132,8 +139,7 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
 
     [RelayCommand]
     public async Task UpdateFavorite(object param)
-
-    { 
+    {
         if (param is string newName && SelectedToUpdate != null)
         {
             if (newName.Length > 3 && newName.Length < 60)
@@ -145,7 +151,7 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
                 await LoadFavoriteList();
                 UpdateFavName = "";
             }
-        } 
+        }
     }
 
     [RelayCommand]
