@@ -74,7 +74,7 @@
     </UserControl.Resources>
     <Grid>
         <ScrollViewer Padding="0,0,16,0" IsVerticalScrollChainingEnabled="False">
-            <ItemsRepeater ItemsSource="{x:Bind Items, Mode=OneWay}">
+            <ItemsRepeater ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
                         ItemsJustification="Start"

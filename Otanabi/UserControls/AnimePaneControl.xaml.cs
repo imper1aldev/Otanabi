@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
@@ -24,16 +25,19 @@ public sealed partial class AnimePaneControl : UserControl
         this.InitializeComponent();
     }
 
-    private readonly SolidColorBrush NormalStateColor = new(Color.FromArgb(255, 0, 0, 0));
-    private readonly SolidColorBrush FocusStateColor = new(Color.FromArgb(255, 0, 0, 0));
-
-    public ObservableCollection<Anime> Items { get; } = new ObservableCollection<Anime>();
     public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         "ItemsSource",
         typeof(ObservableCollection<Anime>),
         typeof(AnimePaneControl),
         null
     );
+
+    public ObservableCollection<Anime> ItemsSource
+    {
+        get => (ObservableCollection<Anime>)GetValue(ItemsSourceProperty);
+        set => SetValue(ItemsSourceProperty, value);
+    }
+
     public static DependencyProperty FavoriteListIdProperty = DependencyProperty.Register(
         "FavoriteListId",
         typeof(int),
@@ -46,19 +50,6 @@ public sealed partial class AnimePaneControl : UserControl
         set => SetValue(FavoriteListIdProperty, value);
     }
     private FavoriteList[] Favorites = [];
-    public ObservableCollection<Anime> ItemsSource
-    {
-        get => (ObservableCollection<Anime>)GetValue(ItemsSourceProperty);
-        set
-        {
-            SetValue(ItemsSourceProperty, value);
-            Items.Clear();
-            foreach (var item in value)
-            {
-                Items.Add(item);
-            }
-        }
-    }
 
     private void Card_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
