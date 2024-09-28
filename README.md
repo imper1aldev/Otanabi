@@ -28,7 +28,7 @@ Quick start guide to building this App locally:
 **Required [Visual Studio components](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=cs-vs-community%2Ccpp-vs-community%2Cvs-2022-17-1-a%2Cvs-2022-17-1-b#required-workloads-and-components):**
 - .NET Desktop Development.
 - Windows App SDK C# Templates
-- Windows 10 SDK (10.0.19041.0)
+- Windows 10 SDK (10.0.22621.0)
 - [.NET SDK 7](https://dotnet.microsoft.com/en-us/download/dotnet)
 - [Template Studio for WinUI](https://marketplace.visualstudio.com/items?itemName=TemplateStudio.TemplateStudioForWinUICs)
 
