@@ -15,6 +15,10 @@
  + Search for anime by name. **(Only search by name is available. Genre and other filters will be added in future versions**
 
 
+## :point_down: Download the Latest Release
+[Last stable release](https://github.com/havsalazar/Otanabi/releases/latest)
+
+
 ## :brain: Getting Started
 Quick start guide to building this App locally:
 
@@ -41,10 +45,7 @@ git clone https://github.com/havsalazar/Otanabi.git
 ```
 >**Note**: Make sure to select `Otanabi` for startup project in Visual Studio.
 
-
-## Or Download the Latest Release
-
-:point_down: [Last stable release](https://github.com/havsalazar/Otanabi/releases/latest)
+ 
 
 
 
@@ -58,6 +59,11 @@ git clone https://github.com/havsalazar/Otanabi.git
 ### Save your favorite anime
 
 ![Favorite view](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Favorites.png?raw=true)
+
+### Anime Detail
+
+![Favorite view](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Detail.png?raw=true)
+
 
 ### Video Player
 
