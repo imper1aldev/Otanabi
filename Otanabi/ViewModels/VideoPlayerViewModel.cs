@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -86,13 +87,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private const int DoubleClickThreshold = 200;
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
-     
 
-
-    public VideoPlayerViewModel(
-        INavigationService navigationService,
-        IWindowPresenterService windowPresenterService
-    )
+    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
     {
         _navigationService = navigationService;
         _windowPresenterService = windowPresenterService;
@@ -120,8 +116,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         FastTimer.Elapsed += HideFast;
 
         /* END*/
-         
-
     }
 
     private void HideRewind(object source, ElapsedEventArgs e)
@@ -160,13 +154,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                 {
                     if (MPE != null && MPE.MediaPlayer != null)
                     {
-                        await dbService.UpdateProgress(
-                            selectedHistory.Id,
-                            MPE.MediaPlayer.PlaybackSession.Position.Ticks
-                        );
+                        var seconds = (long)MPE.MediaPlayer.PlaybackSession.Position.TotalSeconds;
+                        await dbService.UpdateProgress(selectedHistory.Id, seconds);
+                        //Debug.WriteLine($"Progres ssaved seconds {seconds}  transformed: {TimeSpan.FromSeconds(seconds).ToString(@"\.hh\:mm\:ss")}");
                     }
                 });
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogError("UpdateProgress error :", ex.Message);
             }
@@ -260,9 +254,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         {
                             if (args.Error != null)
                             {
-                                logger.LogInfo(
-                                    message: $"Error on timed text source: {args.Error.ToString}"
-                                );
+                                logger.LogInfo(message: $"Error on timed text source: {args.Error.ToString}");
                             }
                             foreach (var track in args.Tracks)
                             {
@@ -272,12 +264,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
                         MpItem.TimedMetadataTracksChanged += (sender, args) =>
                         {
-                            MpItem.TimedMetadataTracks.SetPresentationMode(
-                                0,
-                                TimedMetadataTrackPresentationMode.PlatformPresented
-                            );
+                            MpItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
                         };
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         logger.LogError("Could not load CC or set the CC ", e.Message.ToString());
                     }
@@ -293,7 +283,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                 AutoPlay = true,
                                 Source = MpItem,
                                 Volume = prevVolume,
-                                IsMuted = isMuted
+                                IsMuted = isMuted,
                             }
                         );
                         MPE.Source = MpItem;
@@ -336,9 +326,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         get
         {
-            var maxchap = ChapterList is null
-                ? 1
-                : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
+            var maxchap = ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
 
             return selectedChapter.ChapterNumber < maxchap;
         }
@@ -370,7 +358,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         try
         {
             MPE.MediaPlayer.PlaybackSession.Position += TimeSpan.FromSeconds(79);
-        } catch (Exception)
+        }
+        catch (Exception)
         {
             logger.LogInfo("current time cannot be skipped");
         }
@@ -567,13 +556,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(IsNotFullScreen));
     }
 
-     
-
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;
         IsDisposed = true;
-        _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged; 
+        _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
         _dispatcherQueue.TryEnqueue(() =>
         {
             MainTimerForSave.Stop();
@@ -587,5 +574,5 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             //cant dispose the media player because it will crash the app
             GC.Collect();
         });
-    } 
+    }
 }

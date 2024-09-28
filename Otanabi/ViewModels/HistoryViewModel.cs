@@ -1,11 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Dynamic;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace Otanabi.ViewModels;
 
@@ -20,10 +21,9 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     public string errorMessage = "";
 
-
-    private int currPage = 1;
     [ObservableProperty]
     private bool isLoading = false;
+
     [ObservableProperty]
     private bool isLoadingVideo = false;
 
@@ -31,38 +31,30 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<History> Histories { get; } = new ObservableCollection<History>();
 
-
     public HistoryViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
-        Histories.CollectionChanged += (s, e) =>
-        {
-            if (Histories.Count < 4)
-            {
-                _ = LoadHistory();
-            }
-        };
     }
 
-    public void OnNavigatedFrom()
+    public async void OnNavigatedFrom()
     {
-        noData = false;
-        Histories.Clear();
-        LoadHistory();
+        // Histories.Clear();
+        //await LoadHistory();
     }
-    public void OnNavigatedTo(object parameter)
+
+    public async void OnNavigatedTo(object parameter)
     {
-        LoadHistory();
+        await LoadHistory();
     }
+
     [RelayCommand]
     public async Task LoadHistory()
     {
         if (IsLoading && noData)
             return;
 
-
         IsLoading = true;
-        var history = await dbService.GetHistoriesAsync(currPage, 10);
+        var history = await dbService.GetAllHistoriesAsync();
         if (history != null)
         {
             foreach (var item in history)
@@ -74,7 +66,6 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         {
             noData = true;
         }
-        currPage++;
         IsLoading = false;
     }
 
@@ -95,7 +86,6 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         if (updatedAnime != null)
         {
             selectedAnime = updatedAnime;
-
         }
         else
         {
@@ -105,6 +95,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
 
         await OpenPlayer(selectedHistory, selectedChapter, selectedAnime);
     }
+
     private async Task<Anime> CheckAnimeUpdates(Anime request)
     {
         var anime = await dbService.UpsertAnime(request);
@@ -115,10 +106,8 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         return anime;
     }
 
-
     public async Task OpenPlayer(History history, Chapter selectedChapter, Anime selectedAnime)
     {
-
         try
         {
             dynamic data = new ExpandoObject();
@@ -127,10 +116,6 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             data.AnimeTitle = selectedAnime.Title;
             data.ChapterList = selectedAnime.Chapters.ToList();
             data.Provider = selectedAnime.Provider;
-            //if (string.IsNullOrEmpty(videoUrl))
-            //{
-            //    throw new Exception(ErrorMessage = "Can't extract the video URL");
-            //}
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         }
@@ -142,12 +127,12 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             return;
         }
     }
+
     [RelayCommand]
     public async Task DeleteHistoryById(int id)
     {
         var hs = Histories.Where(h => h.Id == id).First();
         Histories.Remove(hs);
         await dbService.DeleteFromHistory(id);
-        //  await LoadHistory();
     }
 }

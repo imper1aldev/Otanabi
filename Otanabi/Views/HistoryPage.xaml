@@ -11,55 +11,59 @@
     xmlns:models="using:Otanabi.Core.Models"
     mc:Ignorable="d">
     <Page.Resources>
-        <converters:StringFormatConverter x:Key="StringFormatConverter"/>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <Grid x:Name="ContentArea"
-            Margin="20,20,20,10"
-            x:DefaultBindMode="OneWay">
+    <Grid
+        x:Name="ContentArea"
+        Margin="20,20,20,10"
+        x:DefaultBindMode="OneWay">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
 
-        <Grid Grid.Row="0"
-                Grid.Column="0"
-                Canvas.ZIndex="2"
-                Visibility="{x:Bind ViewModel.IsLoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Rectangle Fill="{ThemeResource AcrylicInAppFillColorDefaultBrush}"/>
-            <TextBlock HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="30"
-                    Text="Loading..."/>
-            <ProgressRing Width="200"
-                    Height="200"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"/>
+        <Grid
+            Grid.Row="0"
+            Grid.Column="0"
+            Canvas.ZIndex="2"
+            Visibility="{x:Bind ViewModel.IsLoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Rectangle Fill="{ThemeResource AcrylicInAppFillColorDefaultBrush}" />
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="30"
+                Text="Loading..." />
+            <ProgressRing
+                Width="200"
+                Height="200"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
         </Grid>
 
 
 
-        <ListView x:Name="lstHistory"
-                ItemsSource="{x:Bind ViewModel.Histories}">
+        <ListView
+            x:Name="lstHistory"
+            DataContext="{x:Bind ViewModel}"
+            ItemsSource="{x:Bind ViewModel.Histories}">
             <interactivity:Interaction.Behaviors>
                 <interactions:EventTriggerBehavior EventName="SelectionChanged">
-                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PrepareVideoCommand}"
-                            CommandParameter="{Binding SelectedItem, ElementName=lstHistory}"/>
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.PrepareVideoCommand}" CommandParameter="{Binding SelectedItem, ElementName=lstHistory}" />
                 </interactions:EventTriggerBehavior>
             </interactivity:Interaction.Behaviors>
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="models:History">
-                    <Grid x:Name="GHistoryEl"
-                            Margin="0,10,0,10">
+                    <Grid x:Name="GHistoryEl" Margin="0,10,0,10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <Image
                             Name="ImageExControl"
@@ -67,42 +71,43 @@
                             Width="Auto"
                             HorizontalAlignment="Left"
                             CacheMode="BitmapCache"
-                            Source="{x:Bind Chapter.Anime.Cover}"/>
-                        <StackPanel Grid.Column="1"
-                                Padding="15,15,0,15">
-                            <TextBlock FontSize="17"
-                                    Text="{x:Bind Chapter.Anime.Title}"/>
-                            <TextBlock VerticalAlignment="Center"
-                                    FontSize="15"
-                                    Text="{x:Bind Chapter.ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}"/>
-                            <TextBlock FontSize="15"
-                                    Text="{x:Bind Chapter.Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}"/>
-                            <StackPanel Margin="0,5,0,0"
-                                    Orientation="Horizontal">
-                                <TextBlock Margin="0,0,10,0"
-                                        Text="Last seen :"/>
-                                <TextBlock Text="{x:Bind WatchedDate}"/>
-                                <TextBlock Margin="10,0,10,0"
-                                        Text="Time watched :"/>
-                                <TextBlock Text="{x:Bind TimeString}"/>
+                            Source="{x:Bind Chapter.Anime.Cover}" />
+                        <StackPanel Grid.Column="1" Padding="15,15,0,15">
+                            <TextBlock FontSize="17" Text="{x:Bind Chapter.Anime.Title}" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontSize="15"
+                                Text="{x:Bind Chapter.ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
+                            <TextBlock FontSize="15" Text="{x:Bind Chapter.Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
+                            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                <TextBlock Margin="0,0,10,0" Text="Last seen :" />
+                                <TextBlock Text="{x:Bind WatchedDate}" />
+                                <TextBlock Margin="10,0,10,0" Text="Time watched :" />
+                                <TextBlock Text="{x:Bind TimeString}" />
+                                <TextBlock Margin="10,0,10,0" Text="Seconds watched :" />
+                                <TextBlock Text="{x:Bind SecondsWatched}" />
                             </StackPanel>
                         </StackPanel>
 
-                        <Button x:Name="DeleteBtn"
-                                Grid.Column="2"
-                                Margin="0,0,20,0"
-                                HorizontalAlignment="Right">
-                            <FontIcon Glyph="&#xE74D;"/>
+                        <Button
+                            x:Name="DeleteBtn"
+                            Grid.Column="2"
+                            Margin="0,0,20,0"
+                            HorizontalAlignment="Right">
+                            <FontIcon Glyph="&#xE74D;" />
                             <Button.Flyout>
                                 <Flyout>
                                     <StackPanel>
-                                        <TextBlock Margin="0,0,0,12"
-                                                Style="{ThemeResource BaseTextBlockStyle}"
-                                                Text="Do you want to continue?"/>
-                                        <Button Background="Red"
-                                                Click="DeleteBtn_Click"
-                                                Content="Yes"
-                                                Tag="{Binding Id}"/>
+                                        <TextBlock
+                                            Margin="0,0,0,12"
+                                            Style="{ThemeResource BaseTextBlockStyle}"
+                                            Text="Do you want to continue?" />
+                                        <Button
+                                            Background="Red"
+                                            Command="{Binding ElementName=lstHistory, Path=DataContext.DeleteHistoryByIdCommand}"
+                                            CommandParameter="{Binding Id}"
+                                            Content="Yes"
+                                            Tag="{Binding Id}" />
                                     </StackPanel>
                                 </Flyout>
                             </Button.Flyout>
@@ -112,7 +117,7 @@
             </ListView.ItemTemplate>
             <ListView.Footer>
                 <Grid>
-                    <interactivity:Interaction.Behaviors>
+                    <!--<interactivity:Interaction.Behaviors>
                         <behaviors:ViewportBehavior x:Name="ViewportBehavior"
                                 IsAlwaysOn="True"/>
                     </interactivity:Interaction.Behaviors>
@@ -124,23 +129,19 @@
                                 <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadHistoryCommand}"/>
                             </interactions:EventTriggerBehavior>
                         </interactivity:Interaction.Behaviors>
-                    </TextBox>
-                    <ProgressRing Background="LightGray"
-                            IsActive="{x:Bind ViewModel.IsLoading}"/>
+                    </TextBox>-->
+                    <ProgressRing Background="LightGray" IsActive="{x:Bind ViewModel.IsLoading}" />
                 </Grid>
             </ListView.Footer>
         </ListView>
         <TeachingTip
             x:Name="ErrorTip"
-                Title="Error Detected"
+            Title="Error Detected"
             CloseButtonContent="Got it!"
             IsLightDismissEnabled="True"
-            IsOpen="{x:Bind ViewModel.ErrorActive,
-                            Mode=TwoWay,
-                            UpdateSourceTrigger=PropertyChanged}"
+            IsOpen="{x:Bind ViewModel.ErrorActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
             PlacementMargin="20"
-                PreferredPlacement="Auto"
-            Subtitle="{x:Bind ViewModel.ErrorMessage,
-                              Mode=OneWay}"/>
+            PreferredPlacement="Auto"
+            Subtitle="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
     </Grid>
 </Page>

@@ -11,7 +11,7 @@ public class History
     public int ChapterId { get; set; }
 
     [Ignore]
-    public string TimeString => TimeSpan.FromMilliseconds(SecondsWatched).ToString(@"hh\:mm\:ss");
+    public string TimeString => TimeSpan.FromSeconds(SecondsWatched).ToString(@"hh\:mm\:ss");
 
     [Ignore]
     public Chapter Chapter { get; set; }
