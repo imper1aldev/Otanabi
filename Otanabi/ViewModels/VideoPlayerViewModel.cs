@@ -184,13 +184,17 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //ChapterName = param.ChapterName;
         animeTitle = param.AnimeTitle;
         if (
-            param.History is History hs
+            (param.History is History hs)
             && param.Chapter is Chapter ch
             && param.Provider is Provider prov
             && param.ChapterList is List<Chapter> chapters
         )
         {
-            selectedHistory = hs;
+            if (hs.Id != 0)
+            {
+                selectedHistory = hs;
+            }
+
             selectedProvider = prov;
             selectedChapter = ch;
             foreach (Chapter chapter in chapters)
@@ -219,7 +223,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         IsErrorVideo = false;
         LoadingVideo = true;
-        selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+        if (App.AppState.TryGetValue("Incognito", out var incognito) && (bool)incognito)
+        {
+            selectedHistory = null;
+        }
+        else
+        {
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+        }
+
         SelectedIndex = selectedChapter.ChapterNumber - 1;
         var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
         var data = await _selectSourceService.SelectSourceAsync(videoSources);

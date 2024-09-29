@@ -1,11 +1,10 @@
-﻿using Otanabi.Contracts.Services;
-using Otanabi.Helpers;
-using Otanabi.ViewModels;
-
+﻿using System.Diagnostics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-
+using Otanabi.Contracts.Services;
+using Otanabi.Helpers;
+using Otanabi.ViewModels;
 using Windows.System;
 
 namespace Otanabi.Views;
@@ -13,10 +12,7 @@ namespace Otanabi.Views;
 // TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
 public sealed partial class ShellPage : Page
 {
-    public ShellViewModel ViewModel
-    {
-        get;
-    }
+    public ShellViewModel ViewModel { get; }
 
     public ShellPage(ShellViewModel viewModel)
     {
@@ -46,6 +42,8 @@ public sealed partial class ShellPage : Page
         KeyboardAccelerators.Add(BuildKeyboardAccelerator(VirtualKey.GoBack));
         var setting = (NavigationViewItem)NavigationViewControl.SettingsItem;
         setting.Content = "Settings";
+        App.AppState.TryGetValue("Incognito", out var incognito);
+        IncognitoSwitch.IsOn = (incognito != null) ? (bool)incognito : false;
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
@@ -65,7 +63,7 @@ public sealed partial class ShellPage : Page
             Left = sender.CompactPaneLength * (sender.DisplayMode == NavigationViewDisplayMode.Minimal ? 2 : 1),
             Top = AppTitleBar.Margin.Top,
             Right = AppTitleBar.Margin.Right,
-            Bottom = AppTitleBar.Margin.Bottom
+            Bottom = AppTitleBar.Margin.Bottom,
         };
         var setting = (NavigationViewItem)NavigationViewControl.SettingsItem;
         if (setting != null)
@@ -95,5 +93,13 @@ public sealed partial class ShellPage : Page
         var result = navigationService.GoBack();
 
         args.Handled = result;
+    }
+
+    private void Incognito_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleSwitch tg)
+        {
+            App.AppState["Incognito"] = tg.IsOn;
+        }
     }
 }

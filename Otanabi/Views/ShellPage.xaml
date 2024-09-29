@@ -70,6 +70,20 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
+            <NavigationView.PaneCustomContent>
+                <!--<ToggleButton Width="auto">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE954;" />
+                        <TextBlock Margin="15,0,0,0" Text="IncognitoMode" />
+                    </StackPanel>
+                </ToggleButton>-->
+                <ToggleSwitch
+                    x:Name="IncognitoSwitch"
+                    OffContent="Incognito"
+                    OnContent="Incognito"
+                    Toggled="Incognito_Toggled" />
+
+            </NavigationView.PaneCustomContent>
             <i:Interaction.Behaviors>
                 <behaviors:NavigationViewHeaderBehavior />
             </i:Interaction.Behaviors>
