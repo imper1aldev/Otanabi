@@ -210,6 +210,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(IsEnablePrev));
 
         var prevVolume = 0.3;
+        App.AppState.TryGetValue("Volume", out var stateVolume);
+        if (stateVolume != null)
+        {
+            prevVolume = (double)stateVolume;
+        }
+
         var isMuted = false;
         if (MPE.MediaPlayer != null)
         {
@@ -299,8 +305,20 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                             }
                         );
                         MPE.Source = MpItem;
-
-                        MPE.MediaPlayer.Play();
+                        if (MPE.MediaPlayer != null)
+                        {
+                            MPE.MediaPlayer.VolumeChanged += (sender, args) =>
+                            {
+                                _dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    if (!IsDisposed && MPE != null && MPE.MediaPlayer != null)
+                                    {
+                                        App.AppState["Volume"] = MPE.MediaPlayer.Volume;
+                                    }
+                                });
+                            };
+                            MPE.MediaPlayer.Play();
+                        }
                     }
                 });
                 IsPaused = false;

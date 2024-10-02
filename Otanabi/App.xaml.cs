@@ -40,7 +40,7 @@ public partial class App : Application
     private readonly LoggerService logger = new();
     private readonly AppUpdateService _appUpdateService = new();
     public static WindowEx MainWindow { get; } = new MainWindow();
-    public static Dictionary<string, object> AppState = new() { { "Incognito", false } };
+    public static Dictionary<string, object> AppState = new() { { "Incognito", false }, { "Volume", 0.5 } };
 
     //private WindowEx m_window;
     //public WindowEx MainWindow => m_window;
