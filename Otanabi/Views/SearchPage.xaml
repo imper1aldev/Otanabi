@@ -124,13 +124,13 @@
             IsIndeterminate="True"
             Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
 
-        <TextBlock
+        <!--<TextBlock
             Grid.Row="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             FontSize="38"
             Text="No results found"
-            Visibility="{x:Bind ViewModel.NoResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            Visibility="{x:Bind ViewModel.NoResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />-->
 
         <!--<c:AdaptiveGridView
             x:Name="AnimeGrid"
@@ -223,16 +223,31 @@
         <usercontrols:AnimePaneControl
             x:Name="AnimeGrid"
             Grid.Row="3"
-            Margin="0,10,0,50"
+            Margin="0,15,0,10"
             HorizontalAlignment="Center"
             ItemsSource="{x:Bind ViewModel.Source, Mode=OneWay}">
             <interactivity:Interaction.Behaviors>
                 <interactions:EventTriggerBehavior EventName="AnimeSelected">
                     <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ItemClickCommand}" />
                 </interactions:EventTriggerBehavior>
+                <interactions:EventTriggerBehavior EventName="BottomReached">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadMoreCommand}" />
+                </interactions:EventTriggerBehavior>
+
             </interactivity:Interaction.Behaviors>
         </usercontrols:AnimePaneControl>
-        <Grid
+        <InfoBar
+            Title=""
+            Grid.Row="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            Canvas.ZIndex="2"
+            IsClosable="True"
+            IsOpen="{x:Bind ViewModel.NoResults, Mode=OneWay}"
+            Message="No more results found"
+            Severity="Informational" />
+        <!--<Grid
             Grid.Row="3"
             Margin="0,0,0,0"
             HorizontalAlignment="Center"
@@ -246,6 +261,6 @@
                 Command="{x:Bind ViewModel.LoadMoreCommand}"
                 Content="Load More Content"
                 IsEnabled="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" />
-        </Grid>
+        </Grid>-->
     </Grid>
 </Page>

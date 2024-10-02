@@ -12,6 +12,7 @@
     xmlns:local="using:Otanabi.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Otanabi.Core.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <UserControl.Resources>
         <converteres:TruncateConverter x:Key="truncateConverter" />
@@ -73,8 +74,12 @@
         <Border x:Key="NormalBg" Background="Transparent" />
     </UserControl.Resources>
     <Grid>
-        <ScrollViewer Padding="0,0,16,0" IsVerticalScrollChainingEnabled="False">
-            <ItemsRepeater ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
+        <ScrollViewer
+            x:Name="MainScrollViewer"
+            Padding="0,0,16,0"
+            IsVerticalScrollChainingEnabled="False"
+            ViewChanged="MainScrollViewer_ViewChanged">
+            <ItemsRepeater x:Name="MainItemRepeater" ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
                 <ItemsRepeater.Layout>
                     <UniformGridLayout
                         ItemsJustification="Start"
@@ -103,7 +108,9 @@
                                         Width="160"
                                         Height="227"
                                         VerticalAlignment="Top"
+                                        CacheMode="BitmapCache"
                                         Source="{x:Bind Cover}" />
+
                                     <Border
                                         Width="50"
                                         Margin="5,0,0,5"
@@ -149,7 +156,6 @@
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
                         </Grid>
-
                     </DataTemplate>
                 </ItemsRepeater.ItemTemplate>
             </ItemsRepeater>

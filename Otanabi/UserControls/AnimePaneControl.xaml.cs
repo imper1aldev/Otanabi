@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
@@ -20,7 +19,12 @@ public sealed partial class AnimePaneControl : UserControl
     {
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         this.InitializeComponent();
+        MainItemRepeater.ElementPrepared += MainItemRepeater_ElementPrepared;
     }
+
+    public event EventHandler<Anime> AnimeSelected;
+    public event EventHandler<Anime> AddToFavorites;
+    public event EventHandler BottomReached;
 
     public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         "ItemsSource",
@@ -54,7 +58,6 @@ public sealed partial class AnimePaneControl : UserControl
         {
             var bg = (Border)this.Resources["HoverBg"];
             border.Background = bg.Background;
-            //SetScaleAnimation(border, 1, 1.025, 0.2);
         }
     }
 
@@ -62,54 +65,29 @@ public sealed partial class AnimePaneControl : UserControl
     {
         if (sender is Border border)
         {
-            //if (border.ContextFlyout != null && border.ContextFlyout.IsOpen)
-            //{
-            //    return;
-            //}
             var bg = (Border)this.Resources["NormalBg"];
             border.Background = bg.Background;
-            //SetScaleAnimation(border, 1.025, 1, 0.2);
         }
     }
 
-    private void SetScaleAnimation(Border target, double from, double to, double duration)
+    private void MainItemRepeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
     {
-        var scaleTransform = new ScaleTransform();
-        target.RenderTransform = scaleTransform;
-
-        var storyboard = new Storyboard();
-
-        // Define the animation for ScaleX
-        var scaleXAnimation = new DoubleAnimation()
+        var grid = args.Element as FrameworkElement;
+        if (grid != null)
         {
-            From = from,
-            To = to,
-            Duration = new Duration(TimeSpan.FromSeconds(duration)),
-            AutoReverse = false,
-        };
-        Storyboard.SetTarget(scaleXAnimation, target);
-        Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
-        storyboard.Children.Add(scaleXAnimation);
-
-        // Define the animation for ScaleY
-        var scaleYAnimation = new DoubleAnimation()
-        {
-            From = from,
-            To = to,
-            Duration = new Duration(TimeSpan.FromSeconds(duration)),
-            AutoReverse = false,
-        };
-
-        Storyboard.SetTarget(scaleYAnimation, target);
-        Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
-        storyboard.Children.Add(scaleYAnimation);
-
-        // Start the animation
-        storyboard.Begin();
+            var fadeAnimation = new DoubleAnimation()
+            {
+                From = 0,
+                To = 1,
+                Duration = new Duration(TimeSpan.FromSeconds(0.7)),
+            };
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(fadeAnimation);
+            Storyboard.SetTarget(fadeAnimation, grid);
+            Storyboard.SetTargetProperty(fadeAnimation, "Opacity");
+            storyboard.Begin();
+        }
     }
-
-    public event EventHandler<Anime> AnimeSelected;
-    public event EventHandler<Anime> AddToFavorites;
 
     private async void SubMenuOpen(object sender, RoutedEventArgs e)
     {
@@ -159,7 +137,6 @@ public sealed partial class AnimePaneControl : UserControl
 
             mFlyout.Items.Add(fListMenu);
             mFlyout.ShowAt(btn);
-            Debug.WriteLine($"Submenu open tt{DateTime.Now}");
         }
     }
 
@@ -176,5 +153,23 @@ public sealed partial class AnimePaneControl : UserControl
     {
         var favs = await dbService.GetFavoriteLists();
         Favorites = favs;
+    }
+
+    private static DateTime lastActionTime = DateTime.MinValue;
+    private static readonly TimeSpan actionCooldown = TimeSpan.FromSeconds(1.5);
+
+    private void MainScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+    {
+        if (sender is ScrollViewer scrollViewer)
+        {
+            if (scrollViewer.VerticalOffset == scrollViewer.ScrollableHeight)
+            {
+                if (DateTime.Now - lastActionTime > actionCooldown)
+                {
+                    BottomReached?.Invoke(this, null);
+                    lastActionTime = DateTime.Now;
+                }
+            }
+        }
     }
 }

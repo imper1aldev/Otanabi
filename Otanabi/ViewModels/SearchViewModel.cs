@@ -18,6 +18,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private string currQuery = string.Empty;
     private int currPage = 1;
+    private readonly int maxItemsFirstLoad = 35;
 
     public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
 
@@ -101,8 +102,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         {
             Source.Add(item);
         }
-        OnPropertyChanged(nameof(Source));
         IsLoading = false;
+
+        if (Source.Count < maxItemsFirstLoad)
+        {
+            await LoadMore();
+        }
+        OnPropertyChanged(nameof(Source));
     }
 
     public async Task Search(string query)
@@ -121,8 +127,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         {
             Source.Add(item);
         }
-        OnPropertyChanged(nameof(Source));
         IsLoading = false;
+        if (Source.Count < maxItemsFirstLoad)
+        {
+            await LoadMore();
+        }
+
+        OnPropertyChanged(nameof(Source));
     }
 
     private void LoadTags()
@@ -160,16 +171,19 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task LoadMore()
     {
-        if (IsLoading)
+        if (IsLoading || NoResults)
         {
             return;
         }
-
         currPage++;
         if (currQuery == "")
+        {
             await LoadMainAnimePage();
+        }
         else
+        {
             await Search(currQuery);
+        }
     }
 
     [RelayCommand]

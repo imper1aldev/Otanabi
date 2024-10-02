@@ -20,6 +20,6 @@ public sealed partial class FavoritesPage : Page
     private async void OpenConfigDialog(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         ConfigFavsDialog.XamlRoot = this.XamlRoot;
-        var result = await ConfigFavsDialog.ShowAsync();
+        await ConfigFavsDialog.ShowAsync();
     }
 }

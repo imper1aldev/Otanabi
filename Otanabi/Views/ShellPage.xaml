@@ -17,6 +17,7 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <FontFamily x:Key="CFIcons">/Assets/CFIcons.ttf#CFIcons</FontFamily>
     </Page.Resources>
 
     <Grid>
@@ -79,9 +80,27 @@
                 </ToggleButton>-->
                 <ToggleSwitch
                     x:Name="IncognitoSwitch"
-                    OffContent="Incognito"
-                    OnContent="Incognito"
-                    Toggled="Incognito_Toggled" />
+                    Margin="6,0,0,0"
+                    Toggled="Incognito_Toggled"
+                    ToolTipService.ToolTip="Enable or Disable Incognito Mode">
+                    <ToggleSwitch.OffContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon FontFamily="{StaticResource CFIcons}" Glyph="&#xe002;" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ToggleSwitch.OffContentTemplate>
+                    <ToggleSwitch.OnContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon
+                                    FontFamily="{StaticResource CFIcons}"
+                                    Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
+                                    Glyph="&#xe002;" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ToggleSwitch.OnContentTemplate>
+                </ToggleSwitch>
 
             </NavigationView.PaneCustomContent>
             <i:Interaction.Behaviors>

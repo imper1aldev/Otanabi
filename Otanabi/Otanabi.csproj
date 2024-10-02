@@ -136,7 +136,10 @@
     <CustomAdditionalCompileInputs Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup> 
   <ItemGroup>
-    <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" /> 
+    <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
+    <Content Update="Assets\CFIcons.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
     <Content Update="Assets\Otanabi_icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
