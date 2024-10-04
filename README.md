@@ -15,6 +15,10 @@
  + Search for anime by name. **(Only search by name is available. Genre and other filters will be added in future versions**
 
 
+## :point_down: Download the Latest Release
+[Last stable release](https://github.com/havsalazar/Otanabi/releases/latest)
+
+
 ## :brain: Getting Started
 Quick start guide to building this App locally:
 
@@ -24,7 +28,7 @@ Quick start guide to building this App locally:
 **Required [Visual Studio components](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=cs-vs-community%2Ccpp-vs-community%2Cvs-2022-17-1-a%2Cvs-2022-17-1-b#required-workloads-and-components):**
 - .NET Desktop Development.
 - Windows App SDK C# Templates
-- Windows 10 SDK (10.0.19041.0)
+- Windows 10 SDK (10.0.22621.0)
 - [.NET SDK 7](https://dotnet.microsoft.com/en-us/download/dotnet)
 - [Template Studio for WinUI](https://marketplace.visualstudio.com/items?itemName=TemplateStudio.TemplateStudioForWinUICs)
 
@@ -41,10 +45,7 @@ git clone https://github.com/havsalazar/Otanabi.git
 ```
 >**Note**: Make sure to select `Otanabi` for startup project in Visual Studio.
 
-
-## Or Download the Latest Release
-
-:point_down: [Last stable release](https://github.com/havsalazar/Otanabi/releases/latest)
+ 
 
 
 
@@ -59,6 +60,11 @@ git clone https://github.com/havsalazar/Otanabi.git
 
 ![Favorite view](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Favorites.png?raw=true)
 
+### Anime Detail
+
+![Favorite view](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Detail.png?raw=true)
+
+
 ### Video Player
 
 ![Video Player](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Player.png?raw=true)
@@ -71,3 +77,6 @@ git clone https://github.com/havsalazar/Otanabi.git
 
 ![Settings](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true)
 
+### Disclaimer
+
+The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.

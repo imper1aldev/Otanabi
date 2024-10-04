@@ -178,7 +178,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         if (GetTemplateChild("SkipIntroButton") is Button skipIntroButton)
         {
             skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
-        }
+        } 
     }
     
 }

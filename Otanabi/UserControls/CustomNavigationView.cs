@@ -2,9 +2,15 @@
 using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.UserControls;
+
 public sealed class CustomNavigationView : NavigationView
 {
-    public static DependencyProperty IsFullScreenProperty = DependencyProperty.Register("IsFullScreen", typeof(bool), typeof(CustomNavigationView), null);
+    public static DependencyProperty IsFullScreenProperty = DependencyProperty.Register(
+        "IsFullScreen",
+        typeof(bool),
+        typeof(CustomNavigationView),
+        null
+    );
 
     public bool IsFullScreen
     {

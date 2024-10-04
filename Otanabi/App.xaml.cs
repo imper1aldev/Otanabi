@@ -30,9 +30,7 @@ public partial class App : Application
     {
         if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
         {
-            throw new ArgumentException(
-                $"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs."
-            );
+            throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
         }
 
         return service;
@@ -41,7 +39,9 @@ public partial class App : Application
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly LoggerService logger = new();
     private readonly AppUpdateService _appUpdateService = new();
-    public static WindowEx MainWindow { get; } = new MainWindow(); 
+    public static WindowEx MainWindow { get; } = new MainWindow();
+    public static Dictionary<string, object> AppState = new() { { "Incognito", false }, { "Volume", 0.5 } };
+
     //private WindowEx m_window;
     //public WindowEx MainWindow => m_window;
 
@@ -60,10 +60,7 @@ public partial class App : Application
                 (context, services) =>
                 {
                     // Default Activation Handler
-                    services.AddTransient<
-                        ActivationHandler<LaunchActivatedEventArgs>,
-                        DefaultActivationHandler
-                    >();
+                    services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
                     // Other Activation Handlers
                     services.AddTransient<IActivationHandler, AppNotificationActivationHandler>();
@@ -99,9 +96,7 @@ public partial class App : Application
                     services.AddTransient<ShellViewModel>();
 
                     // Configuration
-                    services.Configure<LocalSettingsOptions>(
-                        context.Configuration.GetSection(nameof(LocalSettingsOptions))
-                    );
+                    services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
                 }
             )
             .Build();
@@ -111,10 +106,7 @@ public partial class App : Application
         UnhandledException += App_UnhandledException;
     }
 
-    private void App_UnhandledException(
-        object sender,
-        Microsoft.UI.Xaml.UnhandledExceptionEventArgs e
-    )
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         logger.LogFatal("App Crashed {0}", e.Message);
     }
@@ -130,5 +122,4 @@ public partial class App : Application
             _ = App.GetService<IAppNotificationService>().ShowByUpdate();
         }
     }
-     
 }

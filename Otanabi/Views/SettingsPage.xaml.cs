@@ -40,7 +40,7 @@ public sealed partial class SettingsPage : Page
         dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
         dialog.Title = $"Patch notes Version {e.version}";
         dialog.Content = content;
-        dialog.CloseButtonText = "Skip";
+        dialog.CloseButtonText = "Close";
 
         if (e.avaible)
         {

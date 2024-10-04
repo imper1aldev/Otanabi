@@ -1,15 +1,15 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Dynamic;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml.Controls;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+
 namespace Otanabi.ViewModels;
 
 public partial class SearchDetailViewModel : ObservableRecipient, INavigationAware
@@ -35,13 +35,11 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty]
     private bool forceLoad = false;
 
-
     [ObservableProperty]
     public string favText = "";
 
     [ObservableProperty]
     public List<FavoriteList> favoritelistsSelected;
-
 
     [ObservableProperty]
     private Anime selectedAnime;
@@ -88,12 +86,13 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             {
                 await GetAnimeFromDB(anime);
                 var bw = new BackgroundWorker();
-                bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
-                {
-                    IsLoading = true;
-                    await UpsertAnime(anime);
-                    IsLoading = false;
-                });
+                bw.DoWork += (sender, args) =>
+                    _dispatcherQueue.TryEnqueue(async () =>
+                    {
+                        IsLoading = true;
+                        await UpsertAnime(anime);
+                        IsLoading = false;
+                    });
                 bw.RunWorkerAsync();
             }
 
@@ -101,6 +100,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             IsLoading = false;
         }
     }
+
     private void setLoader(bool value)
     {
         IsLoading = value;
@@ -123,11 +123,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             {
                 ChapterList.Add(chapter);
             }
-
         }
-
-
     }
+
     private async Task UpsertAnime(Anime request, bool force = false)
     {
         ForceLoad = false;
@@ -166,20 +164,17 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private void ForceUpsert()
     {
         var bw = new BackgroundWorker();
-        bw.DoWork += (sender, args) => _dispatcherQueue.TryEnqueue(async () =>
-        {
-            IsLoading = true;
-            await UpsertAnime(SelectedAnime, true);
-            IsLoading = false;
-        });
+        bw.DoWork += (sender, args) =>
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                IsLoading = true;
+                await UpsertAnime(SelectedAnime, true);
+                IsLoading = false;
+            });
         bw.RunWorkerAsync();
     }
 
-
-    public void OnNavigatedFrom()
-    {
-    }
-
+    public void OnNavigatedFrom() { }
 
     public async void OpenPlayer(Chapter chapter)
     {
@@ -188,9 +183,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         {
             //var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
             //var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
-            var history = await _Db.GetOrCreateHistoryByCap(chapter.Id);
+            App.AppState.TryGetValue("Incognito", out var incognito); // Incognito mode
             dynamic data = new ExpandoObject();
-            data.History = history;
+            data.History = (bool)incognito ? new History() { Id = 0 } : await _Db.GetOrCreateHistoryByCap(chapter.Id);
             //data.Url = videoUrl;
             data.Chapter = chapter;
             //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
@@ -212,6 +207,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             return;
         }
     }
+
     [RelayCommand]
     private void OrderChapterList()
     {
@@ -235,7 +231,6 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         }
     }
 
-
     [RelayCommand]
     private async Task FavoriteFun()
     {
@@ -253,7 +248,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     {
         IsFavorite = await _Db.IsFavorite(SelectedAnime.Id);
         // Icon TO FAV "\uE728"
-        // Icon TO UNFAV "\uE8D9"  
+        // Icon TO UNFAV "\uE8D9"
         FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
         FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
     }

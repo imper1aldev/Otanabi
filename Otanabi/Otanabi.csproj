@@ -2,15 +2,14 @@
   <Import Project="RemoveLanguageFolders.targets" />
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0-windows10.0.22621.0</TargetFramework>
-    <TargetPlatformVersion>10.0.22621.756</TargetPlatformVersion>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <WindowsSdkPackageVersion>10.0.22621.38</WindowsSdkPackageVersion>
     <RootNamespace>Otanabi</RootNamespace>
     <ApplicationIcon>Assets/Otanabi_icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
-    <RuntimeIdentifiers>win10-x64</RuntimeIdentifiers>
-    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers> 
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable> 
     <UseWinUI>true</UseWinUI>
@@ -19,6 +18,18 @@
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <ExcludedLanguages>en-us;en;en-GB;es-ES;es-MX</ExcludedLanguages>
     <UseRidGraph>true</UseRidGraph>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageIcon>Otanabi.png</PackageIcon>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <Product>Otanabi</Product>
+    <Company>None</Company>
+    <Authors>havsalazar</Authors>
+    <Version>0.3.8</Version>
+    <PackageId>Otanabi</PackageId>
+    <Title>Otanabi</Title>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/havsalazar/Otanabi/</RepositoryUrl> 
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,6 +39,7 @@
     <None Remove="SplashScreen.xaml" />
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
+    <None Remove="UserControls\AnimePaneControl.xaml" />
 
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>
@@ -52,27 +64,14 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.DeveloperTools" Version="8.0.240109" />
+    <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240821" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Primitives" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240802000" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240829007" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="WinUIEx" Version="2.3.2" />
-  </ItemGroup>
-  <PropertyGroup>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageIcon>Otanabi.png</PackageIcon>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-    <Product>Otanabi</Product>
-    <Company>None</Company>
-    <Authors>havsalazar</Authors>
-    <Version>0.3.7</Version>
-    <PackageId>Otanabi</PackageId>
-    <Title>Otanabi</Title>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/havsalazar/Otanabi/</RepositoryUrl>
-  </PropertyGroup>
+  </ItemGroup> 
   <ItemGroup>
     <ProjectReference Include="..\Otanabi.Core\Otanabi.Core.csproj" />
     <ProjectReference Include="..\Otanabi.Extensions\Otanabi.Extensions.csproj" />
@@ -85,6 +84,9 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <Page Update="UserControls\AnimePaneControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="SplashScreen.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page> 
@@ -108,7 +110,7 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+    </Compile> 
   </ItemGroup>
 
   <ItemGroup>
@@ -134,6 +136,9 @@
   </ItemGroup> 
   <ItemGroup>
     <Resource Remove="views\embeddeds\PatchNotesDialog.xaml" />
+    <Content Update="Assets\CFIcons.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content> 
     <Content Update="Assets\Otanabi_icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

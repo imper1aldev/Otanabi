@@ -1,25 +1,22 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Timers;
-using Otanabi.Contracts.Services;
-using Otanabi.Contracts.ViewModels;
-using Otanabi.Converters;
-using Otanabi.Core.Models;
-using Otanabi.Core.Services;
-using Otanabi.Models.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Windows.Foundation;
+using Otanabi.Contracts.Services;
+using Otanabi.Contracts.ViewModels;
+using Otanabi.Converters;
+using Otanabi.Core.Models;
+using Otanabi.Core.Services;
+using Otanabi.Models.Enums;
 using Windows.Media.Core;
 using Windows.Media.Playback;
-using Windows.Storage.Streams;
 using Windows.System;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
-using Windows.Media.Streaming.Adaptive;
 
 namespace Otanabi.ViewModels;
 
@@ -28,25 +25,36 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
     private readonly IWindowPresenterService _windowPresenterService;
-    private readonly LoggerService logger = new();
+    private readonly WindowEx _windowEx;
+
     private Chapter selectedChapter;
     private History selectedHistory;
     private Provider selectedProvider;
-    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
 
-    //private List<Chapter> chapterList;
+    private static System.Timers.Timer? MainTimerForSave;
+    private static System.Timers.Timer? RewindTimer;
+    private static System.Timers.Timer? FastTimer;
 
-    private static System.Timers.Timer MainTimerForSave;
+    private bool IsFastTimerRunning = false;
+    private bool IsRewindTimerRunning = false;
+    private readonly int forwardTime = 1000;
+
+    private const int rewindOffset10s = 10;
+    private const int rewindOffset3s = 3;
+    private const int rewindOffset60s = 60;
+
     private readonly DatabaseService dbService = new();
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly SelectSourceService _selectSourceService = new();
+    private readonly LoggerService logger = new();
 
     private MediaSource videoUrl;
     private MediaPlaybackItem MpItem;
     private MediaPlayerElement MPE;
-    private string AppCurTitle = "";
+    private readonly string AppCurTitle = "";
     private bool IsPaused = false;
     private bool IsDisposed = false;
+    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -63,6 +71,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [ObservableProperty]
     private string chapterName = "";
 
+    [ObservableProperty]
+    private bool fastVisible = false;
+
+    [ObservableProperty]
+    private bool rewindVisible = false;
+
+    [ObservableProperty]
+    private bool loadingVideo = false;
+
     private string animeTitle = "";
     private string activeCC = "";
 
@@ -71,19 +88,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
-    private WindowEx _windowEx;
-
-    //this thing will block the interface to prevent problems
-    [ObservableProperty]
-    private bool loadingVideo = false;
-
-    private readonly DispatcherTimer controlsHideTimer =
-        new() { Interval = TimeSpan.FromSeconds(1), };
-
-    public VideoPlayerViewModel(
-        INavigationService navigationService,
-        IWindowPresenterService windowPresenterService
-    )
+    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
     {
         _navigationService = navigationService;
         _windowPresenterService = windowPresenterService;
@@ -96,13 +101,50 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         AppCurTitle = _windowEx.Title;
         //each 4 seconds it will save the current play time
         MainTimerForSave = new System.Timers.Timer(4000);
-        MainTimerForSave.Elapsed += SaveProgressByTime;
         MainTimerForSave.AutoReset = true;
         MainTimerForSave.Enabled = true;
+        MainTimerForSave.Elapsed += SaveProgressByTime;
 
+        /* rewind and fastforward timer definitions*/
+
+        RewindTimer = new System.Timers.Timer(forwardTime);
+        RewindTimer.AutoReset = false;
+        RewindTimer.Elapsed += HideRewind;
+
+        FastTimer = new System.Timers.Timer(forwardTime);
+        FastTimer.AutoReset = false;
+        FastTimer.Elapsed += HideFast;
+
+        /* END*/
     }
 
-    private async void SaveProgressByTime(object source, ElapsedEventArgs e)
+    private void HideRewind(object source, ElapsedEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            RewindVisible = false;
+            if (RewindTimer != null)
+            {
+                RewindTimer.Stop();
+                IsRewindTimerRunning = false;
+            }
+        });
+    }
+
+    private void HideFast(object source, ElapsedEventArgs e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            FastVisible = false;
+            if (FastTimer != null)
+            {
+                FastTimer.Stop();
+                IsFastTimerRunning = false;
+            }
+        });
+    }
+
+    private void SaveProgressByTime(object source, ElapsedEventArgs e)
     {
         if (selectedHistory != null)
         {
@@ -110,12 +152,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             {
                 _dispatcherQueue.TryEnqueue(async () =>
                 {
-                    if (MPE!=null && MPE.MediaPlayer != null)
+                    if (MPE != null && MPE.MediaPlayer != null)
                     {
-                        await dbService.UpdateProgress(
-                            selectedHistory.Id,
-                            MPE.MediaPlayer.PlaybackSession.Position.Ticks
-                        );
+                        var seconds = (long)MPE.MediaPlayer.PlaybackSession.Position.TotalSeconds;
+                        await dbService.UpdateProgress(selectedHistory.Id, seconds);
+                        //Debug.WriteLine($"Progres ssaved seconds {seconds}  transformed: {TimeSpan.FromSeconds(seconds).ToString(@"\.hh\:mm\:ss")}");
                     }
                 });
             }
@@ -143,13 +184,17 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //ChapterName = param.ChapterName;
         animeTitle = param.AnimeTitle;
         if (
-            param.History is History hs
+            (param.History is History hs)
             && param.Chapter is Chapter ch
             && param.Provider is Provider prov
             && param.ChapterList is List<Chapter> chapters
         )
         {
-            selectedHistory = hs;
+            if (hs.Id != 0)
+            {
+                selectedHistory = hs;
+            }
+
             selectedProvider = prov;
             selectedChapter = ch;
             foreach (Chapter chapter in chapters)
@@ -165,6 +210,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         OnPropertyChanged(nameof(IsEnablePrev));
 
         var prevVolume = 0.3;
+        App.AppState.TryGetValue("Volume", out var stateVolume);
+        if (stateVolume != null)
+        {
+            prevVolume = (double)stateVolume;
+        }
+
         var isMuted = false;
         if (MPE.MediaPlayer != null)
         {
@@ -173,12 +224,20 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             MPE.Source = null;
             MpItem = null;
             IsPaused = true;
-            GC.Collect(); 
+            GC.Collect();
         }
 
         IsErrorVideo = false;
         LoadingVideo = true;
-        selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+        if (App.AppState.TryGetValue("Incognito", out var incognito) && (bool)incognito)
+        {
+            selectedHistory = null;
+        }
+        else
+        {
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+        }
+
         SelectedIndex = selectedChapter.ChapterNumber - 1;
         var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
         var data = await _selectSourceService.SelectSourceAsync(videoSources);
@@ -190,16 +249,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
 
-            //var httpClient = new Windows.Web.Http.HttpClient();
-            //httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("X-CustomHeader", "This is a custom header");
-            //AdaptiveMediaSourceCreationResult result = await AdaptiveMediaSource.CreateFromUriAsync(manifestUri, httpClient);
-
-            //MPE.Source=result;
-
-
-            //if(data.Item3 != null) {
-            //    VideoUrl.CustomProperties["HttpHeaders"] = data.Item3;
-            //}
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
@@ -213,9 +262,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         {
                             if (args.Error != null)
                             {
-                                logger.LogInfo(
-                                    message: $"Error on timed text source: {args.Error.ToString}"
-                                );
+                                logger.LogInfo(message: $"Error on timed text source: {args.Error.ToString}");
                             }
                             foreach (var track in args.Tracks)
                             {
@@ -225,10 +272,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
                         MpItem.TimedMetadataTracksChanged += (sender, args) =>
                         {
-                            MpItem.TimedMetadataTracks.SetPresentationMode(
-                                0,
-                                TimedMetadataTrackPresentationMode.PlatformPresented
-                            );
+                            MpItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
                         };
                     }
                     catch (Exception e)
@@ -251,7 +295,20 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                             }
                         );
                         MPE.Source = MpItem;
-                        MPE.MediaPlayer.Play();
+                        if (MPE.MediaPlayer != null)
+                        {
+                            MPE.MediaPlayer.VolumeChanged += (sender, args) =>
+                            {
+                                _dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    if (!IsDisposed && MPE != null && MPE.MediaPlayer != null)
+                                    {
+                                        App.AppState["Volume"] = MPE.MediaPlayer.Volume;
+                                    }
+                                });
+                            };
+                            MPE.MediaPlayer.Play();
+                        }
                     }
                 });
                 IsPaused = false;
@@ -271,7 +328,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         Dispose();
     }
 
-
     [RelayCommand]
     private async Task RetryLoad()
     {
@@ -290,9 +346,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         get
         {
-            var maxchap = ChapterList is null
-                ? 1
-                : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
+            var maxchap = 1;
+            if (ChapterList is not null && ChapterList.Count > 0)
+            {
+                var tt = ChapterList.MaxBy(x => x.ChapterNumber);
+                if (tt != null)
+                {
+                    maxchap = tt.ChapterNumber;
+                }
+            }
 
             return selectedChapter.ChapterNumber < maxchap;
         }
@@ -399,14 +461,129 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
     }
 
+    [RelayCommand]
+    private void FastForward(object args)
+    {
+        if (args is KeyboardAcceleratorInvokedEventArgs keyboardAcceleratorInvokedEventArgs)
+        {
+            var modifier = keyboardAcceleratorInvokedEventArgs.KeyboardAccelerator.Modifiers;
+            switch (modifier)
+            {
+                case VirtualKeyModifiers.None:
+                case VirtualKeyModifiers.Menu: //10s
+                    FastForwardInter(RewindMode.Normal);
+                    break;
+                case VirtualKeyModifiers.Control: //60s
+                    FastForwardInter(RewindMode.Long);
+                    break;
+                case VirtualKeyModifiers.Shift: //3s
+                    FastForwardInter(RewindMode.Short);
+                    break;
+            }
+            keyboardAcceleratorInvokedEventArgs.Handled = true;
+        }
+        else
+        {
+            FastForwardInter(RewindMode.Normal);
+        }
+        if (FastTimer != null)
+        {
+            if (IsFastTimerRunning)
+            {
+                FastTimer.Interval = forwardTime;
+            }
+            else
+            {
+                FastVisible = true;
+                FastTimer.Start();
+                IsFastTimerRunning = true;
+            }
+        }
+    }
+
+    private void FastForwardInter(RewindMode mode)
+    {
+        var offset = mode switch
+        {
+            RewindMode.Normal => rewindOffset10s,
+            RewindMode.Short => rewindOffset3s,
+            RewindMode.Long => rewindOffset60s,
+            _ => rewindOffset10s,
+        };
+        if (MPE != null && MPE.MediaPlayer != null)
+        {
+            MPE.MediaPlayer.PlaybackSession.Position += TimeSpan.FromSeconds(offset);
+        }
+    }
+
+    [RelayCommand]
+    private void Rewind(object args)
+    {
+        if (args is KeyboardAcceleratorInvokedEventArgs keyboardAcceleratorInvokedEventArgs)
+        {
+            var modifier = keyboardAcceleratorInvokedEventArgs.KeyboardAccelerator.Modifiers;
+            switch (modifier)
+            {
+                case VirtualKeyModifiers.None:
+                case VirtualKeyModifiers.Menu: //10s
+                    RewindInter(RewindMode.Normal);
+                    break;
+                case VirtualKeyModifiers.Control: //60s
+                    RewindInter(RewindMode.Long);
+                    break;
+                case VirtualKeyModifiers.Shift: //3s
+                    RewindInter(RewindMode.Short);
+                    break;
+            }
+            keyboardAcceleratorInvokedEventArgs.Handled = true;
+        }
+        else
+        {
+            RewindInter(RewindMode.Normal);
+        }
+        if (RewindTimer != null)
+        {
+            if (IsFastTimerRunning)
+            {
+                RewindTimer.Interval = forwardTime;
+            }
+            else
+            {
+                RewindVisible = true;
+                RewindTimer.Start();
+                IsRewindTimerRunning = true;
+            }
+        }
+    }
+
+    private void RewindInter(RewindMode mode)
+    {
+        var offset = mode switch
+        {
+            RewindMode.Normal => rewindOffset10s,
+            RewindMode.Short => rewindOffset3s,
+            RewindMode.Long => rewindOffset60s,
+            _ => rewindOffset10s,
+        };
+        if (MPE != null && MPE.MediaPlayer != null)
+        {
+            if (MPE.MediaPlayer.PlaybackSession.Position > TimeSpan.FromSeconds(offset + 1))
+            {
+                MPE.MediaPlayer.PlaybackSession.Position -= TimeSpan.FromSeconds(offset);
+            }
+        }
+    }
+
     public void setMediaPlayer(MediaPlayerElement mediaPlayerElement)
     {
         MPE = mediaPlayerElement;
     }
+
     private void OnWindowPresenterChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(IsNotFullScreen));
     }
+
     public void Dispose()
     {
         _windowEx.Title = AppCurTitle;

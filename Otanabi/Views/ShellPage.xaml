@@ -17,48 +17,49 @@
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <FontFamily x:Key="CFIcons">/Assets/CFIcons.ttf#CFIcons</FontFamily>
     </Page.Resources>
 
     <Grid>
         <Grid
             x:Name="AppTitleBar"
             Grid.Row="0"
-            Height="{Binding ElementName=NavigationViewControl,
-                             Path=CompactPaneLength}"
+            Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
             VerticalAlignment="Top"
             Canvas.ZIndex="1"
-            Visibility="{x:Bind ViewModel.IsNotFullScreen,
-                                Mode=OneWay,
-                                Converter={StaticResource BoolToVisibilityConverter}}">
+            Visibility="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel Orientation="Horizontal" Spacing="16">
-                <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap" />
+                <TextBlock
+                    x:Name="AppTitleBarText"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    TextWrapping="NoWrap" />
             </StackPanel>
         </Grid>
         <usercontrols:CustomNavigationView
             x:Name="NavigationViewControl"
+            AllowFocusOnInteraction="False"
             Canvas.ZIndex="0"
             DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
             IsBackButtonVisible="Auto"
-            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled,
-                                   Mode=OneWay}"
-            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen,
-                                  Mode=OneWay,
-                                  Converter={StaticResource BoolNegationConverter}}"
+            IsBackEnabled="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}"
+            IsFullScreen="{x:Bind ViewModel.IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
             IsPaneToggleButtonVisible="True"
             IsSettingsVisible="True"
             IsTitleBarAutoPaddingEnabled="True"
             OpenPaneLength="180"
-            PaneDisplayMode="{x:Bind ViewModel.PaneDisplayMode,
-                                     Mode=OneWay}"
-            SelectedItem="{x:Bind ViewModel.Selected,
-                                  Mode=OneWay}">
+            PaneDisplayMode="{x:Bind ViewModel.PaneDisplayMode, Mode=OneWay}"
+            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="Shell_Favorites" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.FavoritesViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE728;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel" Content="Search">
+                <NavigationViewItem
+                    x:Uid="Shell_Search"
+                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel"
+                    Content="Search">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF6FA;" />
                     </NavigationViewItem.Icon>
@@ -70,6 +71,38 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
+            <NavigationView.PaneCustomContent>
+                <!--<ToggleButton Width="auto">
+                    <StackPanel Orientation="Horizontal">
+                        <FontIcon Glyph="&#xE954;" />
+                        <TextBlock Margin="15,0,0,0" Text="IncognitoMode" />
+                    </StackPanel>
+                </ToggleButton>-->
+                <ToggleSwitch
+                    x:Name="IncognitoSwitch"
+                    Margin="6,0,0,0"
+                    Toggled="Incognito_Toggled"
+                    ToolTipService.ToolTip="Enable or Disable Incognito Mode">
+                    <ToggleSwitch.OffContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon FontFamily="{StaticResource CFIcons}" Glyph="&#xe002;" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ToggleSwitch.OffContentTemplate>
+                    <ToggleSwitch.OnContentTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <FontIcon
+                                    FontFamily="{StaticResource CFIcons}"
+                                    Foreground="{ThemeResource AccentAAFillColorDefaultBrush}"
+                                    Glyph="&#xe002;" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ToggleSwitch.OnContentTemplate>
+                </ToggleSwitch>
+
+            </NavigationView.PaneCustomContent>
             <i:Interaction.Behaviors>
                 <behaviors:NavigationViewHeaderBehavior />
             </i:Interaction.Behaviors>

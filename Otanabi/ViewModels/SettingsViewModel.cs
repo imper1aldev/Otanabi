@@ -184,7 +184,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
                 OnPatchNotes(
                     this,
                     (
-                        " This action will break the application, be aware "
+                        "This action will break the application, be aware \n"
                         + "The running version is higher than the main version; it is not recommended to update in debug mode."
                         ,
                         version.ToString(),

@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Input;
+using Microsoft.UI.Xaml.Controls;
 using Otanabi.ViewModels;
 using Windows.Media.Playback;
 
@@ -12,7 +13,7 @@ public sealed partial class VideoPlayerPage : Page
     {
         ViewModel = App.GetService<VideoPlayerViewModel>();
         InitializeComponent();
-        AMediaPlayer.Loaded += OnPlayerLoaded;
+        AMediaPlayer.Loaded += OnPlayerLoaded;  
     }
 
     private void OnPlayerLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -22,5 +23,5 @@ public sealed partial class VideoPlayerPage : Page
             ViewModel.setMediaPlayer(AMediaPlayer);
             ViewModel.InitializedCommand.Execute(null);
         }
-    }
+    }  
 }
