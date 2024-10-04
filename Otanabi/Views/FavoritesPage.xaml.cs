@@ -22,4 +22,12 @@ public sealed partial class FavoritesPage : Page
         ConfigFavsDialog.XamlRoot = this.XamlRoot;
         await ConfigFavsDialog.ShowAsync();
     }
+
+    private void NoButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (DeleteFlyout != null)
+        {
+            DeleteFlyout.Hide();
+        }
+    }
 }

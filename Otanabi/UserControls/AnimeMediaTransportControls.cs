@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Otanabi.ViewModels;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Otanabi.UserControls;
+using Otanabi.ViewModels;
+
 namespace Otanabi.UserControls;
 
 public sealed partial class AnimeMediaTransportControls : MediaTransportControls
@@ -13,49 +15,45 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         DefaultStyleKey = typeof(AnimeMediaTransportControls);
     }
 
-    public static readonly DependencyProperty FullScreenCommandProperty =
-        DependencyProperty.Register(
-            nameof(FullScreenCommand),
-            typeof(ICommand),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(null)
-        );
-    public static readonly DependencyProperty PreviusCommandProperty =
-        DependencyProperty.Register(
-            nameof(PreviusCommand),
-            typeof(ICommand),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(null)
-        );
-    public static readonly DependencyProperty NextCommandProperty =
-        DependencyProperty.Register(
-            nameof(NextCommand),
-            typeof(ICommand),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(null)
-        );
+    public static readonly DependencyProperty FullScreenCommandProperty = DependencyProperty.Register(
+        nameof(FullScreenCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
+    public static readonly DependencyProperty PreviusCommandProperty = DependencyProperty.Register(
+        nameof(PreviusCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
+    public static readonly DependencyProperty NextCommandProperty = DependencyProperty.Register(
+        nameof(NextCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
 
-    public static readonly DependencyProperty OpenPanelCommandProperty =
-        DependencyProperty.Register(
-            nameof(OpenPanelCommand),
-            typeof(ICommand),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(null)
-        );
-    public static readonly DependencyProperty SkipIntroCommandProperty =
-        DependencyProperty.Register(
-            nameof(SkipIntroCommand),
-            typeof(ICommand),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(null)
-        );
+    public static readonly DependencyProperty OpenPanelCommandProperty = DependencyProperty.Register(
+        nameof(OpenPanelCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
+    public static readonly DependencyProperty SkipIntroCommandProperty = DependencyProperty.Register(
+        nameof(SkipIntroCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
 
-    public static readonly DependencyProperty IsNextEnabledProperty =
-        DependencyProperty.Register(
-            nameof(IsNextEnabled),
-            typeof(bool),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(default (bool), propertyChangedCallback: (d, e) =>
+    public static readonly DependencyProperty IsNextEnabledProperty = DependencyProperty.Register(
+        nameof(IsNextEnabled),
+        typeof(bool),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(
+            default(bool),
+            propertyChangedCallback: (d, e) =>
             {
                 if (d is AnimeMediaTransportControls control)
                 {
@@ -63,16 +61,26 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
                     if (button != null)
                     {
                         button.IsEnabled = (bool)e.NewValue;
+                        if ((bool)e.NewValue)
+                        {
+                            VisualStateManager.GoToState((Control)control.GetTemplateChild("NextTrackButton"), "Normal", true);
+                        }
+                        else
+                        {
+                            VisualStateManager.GoToState((Control)control.GetTemplateChild("NextTrackButton"), "Disabled", true);
+                        }
                     }
                 }
-            })
-        );
-    public static readonly DependencyProperty IsPrevEnabledProperty =
-                DependencyProperty.Register(
-            nameof(IsPrevEnabled),
-            typeof(bool),
-            typeof(AnimeMediaTransportControls),
-            new PropertyMetadata(default (bool),propertyChangedCallback: (d, e) =>
+            }
+        )
+    );
+    public static readonly DependencyProperty IsPrevEnabledProperty = DependencyProperty.Register(
+        nameof(IsPrevEnabled),
+        typeof(bool),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(
+            default(bool),
+            propertyChangedCallback: (d, e) =>
             {
                 if (d is AnimeMediaTransportControls control)
                 {
@@ -80,36 +88,46 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
                     if (button != null)
                     {
                         button.IsEnabled = (bool)e.NewValue;
+                        if ((bool)e.NewValue)
+                        {
+                            VisualStateManager.GoToState((Control)control.GetTemplateChild("PreviousTrackButton"), "Normal", true);
+                        }
+                        else
+                        {
+                            VisualStateManager.GoToState((Control)control.GetTemplateChild("PreviousTrackButton"), "Disabled", true);
+                        }
                     }
                 }
-            })
-        );
-    public static readonly DependencyProperty IsPanelOpenProperty =
-               DependencyProperty.Register(
-           nameof(IsPanelOpen),
-           typeof(bool),
-           typeof(AnimeMediaTransportControls),
-           new PropertyMetadata(false)
-       );
-    public static readonly DependencyProperty IsFullScreenProperty =
-               DependencyProperty.Register(
-           nameof(IsFullScreen),
-           typeof(bool),
-           typeof(AnimeMediaTransportControls),
-           new PropertyMetadata(default(bool),new PropertyChangedCallback((d, e) =>
-           {
-               if (d is AnimeMediaTransportControls control)
-               {
-                   var button = control.GetTemplateChild("FullScreenButton") as AppBarWindowPresenterStateButton;
-                   if (button != null)
-                   {
-                       button.IsFullScreen = (bool)e.NewValue;
-                   }
-               }
-           }))
-       );
-
-
+            }
+        )
+    );
+    public static readonly DependencyProperty IsPanelOpenProperty = DependencyProperty.Register(
+        nameof(IsPanelOpen),
+        typeof(bool),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(false)
+    );
+    public static readonly DependencyProperty IsFullScreenProperty = DependencyProperty.Register(
+        nameof(IsFullScreen),
+        typeof(bool),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(
+            default(bool),
+            new PropertyChangedCallback(
+                (d, e) =>
+                {
+                    if (d is AnimeMediaTransportControls control)
+                    {
+                        var button = control.GetTemplateChild("FullScreenButton") as AppBarWindowPresenterStateButton;
+                        if (button != null)
+                        {
+                            button.IsFullScreen = (bool)e.NewValue;
+                        }
+                    }
+                }
+            )
+        )
+    );
 
     public bool IsNextEnabled
     {
@@ -156,6 +174,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         get => (ICommand)GetValue(SkipIntroCommandProperty);
         set => SetValue(SkipIntroCommandProperty, value);
     }
+
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
@@ -178,7 +197,6 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         if (GetTemplateChild("SkipIntroButton") is Button skipIntroButton)
         {
             skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
-        } 
+        }
     }
-    
 }
