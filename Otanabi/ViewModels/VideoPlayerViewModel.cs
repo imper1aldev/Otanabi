@@ -204,12 +204,38 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
     }
 
+    private async void SetStateForNexAndPrev()
+    {
+        if (selectedChapter.ChapterNumber == 1)
+        {
+            IsEnabledPrev = false;
+            IsEnabledNext = true;
+        }
+        else
+        {
+            var maxChap = ChapterList.Max(c => c.ChapterNumber);
+            if (selectedChapter.ChapterNumber == maxChap)
+            {
+                IsEnabledNext = false;
+                IsEnabledPrev = true;
+            }
+            else
+            {
+                IsEnabledPrev = true;
+                IsEnabledNext = true;
+            }
+        }
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            OnPropertyChanged(nameof(IsEnabledPrev));
+            OnPropertyChanged(nameof(IsEnabledNext));
+        });
+    }
+
     private async Task LoadVideo(Chapter chapter)
     {
-        OnPropertyChanged(nameof(IsEnableNext));
-        OnPropertyChanged(nameof(IsEnablePrev));
-
         var prevVolume = 0.3;
+
         App.AppState.TryGetValue("Volume", out var stateVolume);
         if (stateVolume != null)
         {
@@ -307,6 +333,14 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     }
                                 });
                             };
+                            MPE.MediaPlayer.MediaOpened += (sender, args) =>
+                            {
+                                _dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    SetStateForNexAndPrev();
+                                    LoadingVideo = false;
+                                });
+                            };
                             MPE.MediaPlayer.Play();
                         }
                     }
@@ -318,9 +352,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             IsErrorVideo = true;
             IsPaused = true;
+            LoadingVideo = false;
         }
         _windowEx.Title = ChapterName;
-        LoadingVideo = false;
     }
 
     public void OnNavigatedFrom()
@@ -341,24 +375,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         await Task.CompletedTask;
     }
 
-    public bool IsEnablePrev => selectedChapter.ChapterNumber > 1;
-    public bool IsEnableNext
-    {
-        get
-        {
-            var maxchap = 1;
-            if (ChapterList is not null && ChapterList.Count > 0)
-            {
-                var tt = ChapterList.MaxBy(x => x.ChapterNumber);
-                if (tt != null)
-                {
-                    maxchap = tt.ChapterNumber;
-                }
-            }
+    [ObservableProperty]
+    private bool isEnabledPrev = true;
 
-            return selectedChapter.ChapterNumber < maxchap;
-        }
-    }
+    [ObservableProperty]
+    private bool isEnabledNext = true;
 
     [RelayCommand]
     private void FullScreen()
@@ -396,15 +417,21 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private async Task NextChapter()
     {
-        var next = selectedChapter.ChapterNumber + 1;
-        await ChangeChapterByPos(next);
+        if (IsEnabledNext && LoadingVideo == false)
+        {
+            var next = selectedChapter.ChapterNumber + 1;
+            await ChangeChapterByPos(next);
+        }
     }
 
     [RelayCommand]
     private async Task PrevChapter()
     {
-        var prev = selectedChapter.ChapterNumber - 1;
-        await ChangeChapterByPos(prev);
+        if (IsEnabledPrev && LoadingVideo == false)
+        {
+            var prev = selectedChapter.ChapterNumber - 1;
+            await ChangeChapterByPos(prev);
+        }
     }
 
     private async Task ChangeChapterByPos(int pos)

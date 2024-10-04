@@ -119,6 +119,7 @@
                                 HorizontalContentAlignment="Stretch"
                                 AllowFocusOnInteraction="True"
                                 DisplayMemberPath="Name"
+                                Header="Choose a Favorite to modify ... Or Delete"
                                 ItemsSource="{x:Bind ViewModel.FavoriteList}"
                                 SelectedItem="{x:Bind ViewModel.SelectedToUpdate, Mode=TwoWay}">
 
@@ -134,6 +135,7 @@
                                 Grid.Column="0"
                                 Margin="0,30,0,0"
                                 AllowFocusOnInteraction="True"
+                                Header="Rename to ..."
                                 Text="{x:Bind ViewModel.UpdateFavName, Mode=TwoWay}" />
 
                         </Grid>
@@ -145,11 +147,33 @@
                                 CommandParameter="{Binding ElementName=FavTxtUpdate, Path=Text}"
                                 Content="Update"
                                 Style="{StaticResource AccentButtonStyle}" />
-                            <Button
-                                HorizontalAlignment="Right"
-                                Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
-                                Command="{x:Bind ViewModel.DeleteFavoriteCommand}"
-                                Content="Delete" />
+                            <Button HorizontalAlignment="Right" Content="Delete">
+                                <Button.Flyout>
+                                    <Flyout x:Name="DeleteFlyout">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Width="200"
+                                                Margin="0,0,0,12"
+                                                Style="{ThemeResource BaseTextBlockStyle}"
+                                                Text="Do you want to continue?  This action will delete the list and the animes too."
+                                                TextWrapping="WrapWholeWords" />
+                                            <StackPanel Orientation="Horizontal">
+
+                                                <Button
+                                                    HorizontalAlignment="Left"
+                                                    Background="Red"
+                                                    Command="{x:Bind ViewModel.DeleteFavoriteCommand}"
+                                                    Content="Yes" />
+                                                <Button
+                                                    HorizontalAlignment="Right"
+                                                    Click="NoButton_Click"
+                                                    Content="No" />
+
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
                         </Grid>
                     </StackPanel>
                 </StackPanel>
