@@ -77,3 +77,6 @@ git clone https://github.com/havsalazar/Otanabi.git
 
 ![Settings](https://github.com/havsalazar/Otanabi/blob/dev/Screenshots/Settings.png?raw=true)
 
+### Disclaimer
+
+The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
