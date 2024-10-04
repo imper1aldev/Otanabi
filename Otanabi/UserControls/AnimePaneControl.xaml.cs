@@ -23,8 +23,8 @@ public sealed partial class AnimePaneControl : UserControl
     }
 
     public event EventHandler<Anime> AnimeSelected;
-    public event EventHandler<Anime> AddToFavorites;
     public event EventHandler BottomReached;
+    public event EventHandler FavoriteAnimeChanged;
 
     public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         "ItemsSource",
@@ -132,6 +132,7 @@ public sealed partial class AnimePaneControl : UserControl
                         fItem.IsChecked = false;
                     }
                 }
+                fItem.Command = new RelayCommand(async () => await AddToFavorites(anime, fav.Id));
                 fListMenu.Items.Add(fItem);
             }
 
@@ -140,9 +141,18 @@ public sealed partial class AnimePaneControl : UserControl
         }
     }
 
+    private async Task AddToFavorites(Anime anime, int favId)
+    {
+        var savedAnime = await dbService.UpsertAnime(anime, true);
+        if (savedAnime != null)
+        {
+            _ = await dbService.UpsertAnimeFavorite(savedAnime, favId);
+            FavoriteAnimeChanged?.Invoke(this, null);
+        }
+    }
+
     private void Card_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        Debug.WriteLine($"Card pressed emiting AnimeSelected tt{DateTime.Now}");
         if (sender is Border bd && bd.DataContext is Anime anime)
         {
             AnimeSelected?.Invoke(this, anime);

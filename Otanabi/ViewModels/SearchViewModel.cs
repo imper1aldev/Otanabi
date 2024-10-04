@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
@@ -12,6 +13,7 @@ namespace Otanabi.ViewModels;
 
 public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
+    private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly ILocalSettingsService _localSettingsService;
@@ -41,6 +43,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         _navigationService = navigationService;
         _localSettingsService = localSettingsService;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -164,7 +167,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem);
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem));
         }
     }
 

@@ -47,6 +47,12 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
     public event EventHandler FavoreListChanged;
 
     [RelayCommand]
+    private async Task AnimeOnListChanged()
+    {
+        await GetAnimesByFavList(CurrentFavId);
+    }
+
+    [RelayCommand]
     public async Task GetAnimesByFavList(object param)
     {
         var favId = 0;
@@ -54,7 +60,6 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
         {
             if (sl.SelectedItem != null && sl.SelectedItem.Tag != null)
             {
-                Debug.WriteLine($"Favorite selected : {sl.SelectedItem.Tag}");
                 favId = (int)sl.SelectedItem.Tag;
             }
             else

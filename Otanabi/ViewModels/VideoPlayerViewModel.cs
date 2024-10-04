@@ -249,16 +249,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
 
-            //var httpClient = new Windows.Web.Http.HttpClient();
-            //httpClient.DefaultRequestHeaders.TryAppendWithoutValidation("X-CustomHeader", "This is a custom header");
-            //AdaptiveMediaSourceCreationResult result = await AdaptiveMediaSource.CreateFromUriAsync(manifestUri, httpClient);
-
-            //MPE.Source=result;
-
-
-            //if(data.Item3 != null) {
-            //    VideoUrl.CustomProperties["HttpHeaders"] = data.Item3;
-            //}
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
@@ -356,7 +346,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         get
         {
-            var maxchap = ChapterList is null ? 1 : ChapterList.MaxBy(x => x.ChapterNumber).ChapterNumber;
+            var maxchap = 1;
+            if (ChapterList is not null && ChapterList.Count > 0)
+            {
+                var tt = ChapterList.MaxBy(x => x.ChapterNumber);
+                if (tt != null)
+                {
+                    maxchap = tt.ChapterNumber;
+                }
+            }
 
             return selectedChapter.ChapterNumber < maxchap;
         }

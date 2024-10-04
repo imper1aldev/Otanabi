@@ -51,81 +51,6 @@
                 <FontIcon Glyph="&#xE713;" />
             </Button>
         </Grid>
-        <!--<controls:AdaptiveGridView
-            Grid.Row="1"
-            Margin="0,20,0,0"
-            animations:Connected.ListItemElementName="itemThumbnail"
-            animations:Connected.ListItemKey="animationKeyContentGrid"
-            DesiredWidth="180"
-            IsItemClickEnabled="True"
-            ItemClickCommand="{x:Bind ViewModel.AnimeClickCommand}"
-            ItemsSource="{x:Bind ViewModel.FavoriteAnimes, Mode=OneWay}"
-            SelectionMode="None"
-            StretchContentForSingleRow="False">
-            <animations:Implicit.ShowAnimations>
-                <animations:TranslationAnimation
-                    From="0, -10, 0"
-                    To="0"
-                    Duration="0:0:1" />
-                <animations:OpacityAnimation
-                    From="0"
-                    To="1.0"
-                    Duration="0:0:1" />
-            </animations:Implicit.ShowAnimations>
-            <animations:Implicit.HideAnimations>
-                <animations:OpacityAnimation To="0.0" Duration="0:0:1" />
-                <animations:ScalarAnimation
-                    Target="Translation.Y"
-                    To="10"
-                    Duration="0:0:1">
-                    <animations:ScalarKeyFrame Key="0.1" Value="30" />
-                    <animations:ScalarKeyFrame Key="0.5" Value="0.0" />
-                </animations:ScalarAnimation>
-            </animations:Implicit.HideAnimations>
-            <controls:AdaptiveGridView.ItemTemplate>
-                <DataTemplate x:DataType="models:Anime">
-                    <Grid
-                        x:Name="itemThumbnail"
-                        Height="300"
-                        MaxHeight="300"
-                        Padding="{StaticResource XSmallLeftTopRightBottomMargin}">
-                        <ToolTipService.ToolTip>
-                            <ToolTip Content="{x:Bind Title}" HorizontalOffset="20" />
-                        </ToolTipService.ToolTip>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="50" />
-                        </Grid.RowDefinitions>
-                        <Image
-                            Grid.Row="0"
-                            CacheMode="BitmapCache"
-                            Source="{x:Bind Cover}"
-                            Stretch="UniformToFill" />
-                        <Border
-                            Width="80"
-                            Margin="5,0,0,5"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Bottom"
-                            Background="#4cc2ff"
-                            CornerRadius="8">
-                            <TextBlock
-                                HorizontalAlignment="Center"
-                                Foreground="Black"
-                                Text="{x:Bind TypeStr}" />
-                        </Border>
-                        <TextBlock
-                            Grid.Row="1"
-                            Padding="0,3,0,3"
-                            VerticalAlignment="Center"
-                            FontSize="13"
-                            Text="{x:Bind Title}"
-                            TextAlignment="Center"
-                            TextWrapping="Wrap" />
-                    </Grid>
-                </DataTemplate>
-            </controls:AdaptiveGridView.ItemTemplate>
-        </controls:AdaptiveGridView>-->
-
         <usercontrols:AnimePaneControl
             x:Name="AnimePanel"
             Grid.Row="1"
@@ -134,6 +59,9 @@
             <interactivity:Interaction.Behaviors>
                 <interactions:EventTriggerBehavior EventName="AnimeSelected">
                     <interactions:InvokeCommandAction Command="{x:Bind ViewModel.AnimeClickCommand}" />
+                </interactions:EventTriggerBehavior>
+                <interactions:EventTriggerBehavior EventName="FavoriteAnimeChanged">
+                    <interactions:InvokeCommandAction Command="{x:Bind ViewModel.AnimeOnListChangedCommand}" />
                 </interactions:EventTriggerBehavior>
             </interactivity:Interaction.Behaviors>
         </usercontrols:AnimePaneControl>

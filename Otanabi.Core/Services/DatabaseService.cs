@@ -48,7 +48,6 @@ public class DatabaseService
     {
         if (action == "add")
         {
-            Debug.WriteLine(anime);
             var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favList };
             await DB._db.InsertAsync(favxanime);
             return "added";
@@ -65,6 +64,22 @@ public class DatabaseService
                 }
                 return "deleted";
             }
+            return "deleted";
+        }
+    }
+
+    public async Task<string> UpsertAnimeFavorite(Anime anime, int favId)
+    {
+        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == anime.Id && af.FavoriteListId == favId).FirstOrDefaultAsync();
+        if (el == null)
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favId };
+            await DB._db.InsertAsync(favxanime);
+            return "added";
+        }
+        else
+        {
+            await DB._db.DeleteAsync(el);
             return "deleted";
         }
     }
