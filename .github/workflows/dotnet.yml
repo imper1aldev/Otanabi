@@ -53,7 +53,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         if: ${{ ! env.ACT }}
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "8.0.401"
 
       # Add CommunityToolkit Labs and Main nuget sources
       - run: |
