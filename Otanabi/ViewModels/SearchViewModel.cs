@@ -2,12 +2,14 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
+using Otanabi.Models.Enums;
 
 namespace Otanabi.ViewModels;
 
@@ -48,26 +50,58 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        // Source.Clear();
-        if (Source.Count == 0)
+        await GetProviders();
+        if (parameter != null && parameter is Dictionary<string, object> terms)
         {
-            await GetProviders();
-            var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-
-            if (provdef != 0)
+            if (terms.ContainsKey("Method"))
             {
-                var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
-                if (tmp != null)
-                    SelectedProvider = tmp;
+                switch ((SearchMethods)terms["Method"])
+                {
+                    case SearchMethods.SearchByTag:
+                        var prov = (Provider)terms["Provider"];
+
+                        SelectedProvider = Providers.First(x => x.Id == prov.Id);
+                        var tag = (Tag)terms["Tag"];
+                        ResetData();
+                        LoadTags();
+                        if (Tags.Count > 0)
+                        {
+                            Tags.First(t => t.Name == tag.Name).IsChecked = true;
+                            OnPropertyChanged(nameof(Tags));
+                            await Search("");
+                        }
+                        else
+                        {
+                            //if there are no tags(Provider does not support tagsearch), just load the main page
+                            await LoadMainAnimePage();
+                        }
+
+                        break;
+                }
             }
-            await Task.CompletedTask;
-            await LoadMainAnimePage();
-            LoadTags();
+        }
+        else
+        {
+            if (Source.Count == 0)
+            {
+                var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
+
+                if (provdef != 0)
+                {
+                    var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
+                    if (tmp != null)
+                        SelectedProvider = tmp;
+                }
+                await Task.CompletedTask;
+                await LoadMainAnimePage();
+                LoadTags();
+            }
         }
     }
 
     private async Task GetProviders()
     {
+        Providers.Clear();
         var provs = _searchAnimeService.GetProviders();
         foreach (var item in provs)
         {
@@ -141,6 +175,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private void LoadTags()
     {
+        Tags.Clear();
         var filters = _searchAnimeService.GetTags(SelectedProvider);
         if (filters.Length > 0)
         {

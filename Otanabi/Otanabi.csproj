@@ -25,12 +25,12 @@
     <Product>Otanabi</Product>
     <Company>None</Company>
     <Authors>havsalazar</Authors>
-    <Version>0.3.9</Version>
+    <Version>0.3.10</Version>
     <PackageId>Otanabi</PackageId>
     <Title>Otanabi</Title>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/havsalazar/Otanabi/</RepositoryUrl> 
-  </PropertyGroup>
+  </PropertyGroup> 
 
   <ItemGroup>
     <None Remove="Assets\OtanabiHres.png" />
@@ -146,8 +146,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Update="version.v" CopyToOutputDirectory="Always" />
-  </ItemGroup> 
-  <ItemGroup>
-    <Folder Include="Common\" />
-  </ItemGroup>
+  </ItemGroup>  
 </Project>

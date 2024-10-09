@@ -8,6 +8,7 @@ using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
+using Otanabi.Models.Enums;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Otanabi.ViewModels;
@@ -270,6 +271,22 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         if (idList.Count > 0)
         {
             await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
+        }
+    }
+
+    [RelayCommand]
+    private void GenreClick(object param)
+    {
+        if (param is string genre)
+        {
+            var tag = new Tag() { Name = genre };
+            var data = new Dictionary<string, object>
+            {
+                { "Tag", tag },
+                { "Provider", SelectedAnime.Provider },
+                { "Method", SearchMethods.SearchByTag },
+            };
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchViewModel).FullName!, data));
         }
     }
 }
