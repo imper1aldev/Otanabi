@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Otanabi.Core.Models"
     xmlns:usercontrols="using:Otanabi.UserControls"
+    NavigationCacheMode="Required"
     mc:Ignorable="d">
 
     <Grid x:Name="ContentArea" Margin="20,20,20,10">

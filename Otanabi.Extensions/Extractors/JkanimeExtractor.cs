@@ -1,12 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using Otanabi.Extensions.Contracts.Extractors;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
-using Newtonsoft.Json.Linq;
+using Otanabi.Extensions.Contracts.Extractors;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
+using static Microsoft.FSharp.Core.ByRefKinds;
+
 namespace Otanabi.Extensions.Extractors;
+
 public class JkanimeExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
@@ -17,8 +22,18 @@ public class JkanimeExtractor : IExtractor
     internal readonly string Type = "ANIME";
 
     public string GetSourceName() => sourceName;
+
     public string GetUrl() => originUrl;
-    public IProvider GenProvider() => new Provider { Id = extractorId, Name = sourceName, Url = originUrl, Type = Type, Persistent = Persistent };
+
+    public IProvider GenProvider() =>
+        new Provider
+        {
+            Id = extractorId,
+            Name = sourceName,
+            Url = originUrl,
+            Type = Type,
+            Persistent = Persistent,
+        };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
     {
@@ -29,24 +44,38 @@ public class JkanimeExtractor : IExtractor
         WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
 
         var doc = webPage.Html.CssSelect("body").First();
-        var removeDomain = (string e) => e.Replace(originUrl, "");
+        var tt = doc.InnerHtml;
+        var animesdata = tt.SubstringBetween("var animes = ", "var mode");
+        //var pattern = @"""studios"":\s*\{[^}]*\}\s*,";
+        //var replacement = "";
 
-        foreach (var nodo in doc.CssSelect(".custom_item2"))
+        //var result = Regex.Replace(animesdata, pattern, replacement);
+
+        try
         {
+            var data = JArray.Parse(animesdata.Remove(animesdata.Length - 2));
 
-            var anime = new Anime();
-            anime.Title = nodo.CssSelect("h5.card-title a").First().GetAttributeValue("title");
-            var temp = nodo.CssSelect("h5.card-title a").First();
-            anime.Url = removeDomain(temp.GetAttributeValue("href"));
-            anime.Cover = nodo.CssSelect(".custom_thumb2 img").First().GetAttributeValue("src");
-            anime.Provider = (Provider)GenProvider();
-            anime.ProviderId = anime.Provider.Id;
-            anime.Type = getAnimeTypeByStr(nodo.CssSelect(".card-info p.card-txt").First().InnerText);
-            animeList.Add(anime);
+            foreach (var nodo in data)
+            {
+                var anime = new Anime();
+                anime.Title = (string)nodo["title"];
+                anime.Url = (string)nodo["slug"];
+                anime.Provider = (Provider)GenProvider();
+                anime.ProviderId = anime.Provider.Id;
+                anime.Status = (string)nodo["status"];
+                anime.Cover = (string)nodo["image"];
+                anime.Type = getAnimeTypeByStr((string)nodo["type"]);
+                animeList.Add(anime);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
         }
 
         return animeList.ToArray();
     }
+
     public async Task<IAnime[]> SearchAnimeAsync(string searchTerm, int page, Tag[]? tags = null)
     {
         var animeList = new List<Anime>();
@@ -54,7 +83,6 @@ public class JkanimeExtractor : IExtractor
         var mainPUrl = string.Concat(originUrl, "buscar/", tmp, page);
         var browser = new ScrapingBrowser();
         WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
-
 
         var doc = webPage.Html.CssSelect("body").First();
 
@@ -73,18 +101,16 @@ public class JkanimeExtractor : IExtractor
             animeList.Add(anime);
         }
 
-
-
         await Task.CompletedTask;
 
         return animeList.ToArray();
     }
+
     public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
         var mainPUrl = string.Concat(originUrl, requestUrl);
         var browser = new ScrapingBrowser { Encoding = Encoding.UTF8 };
         WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
-
 
         var doc = webPage.Html.CssSelect("body").First();
 
@@ -116,7 +142,7 @@ public class JkanimeExtractor : IExtractor
         for (var i = 1; i <= lastchap; i++)
         {
             var chapter = new Chapter();
-            chapter.Url = string.Concat(requestUrl, i, "/");
+            chapter.Url = string.Concat(requestUrl, "/", i, "/");
             chapter.ChapterNumber = i;
             chapter.Name = string.Concat(requestUrl.Replace("/", ""), " ", i);
             chapters.Add(chapter);
@@ -133,33 +159,41 @@ public class JkanimeExtractor : IExtractor
 
         var browser = new ScrapingBrowser();
         WebPage webPage = await browser.NavigateToPageAsync(new Uri(mainPUrl));
-        var doc = webPage.Html.CssSelect("body").First().InnerHtml;
+        var doc = webPage.Html.InnerHtml;
 
         var match = doc.SubstringBetween("var servers = ", ";");
 
         Debug.WriteLine(match);
-        var prefJson = JArray.Parse(match);
-        foreach (JObject vsource in prefJson.Children<JObject>())
+        try
         {
-            var serverName = _serverConventions.GetServerName((string)vsource["server"]);
+            var prefJson = JArray.Parse(match);
 
-            if (string.IsNullOrEmpty(serverName))
+            foreach (JObject vsource in prefJson.Children<JObject>())
             {
-                continue;
-            }
-            var vSouce = new VideoSource();
-            vSouce.Server = serverName;
-            vSouce.Code = Base64Decode((string)vsource["remote"]);
-            vSouce.Url = Base64Decode((string)vsource["remote"]);
-            vSouce.Title = serverName;
-            vSouce.Allow_mobile = false;
-            videoSource.Add(vSouce);
+                var serverName = _serverConventions.GetServerName((string)vsource["server"]);
 
+                if (string.IsNullOrEmpty(serverName))
+                {
+                    continue;
+                }
+                var iframe = originUrl + "/c1.php?u=" + (string)vsource["remote"] + "&s=" + serverName.ToLower();
+                var tempframe = await browser.NavigateToPageAsync(new Uri(iframe));
+                var iframedoc = tempframe.Html.SelectSingleNode(".//iframe").GetAttributeValue("src");
+                var vSouce = new VideoSource();
+                vSouce.Server = serverName;
+                vSouce.Title = serverName;
+                vSouce.Code = iframedoc;
+                vSouce.Url = iframedoc;
+                videoSource.Add(vSouce);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e.Message);
         }
         await Task.CompletedTask;
         return videoSource.ToArray();
     }
-
 
     private AnimeType getAnimeTypeByStr(string strType)
     {
@@ -167,16 +201,19 @@ public class JkanimeExtractor : IExtractor
         {
             case "OVA":
                 return AnimeType.OVA;
-            case "Anime":
+            case "ONA":
+                return AnimeType.OVA;
+            case "TV":
                 return AnimeType.TV;
-            case "Película":
+            case "Movie":
                 return AnimeType.MOVIE;
-            case "Especial":
+            case "Special":
                 return AnimeType.SPECIAL;
             default:
                 return AnimeType.TV;
         }
     }
+
     public static string Base64Decode(string base64EncodedData)
     {
         var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);

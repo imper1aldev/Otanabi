@@ -1,7 +1,7 @@
-﻿using Otanabi.Core.Helpers;
+﻿using Juro.Providers.Anime;
+using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
-using Juro.Providers.Anime;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -25,7 +25,7 @@ public class AnimepaheExtractor : IExtractor
             Name = sourceName,
             Url = originUrl,
             Type = Type,
-            Persistent = Persistent
+            Persistent = Persistent,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -63,6 +63,7 @@ public class AnimepaheExtractor : IExtractor
             anime.Title = item.Title;
             anime.Cover = item.Image;
             anime.Url = item.Id;
+            anime.Type = GetAnimeTypeByStr(item.Type);
             anime.Provider = (Provider)GenProvider();
             anime.ProviderId = anime.Provider.Id;
             animeList.Add(anime);
@@ -114,9 +115,7 @@ public class AnimepaheExtractor : IExtractor
         var provider = new AnimePahe();
 
         var videoServers = await provider.GetVideoServersAsync(requestUrl);
-        var selected = videoServers
-            .Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720"))
-            .FirstOrDefault();
+        var selected = videoServers.Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720")).FirstOrDefault();
         if (selected != null)
         {
             var videos = await provider.GetVideosAsync(selected);
@@ -151,6 +150,7 @@ public class AnimepaheExtractor : IExtractor
                 return AnimeType.TV;
         }
     }
+
     public Tag[] GetTags()
     {
         return Array.Empty<Tag>();
