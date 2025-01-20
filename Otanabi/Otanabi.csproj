@@ -29,7 +29,8 @@
     <PackageId>Otanabi</PackageId>
     <Title>Otanabi</Title>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/havsalazar/Otanabi/</RepositoryUrl> 
+    <RepositoryUrl>https://github.com/havsalazar/Otanabi/</RepositoryUrl>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks> 
   </PropertyGroup> 
 
   <ItemGroup>

@@ -166,6 +166,23 @@ public class DatabaseService
             {
                 var chapstoadd = chapsSource.Where(c1 => !chapsDB.Any(c2 => c1.ChapterNumber == c2.ChapterNumber));
                 await DB._db.InsertAllAsync(chapstoadd);
+
+                if (forceUpdate)
+                {
+                    // update all chapters url 
+                    foreach(var chap in chapsDB)
+                    {
+                        var updatechapData= chapsSource.FirstOrDefault(c => c.ChapterNumber == chap.ChapterNumber);
+                        if(updatechapData != null)
+                        {
+                            chap.Url= updatechapData.Url;
+                            await DB._db.UpdateAsync(chap);
+                        }
+
+                    }
+
+                }
+
                 chapsDB = await GetChaptersByAnime(animeDB.Id);
             }
             /**/
