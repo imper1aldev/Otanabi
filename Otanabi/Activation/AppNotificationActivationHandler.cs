@@ -1,10 +1,7 @@
-﻿using Otanabi.Contracts.Services;
-using Otanabi.ViewModels;
-
-using Microsoft.UI.Dispatching;
+﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
-using Microsoft.Windows.AppNotifications;
+using Otanabi.Contracts.Services;
 
 namespace Otanabi.Activation;
 

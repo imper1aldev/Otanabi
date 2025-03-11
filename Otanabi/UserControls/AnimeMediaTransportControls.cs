@@ -1,10 +1,7 @@
-using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Otanabi.UserControls;
-using Otanabi.ViewModels;
 
 namespace Otanabi.UserControls;
 

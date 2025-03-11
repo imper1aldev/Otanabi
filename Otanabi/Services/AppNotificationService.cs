@@ -1,9 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
-using Otanabi.Contracts.Services;
-using Otanabi.ViewModels;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
+using Otanabi.Contracts.Services;
+using Otanabi.ViewModels;
 
 namespace Otanabi.Notifications;
 

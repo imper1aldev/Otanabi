@@ -1,5 +1,5 @@
-﻿using Otanabi.Core.Models;
-using Otanabi.Core.Helpers;
+﻿using Otanabi.Core.Helpers;
+using Otanabi.Core.Models;
 namespace Otanabi.Core.Services;
 public class SearchAnimeService
 {

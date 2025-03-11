@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-
+using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Helpers;
 using Otanabi.ViewModels;
-
-using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.Services;
 

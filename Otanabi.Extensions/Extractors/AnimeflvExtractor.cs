@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
+using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
-using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 
 namespace Otanabi.Extensions.Extractors;

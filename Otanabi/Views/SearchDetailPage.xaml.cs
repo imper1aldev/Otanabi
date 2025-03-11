@@ -1,8 +1,8 @@
-﻿using Otanabi.Core.Models;
+﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.ViewModels;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace Otanabi.Views;
 
@@ -10,7 +10,7 @@ public sealed partial class SearchDetailPage : Page
 {
     private int AnimeId;
     private List<FavoriteList> favoriteLists;
-    private List<FavoriteList> selectedFList = new List<FavoriteList>();
+    private List<FavoriteList> selectedFList = new();
     DatabaseService dbService = new();
     public SearchDetailViewModel ViewModel
     {

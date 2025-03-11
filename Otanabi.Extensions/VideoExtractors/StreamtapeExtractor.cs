@@ -1,8 +1,5 @@
 ﻿using System.Net.Http.Headers;
-using System.Text.RegularExpressions;
-using HtmlAgilityPack;
 using Otanabi.Extensions.Contracts.VideoExtractors;
-using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace Otanabi.Extensions.VideoExtractors;
 
@@ -26,12 +23,12 @@ public class StreamtapeExtractor : IVideoExtractor
                 return (streamUrl, newHeaders);
             }
 
-            var response = await client.GetStringAsync(newUrl); 
-             var scriptData = response
-            .SubstringAfter("document.getElementById('robotlink').innerHTML = ")
-            .SubstringBefore(";"); 
-            var baseVideo=scriptData.SubstringBetween("'//","'+");
-            var toex=scriptData.SubstringBetween("('xcd","').substring");
+            var response = await client.GetStringAsync(newUrl);
+            var scriptData = response
+           .SubstringAfter("document.getElementById('robotlink').innerHTML = ")
+           .SubstringBefore(";");
+            var baseVideo = scriptData.SubstringBetween("'//", "'+");
+            var toex = scriptData.SubstringBetween("('xcd", "').substring");
             var videoUrl = $"https://{baseVideo}" + toex;
             streamUrl = videoUrl;
         }
@@ -42,5 +39,5 @@ public class StreamtapeExtractor : IVideoExtractor
         }
         return (streamUrl, newHeaders);
     }
-     
+
 }

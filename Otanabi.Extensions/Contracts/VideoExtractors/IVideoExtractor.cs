@@ -3,5 +3,5 @@
 namespace Otanabi.Extensions.Contracts.VideoExtractors;
 public interface IVideoExtractor
 {
-    Task<(string,HttpHeaders?)> GetStreamAsync(string url);
+    Task<(string, HttpHeaders?)> GetStreamAsync(string url);
 }

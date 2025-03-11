@@ -1,6 +1,5 @@
-﻿using Otanabi.ViewModels;
-
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
+using Otanabi.ViewModels;
 
 namespace Otanabi.Views;
 

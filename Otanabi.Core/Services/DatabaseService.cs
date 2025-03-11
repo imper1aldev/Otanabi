@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using Otanabi.Core.Database;
+﻿using Otanabi.Core.Database;
 using Otanabi.Core.Models;
 
 namespace Otanabi.Core.Services;
@@ -10,7 +8,9 @@ public class DatabaseService
     public readonly DatabaseHandler DB = DatabaseHandler.GetInstance();
     private readonly SearchAnimeService _searchAnimeService = new();
 
-    public DatabaseService() { }
+    public DatabaseService()
+    {
+    }
 
     public async Task CreateFavorite(string fav)
     {
@@ -170,12 +170,12 @@ public class DatabaseService
                 if (forceUpdate)
                 {
                     // update all chapters url 
-                    foreach(var chap in chapsDB)
+                    foreach (var chap in chapsDB)
                     {
-                        var updatechapData= chapsSource.FirstOrDefault(c => c.ChapterNumber == chap.ChapterNumber);
-                        if(updatechapData != null)
+                        var updatechapData = chapsSource.FirstOrDefault(c => c.ChapterNumber == chap.ChapterNumber);
+                        if (updatechapData != null)
                         {
-                            chap.Url= updatechapData.Url;
+                            chap.Url = updatechapData.Url;
                             await DB._db.UpdateAsync(chap);
                         }
 

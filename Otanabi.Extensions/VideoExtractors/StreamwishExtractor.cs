@@ -1,38 +1,33 @@
-﻿using Otanabi.Extensions.Contracts.VideoExtractors;
+﻿using System.Net.Http.Headers;
 using HtmlAgilityPack;
 using JsUnpacker;
-using System.Net.Http.Headers;
+using Otanabi.Extensions.Contracts.VideoExtractors;
 namespace Otanabi.Extensions.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor
 {
-    public async Task<(string,HttpHeaders)> GetStreamAsync(string url)
+    public async Task<(string, HttpHeaders)> GetStreamAsync(string url)
     {
-        var streamUrl = "";
         try
         {
-            HtmlWeb oWeb = new HtmlWeb();
-            HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
+            HtmlWeb oWeb = new();
+            var doc = await oWeb.LoadFromWebAsync(url);
+            var packedScript = doc.DocumentNode.Descendants()
+                .FirstOrDefault(x => x.Name == "script" && x.InnerText?.Contains("eval") == true);
 
-            var packed = doc.DocumentNode.Descendants()
-                         .FirstOrDefault(x => x.Name == "script" && x.InnerText?.Contains("eval") == true);
-            var unpacked = "";
-            if (Unpacker.IsPacked(packed?.InnerText))
+            if (packedScript != null && Unpacker.IsPacked(packedScript.InnerText))
             {
-                unpacked = Unpacker.UnpackAndCombine(packed?.InnerText);
+                var unpacked = Unpacker.UnpackAndCombine(packedScript.InnerText);
+                var streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(["\"}"], StringSplitOptions.None)[0];
+                return (streamUrl, null);
             }
-            else
-            {
-                //not valid pack
-                return (streamUrl = "",null);
-            }
-
-            streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(new[] { "\"}" }, StringSplitOptions.None)[0];
-
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.ToString());
+            // Mejorar la gestión de errores para facilitar la depuración
+            Console.WriteLine($"Error extracting video stream: {ex.Message}");
         }
-        return (streamUrl,null);
+
+        // Devolver valor por defecto si no se pudo obtener la URL
+        return ("", null);
     }
 }

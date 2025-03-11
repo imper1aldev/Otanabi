@@ -1,13 +1,13 @@
-﻿using Otanabi.Extensions.Contracts.VideoExtractors;
+﻿using System.Net.Http.Headers;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
+using Otanabi.Extensions.Contracts.VideoExtractors;
 using ScrapySharp.Extensions;
-using System.Net.Http.Headers;
 
 namespace Otanabi.Extensions.VideoExtractors;
 public class OkruExtractor : IVideoExtractor
 {
-    public async Task<(string,HttpHeaders)> GetStreamAsync(string url)
+    public async Task<(string, HttpHeaders)> GetStreamAsync(string url)
     {
         // url = "https://ok.ru/videoembed/947875089023";
         var streaminUrl = "";
@@ -34,6 +34,6 @@ public class OkruExtractor : IVideoExtractor
         }
 
 
-        return (streaminUrl,null);
+        return (streaminUrl, null);
     }
 }

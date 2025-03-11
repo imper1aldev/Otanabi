@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using Otanabi.Contracts.Services;
-
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Otanabi.Contracts.Services;
 using WinRT.Interop;
 
 
@@ -25,12 +23,12 @@ public class WindowPresenterService : IWindowPresenterService
     public event EventHandler? WindowPresenterChanged;
 
     public bool IsFullScreen => _appWindow.Presenter.Kind == AppWindowPresenterKind.FullScreen;
-    public bool IsCompactOverlay =>_appWindow.Presenter.Kind == AppWindowPresenterKind.CompactOverlay;
+    public bool IsCompactOverlay => _appWindow.Presenter.Kind == AppWindowPresenterKind.CompactOverlay;
 
     private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
     {
         if (args.DidPresenterChange)
-        { 
+        {
             WindowPresenterChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -38,22 +36,22 @@ public class WindowPresenterService : IWindowPresenterService
     public void ToggleFullScreen()
     {
         if (IsFullScreen)
-        { 
+        {
             _appWindow.SetPresenter(AppWindowPresenterKind.Default);
         }
         else
-        { 
+        {
             _appWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
         }
     }
     public void ToggleCompactOverlay()
     {
         if (IsCompactOverlay)
-        { 
+        {
             _appWindow.SetPresenter(AppWindowPresenterKind.Default);
         }
         else
-        { 
+        {
             _appWindow.SetPresenter(AppWindowPresenterKind.CompactOverlay);
         }
     }

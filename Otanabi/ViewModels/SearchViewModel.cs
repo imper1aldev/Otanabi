@@ -1,8 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
@@ -187,7 +185,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     private void ResetData()
     {

@@ -1,17 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
-using Otanabi.Contracts.Services;
-using Otanabi.Contracts.ViewModels;
-using Otanabi.Core.Helpers;
-using Otanabi.Core.Models;
-using Otanabi.Core.Services;
-using Otanabi.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
+using Otanabi.Contracts.Services;
+using Otanabi.Contracts.ViewModels;
+using Otanabi.Core.Models;
+using Otanabi.Core.Services;
+using Otanabi.Helpers;
 using Windows.ApplicationModel;
 
 namespace Otanabi.ViewModels;
@@ -43,7 +42,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     private bool updateAvailable = false;
 
-    public ICommand SwitchThemeCommand { get; }
+    public ICommand SwitchThemeCommand
+    {
+        get;
+    }
 
     [ObservableProperty]
     private Provider selectedProvider;
@@ -145,7 +147,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     private async Task GetProviders()
     {

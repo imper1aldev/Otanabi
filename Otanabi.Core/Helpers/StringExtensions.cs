@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using System.Text;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 public static class StringExtensions
 {
@@ -8,7 +8,7 @@ public static class StringExtensions
         var startIndex = str.IndexOf(start);
         if (startIndex == -1)
             return "";
-        
+
         startIndex += start.Length;
 
         var endIndex = str.IndexOf(end, startIndex);
@@ -76,7 +76,7 @@ public static class StringExtensions
 
     public static string RemoveWhitespaces(this string input) =>
         input.ReplaceWhitespaces(string.Empty);
-     
+
     public static string RemovePrefix(this string input, string prefix)
     {
         if (input.StartsWith(prefix))
