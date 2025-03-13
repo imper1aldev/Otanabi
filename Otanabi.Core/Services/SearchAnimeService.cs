@@ -29,6 +29,7 @@ public class SearchAnimeService
 
         return animesTmp.ToArray();
     }
+
     public async Task<Anime> GetAnimeDetailsAsync(Anime animeReq)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetAnimeDetailsAsync", animeReq.Provider);
@@ -38,15 +39,17 @@ public class SearchAnimeService
 
         return animesDet;
     }
+
     public async Task<VideoSource[]> GetVideoSources(string requestUrl, Provider provider)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetVideoSources", provider);
         var method = reflex.Item1;
         var instance = reflex.Item2;
-        var videoSources = (VideoSource[])await (Task<IVideoSource[]>)method.Invoke(instance, new object[] { requestUrl });
+        var videoSources = (VideoSource[])await (Task<IVideoSource[]>)method.Invoke(instance, [requestUrl]);
 
         return videoSources.ToArray();
     }
+
     public Tag[] GetTags(Provider provider)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetTags", provider);

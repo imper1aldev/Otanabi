@@ -30,7 +30,11 @@ public interface IVideoSource
     {
         get; set;
     }
-    string Subtitle
+    //string Subtitle
+    //{
+    //    get; set;
+    //}
+    List<Track> Subtitles
     {
         get; set;
     }

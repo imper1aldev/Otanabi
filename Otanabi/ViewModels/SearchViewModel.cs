@@ -22,7 +22,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private int currPage = 1;
     private readonly int maxItemsFirstLoad = 35;
 
-    public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
+    public ObservableCollection<Anime> Source { get; } = [];
 
     [ObservableProperty]
     private bool isLoading = false;
@@ -37,7 +37,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
 
-    private Tag[] OriginalTags = Array.Empty<Tag>();
+    private Tag[] OriginalTags = [];
 
     public SearchViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
     {

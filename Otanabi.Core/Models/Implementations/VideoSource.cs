@@ -1,4 +1,5 @@
-﻿namespace Otanabi.Core.Models;
+﻿
+namespace Otanabi.Core.Models;
 
 public class VideoSource : IVideoSource
 {
@@ -26,9 +27,13 @@ public class VideoSource : IVideoSource
     {
         get; set;
     }
-    public string CheckedUrl => Url != null ? Url : Code;
-    public string Subtitle
+    public string CheckedUrl => Url ?? Code;
+    public List<Track> Subtitles
     {
         get; set;
-    }
+    } = [];
+    public List<Track> Audios
+    {
+        get; set;
+    } = [];
 }

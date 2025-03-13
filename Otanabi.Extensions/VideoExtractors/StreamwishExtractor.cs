@@ -1,11 +1,12 @@
-﻿using System.Net.Http.Headers;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using JsUnpacker;
+using Newtonsoft.Json;
+using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
 namespace Otanabi.Extensions.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor
 {
-    public async Task<(string, HttpHeaders)> GetStreamAsync(string url)
+    public async Task<SelectedSource> GetStreamAsync(string url)
     {
         try
         {
@@ -18,7 +19,8 @@ public class StreamwishExtractor : IVideoExtractor
             {
                 var unpacked = Unpacker.UnpackAndCombine(packedScript.InnerText);
                 var streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(["\"}"], StringSplitOptions.None)[0];
-                return (streamUrl, null);
+                var subtitles = ExtractSubtitles(unpacked);
+                return new(streamUrl, subtitles, null);
             }
         }
         catch (Exception ex)
@@ -28,6 +30,19 @@ public class StreamwishExtractor : IVideoExtractor
         }
 
         // Devolver valor por defecto si no se pudo obtener la URL
-        return ("", null);
+        return new();
+    }
+
+    public static List<Track> ExtractSubtitles(string script)
+    {
+        try
+        {
+            var subtitleStr = script.SubstringAfter("tracks").SubstringAfter("[").SubstringBefore("]");
+            return JsonConvert.DeserializeObject<List<Track>>($"[{subtitleStr}]");
+        }
+        catch (Exception)
+        {
+            return [];
+        }
     }
 }

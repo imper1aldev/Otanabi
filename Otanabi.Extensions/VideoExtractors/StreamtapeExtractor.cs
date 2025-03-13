@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+﻿using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
 
 namespace Otanabi.Extensions.VideoExtractors;
@@ -7,7 +7,7 @@ public class StreamtapeExtractor : IVideoExtractor
 {
     private static readonly HttpClient client = new();
 
-    public async Task<(string, HttpHeaders)> GetStreamAsync(string url)
+    public async Task<SelectedSource> GetStreamAsync(string url)
     {
         var streamUrl = "";
         var newHeaders = new HttpClient().DefaultRequestHeaders;
@@ -20,13 +20,11 @@ public class StreamtapeExtractor : IVideoExtractor
 
             if (newUrl == null)
             {
-                return (streamUrl, newHeaders);
+                return new(streamUrl, newHeaders);
             }
 
             var response = await client.GetStringAsync(newUrl);
-            var scriptData = response
-           .SubstringAfter("document.getElementById('robotlink').innerHTML = ")
-           .SubstringBefore(";");
+            var scriptData = response.SubstringAfter("document.getElementById('robotlink').innerHTML = ").SubstringBefore(";");
             var baseVideo = scriptData.SubstringBetween("'//", "'+");
             var toex = scriptData.SubstringBetween("('xcd", "').substring");
             var videoUrl = $"https://{baseVideo}" + toex;
@@ -37,7 +35,7 @@ public class StreamtapeExtractor : IVideoExtractor
             Console.WriteLine(e.Message);
             // Handle exceptions as needed
         }
-        return (streamUrl, newHeaders);
+        return new(streamUrl, newHeaders);
     }
 
 }

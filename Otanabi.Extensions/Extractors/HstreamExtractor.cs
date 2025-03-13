@@ -208,13 +208,19 @@ public class HstreamExtractor : IExtractor
                 Title = "Juro",
                 Code = dest,
                 Url = dest,
-                Subtitle = $"{urlBase}/eng.ass"
+                Subtitles = [
+                    new() {
+                        File = $"{urlBase}/eng.ass",
+                        Label = "English"
+                    }
+                ]
             };
             videoSources.Add(vsouce);
         }
 
         return videoSources.ToArray();
     }
+
     public static string GenerateTagString(Tag[] tags)
     {
         var result = "";
@@ -228,10 +234,11 @@ public class HstreamExtractor : IExtractor
         }
         return result;
     }
+
     public Tag[] GetTags()
     {
-        return new Tag[]
-        {
+        return
+        [
             new() { Name = "3D", Value = "3d" },
             new() { Name = "4K", Value = "4k" },
             new() { Name = "Ahegao", Value = "ahegao" },
@@ -295,6 +302,6 @@ public class HstreamExtractor : IExtractor
             new() { Name = "Virgin", Value = "virgin" },
             new() { Name = "X-Ray,", Value = "x-ray" },
             new() { Name = "Yuri", Value = "yuri" }
-        };
+        ];
     }
 }

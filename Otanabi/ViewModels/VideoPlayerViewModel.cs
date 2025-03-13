@@ -11,6 +11,7 @@ using Otanabi.Converters;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.Models.Enums;
+using Otanabi.UserControls;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System;
@@ -52,7 +53,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly string AppCurTitle = "";
     private bool IsPaused = false;
     private bool IsDisposed = false;
-    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
+    public ObservableCollection<Chapter> ChapterList { get; } = [];
+
+    [ObservableProperty]
+    public ObservableCollection<string> servers = [];
+
+    [ObservableProperty]
+    private string selectedServer;
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -79,7 +86,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private string animeTitle = "";
-    private string activeCC = "";
+
+    private bool activeCc = false;
 
     private DateTime _lastClickTime;
     private const int DoubleClickThreshold = 200;
@@ -178,8 +186,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         dynamic param = parameter as dynamic;
 
-        //VideoUrl = param.Url;
-        //ChapterName = param.ChapterName;
         animeTitle = param.AnimeTitle;
         if (
             (param.History is History hs)
@@ -264,36 +270,52 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;
         var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
-        var data = await _selectSourceService.SelectSourceAsync(videoSources);
+        if (videoSources != null && (videoSources.FirstOrDefault(e => e.Server == SelectedServer) ?? videoSources[0]) is VideoSource item)
+        {
+            SelectedServer = item.Server;
+        }
+        //(streamUrl, subUrl, headers)
+        var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
 
-        activeCC = data.Item2;
+        //activeCC = data.Item2;
+        activeCc = data.Subtitles.Count != 0;
 
         ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
-        if (!string.IsNullOrEmpty(data.Item1))
+        if (!string.IsNullOrEmpty(data.StreamUrl))
         {
-            VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
-
+            VideoUrl = MediaSource.CreateFromUri(new Uri(data.StreamUrl));
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
-                if (!string.IsNullOrEmpty(activeCC))
+                if (activeCc)
                 {
                     try
                     {
-                        var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(activeCC);
-                        var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
-                        timedTextSource.Resolved += (sender, args) =>
+                        LoadServers();
+                        foreach (var track in data.Subtitles)
                         {
-                            if (args.Error != null)
+                            var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(track.File);
+                            // Crear el `TimedTextSource` para cada archivo de subtítulos
+                            var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
+
+                            // Manejar el evento `Resolved` para cada fuente de subtítulos
+                            timedTextSource.Resolved += (sender, args) =>
                             {
-                                logger.LogInfo(message: $"Error on timed text source: {args.Error.ToString}");
-                            }
-                            foreach (var track in args.Tracks)
-                            {
-                                track.Label = track.Label == "" ? "English" : track.Label;
-                            }
-                        };
-                        MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
+                                if (args.Error != null)
+                                {
+                                    logger.LogInfo(message: $"Error on timed text source for track {track.Label}: {args.Error}");
+                                }
+
+                                // Cambiar el label de cada track, si no tiene, asignarle uno por defecto
+                                foreach (var timedTrack in args.Tracks)
+                                {
+                                    timedTrack.Label = string.IsNullOrEmpty(timedTrack.Label) ? track.Label : timedTrack.Label;
+                                }
+                            };
+
+                            // Agregar la fuente de subtítulos externa al `MediaPlaybackItem`
+                            MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
+                        }
                         MpItem.TimedMetadataTracksChanged += (sender, args) =>
                         {
                             MpItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
@@ -355,9 +377,43 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowEx.Title = ChapterName;
     }
 
+    private async Task LoadServers()
+    {
+        try
+        {
+            var videoSources = await _searchAnimeService.GetVideoSources(selectedChapter.Url, selectedProvider);
+            Servers.Clear();
+            foreach (var source in videoSources)
+            {
+                Servers.Add(source.Server); // Asume que `source.Name` es el nombre del servidor
+            }
+
+            if (MPE?.TransportControls is AnimeMediaTransportControls controls)
+            {
+                controls.UpdateServers(Servers, SelectedServer);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Could not load servers ", e.Message.ToString());
+        }
+    }
+
     public void OnNavigatedFrom()
     {
         Dispose();
+    }
+
+    [RelayCommand]
+    private async Task SelectServer(string server)
+    {
+        if (string.IsNullOrEmpty(server))
+        {
+            return;
+        }
+
+        SelectedServer = server;
+        await LoadVideo(selectedChapter); // Recargar el video con el servidor seleccionado
     }
 
     [RelayCommand]
@@ -388,7 +444,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private void ClickFull()
     {
-        DateTime now = DateTime.Now;
+        var now = DateTime.Now;
         TimeSpan interval = now - _lastClickTime;
 
         if (interval.TotalMilliseconds <= DoubleClickThreshold)

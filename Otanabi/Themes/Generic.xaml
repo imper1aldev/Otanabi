@@ -644,6 +644,14 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton
+                                                x:Name="QualitiesButton"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Quality">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xe93e;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton
                                                 x:Name="CCSelectionButton"
                                                 AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="15"

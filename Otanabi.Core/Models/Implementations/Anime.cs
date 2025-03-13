@@ -75,5 +75,5 @@ public class Anime : IAnime
     }
 
     [Ignore]
-    public List<string> Genre => (GenreStr != null) ? GenreStr.Split(',').ToList() : new();
+    public List<string> Genre => (GenreStr != null) ? [.. GenreStr.Split(',')] : new();
 }

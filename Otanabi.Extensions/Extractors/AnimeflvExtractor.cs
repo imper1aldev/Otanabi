@@ -89,7 +89,7 @@ public class AnimeflvExtractor : IExtractor
         var oWeb = new HtmlWeb();
         var doc = await oWeb.LoadFromWebAsync(url);
 
-        if (oWeb.StatusCode != System.Net.HttpStatusCode.OK)
+        if (oWeb.StatusCode != HttpStatusCode.OK)
         {
             throw new Exception("Anime could not be found");
         }
@@ -140,7 +140,7 @@ public class AnimeflvExtractor : IExtractor
         return anime;
     }
 
-    private string[] GetUriIdentify(string text, string aStatus)
+    private static string[] GetUriIdentify(string text, string aStatus)
     {
         var pattern = @"anime_info = (\[.*])";
         var identifier = "";
@@ -270,9 +270,7 @@ public class AnimeflvExtractor : IExtractor
         var doc = await oWeb.LoadFromWebAsync(url);
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
 
-        var sources = getSorcesRegex(node.InnerHtml);
-
-        return sources;
+        return getSorcesRegex(node.InnerHtml);
     }
 
     private static AnimeType GetAnimeTypeByStr(string strType)

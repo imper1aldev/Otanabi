@@ -23,13 +23,10 @@
 
     </Page.Resources>
     <usercontrols:MouseGrid x:Name="ContentArea" VerticalAlignment="Stretch">
-
-
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
 
         <Grid
             Width="0"
@@ -129,7 +126,6 @@
 
         </Grid>
 
-
         <ProgressRing
             Width="80"
             Height="80"
@@ -164,8 +160,6 @@
                 </StackPanel>
             </Button>
         </StackPanel>
-
-
 
         <SplitView
             x:Name="splitView"
@@ -278,7 +272,8 @@
                             NextCommand="{x:Bind ViewModel.NextChapterCommand}"
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
-                            SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}" />
+                            SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}" 
+                            Servers="{x:Bind ViewModel.servers, Mode=OneWay}" />
                     </MediaPlayerElement.TransportControls>
                 </MediaPlayerElement>
             </Grid>

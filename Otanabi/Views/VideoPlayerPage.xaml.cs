@@ -10,9 +10,17 @@ public sealed partial class VideoPlayerPage : Page
         get;
     }
 
+    //public VideoPlayerPage()
+    //{
+    //    ViewModel = App.GetService<VideoPlayerViewModel>();
+    //    InitializeComponent();
+    //    AMediaPlayer.Loaded += OnPlayerLoaded;
+    //}
+
     public VideoPlayerPage()
     {
         ViewModel = App.GetService<VideoPlayerViewModel>();
+        this.DataContext = ViewModel; // Asigna el ViewModel como DataContext
         InitializeComponent();
         AMediaPlayer.Loaded += OnPlayerLoaded;
     }
