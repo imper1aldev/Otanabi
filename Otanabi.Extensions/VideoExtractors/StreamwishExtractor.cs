@@ -25,11 +25,8 @@ public class StreamwishExtractor : IVideoExtractor
         }
         catch (Exception ex)
         {
-            // Mejorar la gestión de errores para facilitar la depuración
             Console.WriteLine($"Error extracting video stream: {ex.Message}");
         }
-
-        // Devolver valor por defecto si no se pudo obtener la URL
         return new();
     }
 

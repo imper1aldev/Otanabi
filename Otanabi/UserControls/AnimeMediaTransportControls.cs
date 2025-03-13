@@ -138,8 +138,6 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         new PropertyMetadata(null, OnServersChanged)
     );
 
-    //public IEnumerable<string> _pendingServers;
-
     public IEnumerable<string> Servers
     {
         get => (IEnumerable<string>)GetValue(ServersProperty);
@@ -303,11 +301,10 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
             foreach (var server in serverList)
             {
                 var flyoutItem = new MenuFlyoutItem { Text = server };
-                // Agrega un FontIcon si el servidor está seleccionado
                 if (server == selectedServer)
                 {
                     flyoutItem.IsEnabled = false;
-                    flyoutItem.Icon = new FontIcon { Glyph = "\u2713" }; // Símbolo de check
+                    flyoutItem.Icon = new FontIcon { Glyph = "\u2713" };
                 }
                 flyoutItem.Click += ServerFlyoutItem_Click;
                 _serverFlyout.Items.Add(flyoutItem);

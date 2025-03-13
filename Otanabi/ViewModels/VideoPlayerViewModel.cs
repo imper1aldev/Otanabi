@@ -277,7 +277,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //(streamUrl, subUrl, headers)
         var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
 
-        //activeCC = data.Item2;
         activeCc = data.Subtitles.Count != 0;
 
         ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
@@ -295,25 +294,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                         foreach (var track in data.Subtitles)
                         {
                             var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(track.File);
-                            // Crear el `TimedTextSource` para cada archivo de subtítulos
                             var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
-
-                            // Manejar el evento `Resolved` para cada fuente de subtítulos
                             timedTextSource.Resolved += (sender, args) =>
                             {
                                 if (args.Error != null)
                                 {
                                     logger.LogInfo(message: $"Error on timed text source for track {track.Label}: {args.Error}");
                                 }
-
-                                // Cambiar el label de cada track, si no tiene, asignarle uno por defecto
                                 foreach (var timedTrack in args.Tracks)
                                 {
                                     timedTrack.Label = string.IsNullOrEmpty(timedTrack.Label) ? track.Label : timedTrack.Label;
                                 }
                             };
-
-                            // Agregar la fuente de subtítulos externa al `MediaPlaybackItem`
                             MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
                         }
                         MpItem.TimedMetadataTracksChanged += (sender, args) =>
@@ -385,7 +377,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Servers.Clear();
             foreach (var source in videoSources)
             {
-                Servers.Add(source.Server); // Asume que `source.Name` es el nombre del servidor
+                Servers.Add(source.Server);
             }
 
             if (MPE?.TransportControls is AnimeMediaTransportControls controls)
@@ -413,7 +405,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
 
         SelectedServer = server;
-        await LoadVideo(selectedChapter); // Recargar el video con el servidor seleccionado
+        await LoadVideo(selectedChapter);
     }
 
     [RelayCommand]

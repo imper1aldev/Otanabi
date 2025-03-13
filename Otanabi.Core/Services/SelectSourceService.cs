@@ -17,45 +17,6 @@ public class SelectSourceService
         return newList;
     }
 
-    //public async Task<(string, string, HttpHeaders)> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
-    //{
-    //    var streamUrl = "";
-    //    var subUrl = "";
-    //    HttpHeaders headers = new HttpClient().DefaultRequestHeaders;
-    //    try
-    //    {
-    //        var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
-    //        var orderedSources = MoveToFirst([.. videoSources], item);
-    //        subUrl = item.Subtitle ?? "";
-    //        foreach (var source in orderedSources)
-    //        {
-    //            (string, HttpHeaders) tempUrl;
-    //            var reflex = _classReflectionHelper.GetMethodFromVideoSource(source);
-    //            var method = reflex.Item1;
-    //            var instance = reflex.Item2;
-    //            tempUrl = await (Task<(string, HttpHeaders)>)method.Invoke(instance, [source.CheckedUrl]);
-    //            if (!string.IsNullOrEmpty(tempUrl.Item1))
-    //            {
-    //                streamUrl = tempUrl.Item1;
-    //                if (tempUrl.Item2 != null)
-    //                {
-    //                    headers = tempUrl.Item2;
-    //                }
-    //                break;
-    //            }
-
-    //        }
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        logger.LogFatal("Failed on load video extension {0}", e.Message);
-    //        streamUrl = "";
-    //        throw;
-    //    }
-    //    return (streamUrl, subUrl, headers);
-    //}
-
-
     public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
         HttpHeaders headers = new HttpClient().DefaultRequestHeaders;
