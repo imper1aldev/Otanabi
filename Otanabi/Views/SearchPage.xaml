@@ -12,7 +12,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Otanabi.Core.Models"
     xmlns:usercontrols="using:Otanabi.UserControls"
-    NavigationCacheMode="Required"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -61,7 +61,6 @@
                     <TextBox AllowFocusOnInteraction="True" PlaceholderText="Search... (press Enter to search)" />
                 </StackPanel>
             </Border>-->
-
             <Button
                 Grid.Row="0"
                 Grid.Column="1"
@@ -100,6 +99,7 @@
                 </Button.Flyout>
             </Button>
             <ComboBox
+                x:Name="cbProvider"
                 Grid.Row="0"
                 Grid.Column="2"
                 Width="150"
@@ -111,7 +111,7 @@
                 SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
                 <interactivity:Interaction.Behaviors>
                     <interactions:EventTriggerBehavior EventName="SelectionChanged">
-                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ProviderChangedCommand}" />
+                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ProviderChangedCommand}" CommandParameter="{Binding SelectedItem, ElementName=cbProvider}" />
                     </interactions:EventTriggerBehavior>
                 </interactivity:Interaction.Behaviors>
             </ComboBox>

@@ -1,14 +1,13 @@
-﻿using Otanabi.Core.Models;
-using System.Reflection;
+﻿using System.Reflection;
+using Otanabi.Core.Models;
 
 namespace Otanabi.Core.Helpers;
+
 public class ClassReflectionHelper
 {
     private readonly string AssemblyName = "Otanabi.Extensions";
     private string ExNameSpace => $"{AssemblyName}.Extractors";
     private string VidNameSpace => $"{AssemblyName}.VideoExtractors";
-
-
 
     public Provider GetProviderPropsByType(Type type)
     {
@@ -21,9 +20,7 @@ public class ClassReflectionHelper
     {
         var lTypes = new List<Type>();
 
-        var data = LoadExtensionAssembly().GetTypes()
-                           .Where(t => t.Namespace == namesp)
-                           .Select(t => t).ToList();
+        var data = LoadExtensionAssembly().GetTypes().Where(t => t.Namespace == namesp).Select(t => t).ToList();
         foreach (var type in data)
         {
             if (!type.Name.Contains("<"))
@@ -33,11 +30,13 @@ public class ClassReflectionHelper
         }
         return lTypes.ToArray();
     }
+
     public Assembly LoadExtensionAssembly()
     {
         var currDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         return Assembly.LoadFile(Path.Join(currDir, $"{AssemblyName}.dll"));
     }
+
     public string GetAssemblyPath()
     {
         var currDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -47,12 +46,8 @@ public class ClassReflectionHelper
     private Type GetExtensionType(string className)
     {
         var types = LoadExtensionAssembly().GetTypes();
-        return LoadExtensionAssembly().
-            GetTypes().
-            Where(t => t.FullName == className).
-            ToList().First();
+        return LoadExtensionAssembly().GetTypes().Where(t => t.FullName == className).ToList().First();
     }
-
 
     public (MethodInfo, object) GetMethodFromProvider(string methodName, Provider provider)
     {
@@ -62,6 +57,7 @@ public class ClassReflectionHelper
         var method = extractorType.GetMethod(methodName);
         return (method, extractorInstance);
     }
+
     public (MethodInfo, object) GetMethodFromVideoSource(VideoSource source)
     {
         var extractorType = GetExtensionType($"{VidNameSpace}.{source.Server}Extractor");
@@ -77,10 +73,11 @@ public class ClassReflectionHelper
         foreach (var cls in data)
         {
             var provider = GetProviderPropsByType(cls);
-            providers.Add(provider);
+            if (provider.Active)
+            {
+                providers.Add(provider);
+            }
         }
         return providers.ToArray();
     }
-
-
 }
