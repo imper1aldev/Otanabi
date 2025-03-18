@@ -22,7 +22,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private string currQuery = string.Empty;
     private int currPage = 1;
-    private readonly int maxItemsFirstLoad = 35;
+    private readonly int maxItemsFirstLoad = 40;
 
     public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
 
@@ -33,7 +33,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private bool noResults = false;
 
     [ObservableProperty]
-    private Provider selectedProvider = new();
+    private Provider selectedProvider;
 
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
@@ -101,13 +101,17 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private async Task GetProviders()
     {
-        Providers.Clear();
-        var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs)
+        if (Providers.Count == 0)
         {
-            Providers.Add(item);
+            Providers.Clear();
+            var provs = _searchAnimeService.GetProviders();
+            foreach (var item in provs)
+            {
+                Providers.Add(item);
+            }
+            SelectedProvider = provs[0];
         }
-        SelectedProvider = provs[0];
+
         await Task.CompletedTask;
     }
 
@@ -167,6 +171,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         IsLoading = false;
         if (Source.Count < maxItemsFirstLoad)
         {
+            await Task.Delay(200);
             await LoadMore();
         }
 
@@ -225,10 +230,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    private async Task OnProviderChanged()
+    private async Task OnProviderChanged(Provider selected)
     {
         ResetData();
         LoadTags();
+        SelectedProvider = selected;
         await LoadMainAnimePage();
     }
 
