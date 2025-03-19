@@ -16,6 +16,10 @@
     <PackageReference Include="RestSharp" Version="112.0.0" />
     <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="112.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="ZeroQL" Version="7.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ZeroQLConfig Include="config.zeroql.json"/>
   </ItemGroup>
   <ItemGroup>
     <None Update="nlog.config" CopyToOutputDirectory="Always" />

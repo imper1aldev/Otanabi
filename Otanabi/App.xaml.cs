@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Otanabi.Activation;
 using Otanabi.Contracts.Services;
 using Otanabi.Core.Contracts.Services;
-using Otanabi.Core.Database;
 using Otanabi.Core.Services;
 using Otanabi.Models;
 using Otanabi.Notifications;
@@ -51,7 +50,6 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
-
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         Host = Microsoft
             .Extensions.Hosting.Host.CreateDefaultBuilder()
@@ -94,6 +92,8 @@ public partial class App : Application
                     services.AddTransient<SettingsPage>();
                     services.AddTransient<ShellPage>();
                     services.AddTransient<ShellViewModel>();
+                    services.AddTransient<SeasonalViewModel>();
+                    services.AddTransient<SeasonalPage>();
 
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
