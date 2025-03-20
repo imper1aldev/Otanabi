@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
-    xmlns:converteres="using:Otanabi.Converters"
+    xmlns:converters="using:Otanabi.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
@@ -15,7 +15,7 @@
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <converteres:TruncateConverter x:Key="truncateConverter" />
+        <converters:TruncateConverter x:Key="truncateConverter" />
 
         <Style x:Key="BaseButton" TargetType="Button">
             <Setter Property="Background" Value="#8b000000" />

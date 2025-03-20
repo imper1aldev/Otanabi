@@ -7,26 +7,32 @@ public class AnilistService
 {
     public AnilistService() { }
 
-    public async Task<List<Anime>> GetSeasonal()
+    public async Task<(List<Anime>, PageInfo)> GetSeasonal(
+        int page = 1,
+        MediaSeason season = MediaSeason.Fall,
+        int seasonYear = 2024,
+        MediaStatus? status = MediaStatus.Finished,
+        bool isAdult = false
+    )
     {
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("https://graphql.anilist.co");
         var _client = new ZeroQLClient(httpClient);
         var response = await _client.Query(q =>
             q.Page(
-                page: 1,
+                page: page,
                 selector: p => new
                 {
                     PageInfo = p.PageInfo(pi => new PageInfo { HasNextPage = pi.HasNextPage, Total = pi.Total }),
 
                     Media = p.Media(
-                        season: MediaSeason.Fall,
-                        seasonYear: 2024,
+                        season: season,
+                        seasonYear: seasonYear,
                         format: MediaFormat.Tv,
                         format_not: MediaFormat.Ona,
-                        status: MediaStatus.Finished,
-                        episodes_greater: 12,
-                        isAdult: false,
+                        //status: status,
+                        //episodes_greater: 12,
+                        isAdult: isAdult,
                         type: MediaType.Anime,
                         selector: m => new
                         {
@@ -131,9 +137,17 @@ public class AnilistService
         for (int i = 0; i < mediaItems.Length; i++)
         {
             var media = mediaItems[i];
-            animes.Add(new Anime() { Title = media.Title.Romaji, Cover = media.CoverImage.ExtraLarge });
+            animes.Add(
+                new Anime()
+                {
+                    Title = media.Title.Romaji,
+                    Cover = media.CoverImage.ExtraLarge,
+                    Description = media.Description,
+                    GenreStr = string.Join(",", media.Genres),
+                }
+            );
         }
 
-        return animes;
+        return (animes, response.Data.PageInfo);
     }
 }

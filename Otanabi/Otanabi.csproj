@@ -40,6 +40,7 @@
     <None Remove="SplashScreen.xaml" />
     <None Remove="styles\ControlBackground.xaml" />
     <None Remove="Styles\NavigationViewStyles.xaml" />
+    <None Remove="UserControls\AnimeDetailCollectionControl.xaml" />
     <None Remove="UserControls\AnimePaneControl.xaml" />
 
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
@@ -57,6 +58,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.TokenView" Version="0.1.230830" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.1.240821" />
     <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.0.240109" />
@@ -85,6 +87,9 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <Page Update="UserControls\AnimeDetailCollectionControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="UserControls\AnimePaneControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
