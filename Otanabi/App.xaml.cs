@@ -94,6 +94,8 @@ public partial class App : Application
                     services.AddTransient<ShellViewModel>();
                     services.AddTransient<SeasonalViewModel>();
                     services.AddTransient<SeasonalPage>();
+                    services.AddTransient<DetailViewModel>();
+                    services.AddTransient<DetailPage>();
 
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

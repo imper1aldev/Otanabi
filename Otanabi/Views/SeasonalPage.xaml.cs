@@ -17,4 +17,12 @@ public sealed partial class SeasonalPage : Page
     {
         ViewModel.LoadedViewCommand.Execute(SelectorSeason);
     }
+
+    private void YearCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (object.ReferenceEquals(sender, YearCB))
+        {
+            //ViewModel.SelectedYear = (int)YearCB.SelectedItem;
+        }
+    }
 }

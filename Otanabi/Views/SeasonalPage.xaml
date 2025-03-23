@@ -2,15 +2,20 @@
     x:Class="Otanabi.Views.SeasonalPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    xmlns:c="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
-    xmlns:localconverters="using:Otanabi.Converters"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Otanabi.Core.Models"
     xmlns:usercontrols="using:Otanabi.UserControls"
     Loaded="Page_Loaded"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
-    <Grid x:Name="ContentArea">
+    <Grid x:Name="ContentArea" Margin="20,20,20,10">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -34,15 +39,25 @@
                 <SelectorBarItem x:Name="SelectorWinter" Text="Winter" />
             </SelectorBar>
             <ComboBox
+                x:Name="YearCB"
+                Width="90"
                 Margin="50,8,0,0"
-                ItemsSource="{x:Bind ViewModel.years}"
-                SelectedItem="{x:Bind ViewModel.SelectedYear, Mode=OneWay}" />
-            <Button Command="{x:Bind ViewModel.testCommand}" Content="Test" />
+                AllowFocusOnInteraction="True"
+                ItemsSource="{x:Bind ViewModel.Years, Mode=OneWay}"
+                SelectedItem="{x:Bind ViewModel.SelectedYear, Mode=TwoWay}">
+                <interactivity:Interaction.Behaviors>
+                    <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.YearChangedCommand}" CommandParameter="{Binding SelectedItem, ElementName=YearCB}" />
+                    </interactions:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+
+            </ComboBox>
+            <TextBlock Text="{x:Bind ViewModel.SelectedSeason, Mode=OneWay}" />
         </StackPanel>
         <usercontrols:AnimeDetailCollectionControl
             x:Name="AnimeGrid"
             Grid.Row="1"
-            Margin="0,12,0,12"
+            Margin="0,30,0,12"
             HorizontalAlignment="Center"
             ItemsSource="{x:Bind ViewModel.AnimeList, Mode=OneWay}" />
     </Grid>

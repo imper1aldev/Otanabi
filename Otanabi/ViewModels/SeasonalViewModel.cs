@@ -2,23 +2,32 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
+using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using ZeroQL.Client;
 
+//using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+
 namespace Otanabi.ViewModels;
 
 public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
 {
+    private readonly INavigationService _navigationService;
+
+    //private readonly DispatcherQueue _dispatcherQueue;
+
     private AnilistService _anilistService = new();
     public ObservableCollection<Anime> AnimeList { get; } = new ObservableCollection<Anime>();
 
-    public int[] years = Enumerable.Range(2009, ((DateTime.Now.Year + 2) - 2009)).Reverse().ToArray();
+    //public int[] Years { get; } = Enumerable.Range(2009, ((DateTime.Now.Year + 2) - 2009)).Reverse().ToArray();
+    public ObservableCollection<int> Years { get; } = new ObservableCollection<int>();
 
     [ObservableProperty]
-    private int selectedYear = DateTime.Now.Year;
+    private int selectedYear =DateTime.Now.Year ;
 
+    [ObservableProperty]
     private MediaSeason selectedSeason;
 
     [ObservableProperty]
@@ -26,16 +35,27 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
 
     private SelectorBarItem[] selectorBars;
 
-    public SeasonalViewModel() { }
-
-    [RelayCommand]
-    private async void LoadSeasonalAnimes()
+    public SeasonalViewModel(INavigationService navigationService)
     {
-        // Load seasonal animes
-        await LoadData(selectedSeason, SelectedYear, 1);
+        _navigationService = navigationService;
+        //_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
-    public async void OnNavigatedTo(object parameter) { }
+    [RelayCommand]
+    private async Task LoadSeasonalAnimes()
+    {
+        // Load seasonal animes
+        await LoadData(SelectedSeason, SelectedYear, 1);
+    }
+
+    public async void OnNavigatedTo(object parameter)
+    { 
+        Years.Clear(); 
+        for (var i = 2009; i <= DateTime.Now.Year + 1; i++)
+        { 
+            Years.Add(i);
+        } 
+    }
 
     public void OnNavigatedFrom() { }
 
@@ -63,13 +83,13 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
         selectorBars = selectorBar.Items.ToArray();
         AnimeList.Clear();
         LoadCurrentSeason();
-        await LoadData(selectedSeason, SelectedYear, 1);
+        await LoadData(SelectedSeason, SelectedYear, 1);
     }
 
     [RelayCommand]
-    private async void SeasonChanged()
+    private async Task SeasonChanged()
     {
-        if (selectedSeasonBar != null)
+        if (SelectedSeasonBar != null)
         {
             var season = SelectedSeasonBar.Name switch
             {
@@ -81,7 +101,21 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
             };
 
             AnimeList.Clear();
-            await LoadData(season, SelectedYear);
+            SelectedSeason = season;
+            OnPropertyChanged(nameof(SelectedSeason));
+            await LoadData(SelectedSeason, SelectedYear);
+        }
+    }
+
+    [RelayCommand]
+    private async Task YearChanged(int year)
+    {
+        if (SelectedSeasonBar != null)
+        {
+            SelectedYear = year;
+            OnPropertyChanged(nameof(SelectedYear));
+            AnimeList.Clear();
+            await LoadData(selectedSeason, SelectedYear); 
         }
     }
 
@@ -110,5 +144,6 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
             SelectedSeasonBar = selectorBars.FirstOrDefault(x => x.Name == "SelectorWinter");
             selectedSeason = MediaSeason.Winter;
         }
+        OnPropertyChanged(nameof(SelectedSeasonBar)); 
     }
 }

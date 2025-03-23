@@ -1,13 +1,84 @@
-﻿using Otanabi.Core.Models;
+﻿using System.Text.RegularExpressions;
+using Otanabi.Core.Models;
 using ZeroQL.Client;
 
 namespace Otanabi.Core.Services;
 
 public class AnilistService
 {
-    public AnilistService() { }
+    private readonly ZeroQLClient _client;
+
+    public AnilistService()
+    {
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("https://graphql.anilist.co");
+        _client = new ZeroQLClient(httpClient);
+    }
 
     public async Task<(List<Anime>, PageInfo)> GetSeasonal(
+        int page = 1,
+        MediaSeason season = MediaSeason.Fall,
+        int seasonYear = 2024,
+        MediaStatus? status = MediaStatus.Finished,
+        bool isAdult = false,
+        MediaType type = MediaType.Anime,
+        MediaFormat format = MediaFormat.Tv
+    )
+    {
+        var sortFilter = new[] { MediaSort.PopularityDesc };
+        var response = await _client.Query(q =>
+            q.Page(
+                page: page,
+                selector: p => new
+                {
+                    PageInfo = p.PageInfo(pi => new PageInfo { HasNextPage = pi.HasNextPage, Total = pi.Total }),
+                    Media = p.Media(
+                        season: season,
+                        seasonYear: seasonYear,
+                        format: format,
+                        format_not: MediaFormat.Ona,
+                        isAdult: isAdult,
+                        type: type,
+                        sort: sortFilter,
+                        selector: m => new
+                        {
+                            Id = m.Id,
+                            IdMal = m.IdMal,
+                            Title = m.Title(t => new
+                            {
+                                Romaji = t.Romaji(),
+                                Native = t.Native(),
+                                English = t.English(),
+                            }),
+                            Status = m.Status(),
+                            Description = m.Description(),
+                            Genres = m.Genres,
+                            CoverImage = m.CoverImage(ci => new { ExtraLarge = ci.ExtraLarge }),
+                        }
+                    ),
+                }
+            )
+        );
+        var animes = new List<Anime>();
+        var mediaItems = response.Data.Media;
+
+        foreach (var media in response.Data.Media)
+        {
+            animes.Add(
+                new Anime()
+                {
+                    Title = media.Title.Romaji,
+                    Cover = media.CoverImage.ExtraLarge,
+                    Description = RemoveHtmlTags(media.Description),
+                    GenreStr = string.Join(",", media.Genres),
+                }
+            );
+        }
+
+        return (animes, response.Data.PageInfo);
+    }
+
+    public async Task<(List<Anime>, PageInfo)> GetSeasonalFullDetail(
         int page = 1,
         MediaSeason season = MediaSeason.Fall,
         int seasonYear = 2024,
@@ -15,9 +86,6 @@ public class AnilistService
         bool isAdult = false
     )
     {
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("https://graphql.anilist.co");
-        var _client = new ZeroQLClient(httpClient);
         var response = await _client.Query(q =>
             q.Page(
                 page: page,
@@ -134,20 +202,58 @@ public class AnilistService
         var animes = new List<Anime>();
         var mediaItems = response.Data.Media;
 
-        for (int i = 0; i < mediaItems.Length; i++)
+        foreach (var media in mediaItems)
         {
-            var media = mediaItems[i];
             animes.Add(
                 new Anime()
                 {
                     Title = media.Title.Romaji,
                     Cover = media.CoverImage.ExtraLarge,
-                    Description = media.Description,
+                    Description = RemoveHtmlTags(media.Description),
                     GenreStr = string.Join(",", media.Genres),
                 }
             );
         }
 
         return (animes, response.Data.PageInfo);
+    }
+
+    public async Task<AnilistModels.Media> GetMediaAsync(int id)
+    {
+        var response = await _client.Query(q =>
+            q.Media(
+                id: id,
+                selector: m => new AnilistModels.Media()
+                {
+                    Title = m.Title(t => new AnilistModels.MediaTitle
+                    {
+                        Romaji = t.Romaji(),
+                        Native = t.Native(),
+                        English = t.English(),
+                    }),
+                    BannerImage = m.BannerImage,
+                    CoverImage = m.CoverImage(ci => new AnilistModels.MediaCoverImage { ExtraLarge = ci.ExtraLarge, Color = ci.Color }),
+                    Description = m.Description(),
+                    Genres = m.Genres,
+                    MeanScore = m.MeanScore,
+                    Popularity = m.Popularity,
+                    AverageScore = m.AverageScore,
+                    Status = m.Status(),
+                    Format = m.Format,
+                }
+            )
+        );
+        /*Mutations to solve some problems*/
+
+        response.Data.Description = RemoveHtmlTags(response.Data.Description);
+
+        /*End Mutations*/
+
+        return response.Data;
+    }
+
+    private static string RemoveHtmlTags(string html)
+    {
+        return string.IsNullOrEmpty(html) ? html : Regex.Replace(html, @"<.*?>", string.Empty);
     }
 }

@@ -5,6 +5,7 @@
     <Platforms>x64</Platforms>
     <Platforms>x64</Platforms>
     <ImplicitUsings>enable</ImplicitUsings>
+
   </PropertyGroup>
 
   <ItemGroup> 
@@ -19,10 +20,16 @@
     <PackageReference Include="ZeroQL" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ZeroQLConfig Include="config.zeroql.json"/>
+    <ZeroQLConfig Include="config.zeroql.json" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Clean.ps1" CopyToOutputDirectory="Always"/>
     <None Update="nlog.config" CopyToOutputDirectory="Always" />
     <None Update="update.ps1" CopyToOutputDirectory="Always" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy RemoteSigned -file &quot;$(ProjectDir)Clean.ps1&quot;" />
+  </Target>
+  
 </Project>

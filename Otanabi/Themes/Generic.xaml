@@ -170,6 +170,7 @@
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="*" />
                                                 </Grid.RowDefinitions>
+                                                <!-- ReSharper disable once Xaml.InvalidResourceType -->
                                                 <ContentPresenter
                                                     x:Name="HeaderContentPresenter"
                                                     Margin="{ThemeResource SliderHeaderThemeMargin}"

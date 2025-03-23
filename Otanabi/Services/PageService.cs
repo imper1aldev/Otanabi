@@ -21,6 +21,7 @@ public class PageService : IPageService
         Configure<FavoritesViewModel, FavoritesPage>();
         Configure<HistoryViewModel, HistoryPage>();
         Configure<SeasonalViewModel, SeasonalPage>();
+        Configure<DetailViewModel, DetailPage>();
     }
 
     public Type GetPageType(string key)
