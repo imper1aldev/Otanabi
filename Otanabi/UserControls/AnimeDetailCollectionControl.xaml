@@ -9,10 +9,10 @@
     xmlns:converteres="using:Otanabi.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
-    xmlns:interactivity="using:Microsoft.Xaml.Interactivity" 
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:Otanabi.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Otanabi.Core.Models"
+    xmlns:models="using:Otanabi.Core.AnilistModels"
     xmlns:ui="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
@@ -32,18 +32,25 @@
                         MinRowSpacing="20" />
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
-                    <DataTemplate x:DataType="models:Anime">
-                        <Grid Width="450" Height="250">
+                    <DataTemplate x:DataType="models:Media">
+                        <Grid
+                            Width="450"
+                            Height="250"
+                            AllowFocusOnInteraction="True"
+                            DataContext="{x:Bind}">
                             <Border
+                                x:Name="Card"
                                 Width="450"
                                 Height="auto"
                                 BorderThickness="1"
-                                CornerRadius="8">
+                                CornerRadius="8"
+                                DataContext="{x:Bind}"
+                                PointerPressed="Card_PointerPressed">
                                 <StackPanel Height="auto" Orientation="Horizontal">
                                     <Border Background="Aqua">
                                         <Image
                                             Width="180"
-                                            Source="{x:Bind Cover}"
+                                            Source="{x:Bind CoverImage.ExtraLarge}"
                                             Stretch="Fill" />
                                     </Border>
 
@@ -66,7 +73,7 @@
                                                 Margin="0,10,2,0"
                                                 FontSize="16"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                Text="{x:Bind Title}"
+                                                Text="{x:Bind Title.Romaji}"
                                                 TextWrapping="Wrap" />
 
                                             <TextBlock
@@ -75,7 +82,10 @@
                                                 Text="{x:Bind Description, Converter={StaticResource truncateConverter}, ConverterParameter=230}"
                                                 TextWrapping="Wrap" />
 
-                                            <ItemsRepeater Grid.Row="2" ItemsSource="{x:Bind Genre}">
+                                            <ItemsRepeater
+                                                Grid.Row="2"
+                                                Width="240"
+                                                ItemsSource="{x:Bind Genres}">
                                                 <ItemsRepeater.Layout>
                                                     <ui:WrapLayout HorizontalSpacing="10" VerticalSpacing="10" />
                                                 </ItemsRepeater.Layout>
@@ -90,19 +100,6 @@
                                                     </DataTemplate>
                                                 </ItemsRepeater.ItemTemplate>
                                             </ItemsRepeater>
-                                            <!-- <labs:TokenView -->
-                                            <!--     Grid.Row="2" -->
-                                            <!--     Margin="0,0,0,6" -->
-                                            <!--     IsWrapped="True" -->
-                                            <!--     ItemsSource="{x:Bind Genre}"> -->
-                                            <!--     <labs:TokenView.ItemTemplate> -->
-                                            <!--         <DataTemplate x:DataType="x:String"> -->
-                                            <!--             <Grid> -->
-                                            <!--                 <TextBlock FontSize="12" Text="{Binding}" /> -->
-                                            <!--             </Grid> -->
-                                            <!--         </DataTemplate> -->
-                                            <!--     </labs:TokenView.ItemTemplate> -->
-                                            <!-- </labs:TokenView> -->
                                         </Grid>
                                     </Border>
                                 </StackPanel>

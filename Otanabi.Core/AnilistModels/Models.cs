@@ -10,6 +10,29 @@ public interface LikeableUnion { }
 
 public interface NotificationUnion { }
 
+public class StreamingEpisode
+{
+    public object Title
+    {
+        get;
+        set;
+    }
+    public object Thumbnail
+    {
+        get;
+        set;
+    }
+    public object Url
+    {
+        get;
+        set;
+    }
+    public object Site
+    {
+        get;
+        set;
+    }
+}
 public class ActivityLikeNotification
 {
     public ActivityUnion Activity { get; set; }
@@ -422,7 +445,7 @@ public class Media
     public FuzzyDate StartDate { get; set; }
     public MediaStats Stats { get; set; }
     public MediaStatus? Status { get; set; }
-    public List<MediaStreamingEpisode> streamingEpisodes { get; set; }
+    public List<MediaStreamingEpisode> StreamingEpisodes { get; set; }
     public StudioConnection Studios { get; set; }
     public List<string> synonyms { get; set; }
     public List<MediaTag> tags { get; set; }
@@ -642,6 +665,10 @@ public class MediaStreamingEpisode
     public string Thumbnail { get; set; }
     public string Title { get; set; }
     public string Url { get; set; }
+    public int Number
+    {
+        get; set;
+    }
 }
 
 public class MediaSubmission

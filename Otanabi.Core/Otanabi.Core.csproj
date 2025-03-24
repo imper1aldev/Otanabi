@@ -23,7 +23,7 @@
     <ZeroQLConfig Include="config.zeroql.json" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Clean.ps1" CopyToOutputDirectory="Always"/>
+    <None Update="Clean.ps1" CopyToOutputDirectory="Always" />
     <None Update="nlog.config" CopyToOutputDirectory="Always" />
     <None Update="update.ps1" CopyToOutputDirectory="Always" />
   </ItemGroup>

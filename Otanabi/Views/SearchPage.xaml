@@ -137,7 +137,6 @@
                 <interactions:EventTriggerBehavior EventName="BottomReached">
                     <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadMoreCommand}" />
                 </interactions:EventTriggerBehavior>
-
             </interactivity:Interaction.Behaviors>
         </usercontrols:AnimePaneControl>
         <InfoBar

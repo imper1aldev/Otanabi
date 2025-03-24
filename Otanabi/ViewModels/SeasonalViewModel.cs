@@ -6,9 +6,11 @@ using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
+//using ZeroQL.Client;
+using AnilistModels=Otanabi.Core.AnilistModels;
 using ZeroQL.Client;
-
-//using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using System.Linq;
+using Microsoft.UI.Dispatching;
 
 namespace Otanabi.ViewModels;
 
@@ -16,13 +18,13 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
 {
     private readonly INavigationService _navigationService;
 
-    //private readonly DispatcherQueue _dispatcherQueue;
+    private readonly DispatcherQueue _dispatcherQueue;
 
     private AnilistService _anilistService = new();
-    public ObservableCollection<Anime> AnimeList { get; } = new ObservableCollection<Anime>();
+    public ObservableCollection<AnilistModels.Media> AnimeList { get; } = new ObservableCollection<AnilistModels.Media>();
 
-    //public int[] Years { get; } = Enumerable.Range(2009, ((DateTime.Now.Year + 2) - 2009)).Reverse().ToArray();
-    public ObservableCollection<int> Years { get; } = new ObservableCollection<int>();
+    public int[] Years { get; } = Enumerable.Range(2009, ((DateTime.Now.Year + 2) - 2009)).Reverse().ToArray();
+    //public ObservableCollection<int> Years { get; } = new ObservableCollection<int>();
 
     [ObservableProperty]
     private int selectedYear =DateTime.Now.Year ;
@@ -38,7 +40,7 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
     public SeasonalViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
-        //_dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     [RelayCommand]
@@ -49,12 +51,17 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
     }
 
     public async void OnNavigatedTo(object parameter)
-    { 
-        Years.Clear(); 
-        for (var i = 2009; i <= DateTime.Now.Year + 1; i++)
-        { 
-            Years.Add(i);
-        } 
+    {
+        //if (Years.Count > 0)
+        //{
+        //Years.Clear(); 
+        //for (var i = 2009; i <= DateTime.Now.Year + 1; i++)
+        //{ 
+        //    Years.Add(i);
+        //} 
+
+        //}
+
     }
 
     public void OnNavigatedFrom() { }
@@ -86,25 +93,35 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
         await LoadData(SelectedSeason, SelectedYear, 1);
     }
 
-    [RelayCommand]
-    private async Task SeasonChanged()
-    {
-        if (SelectedSeasonBar != null)
-        {
-            var season = SelectedSeasonBar.Name switch
-            {
-                "SelectorSpring" => MediaSeason.Spring,
-                "SelectorSummer" => MediaSeason.Summer,
-                "SelectorFall" => MediaSeason.Fall,
-                "SelectorWinter" => MediaSeason.Winter,
-                _ => MediaSeason.Winter,
-            };
 
-            AnimeList.Clear();
-            SelectedSeason = season;
-            OnPropertyChanged(nameof(SelectedSeason));
-            await LoadData(SelectedSeason, SelectedYear);
+
+
+    [RelayCommand]
+    private async Task SeasonChanged(object e)
+
+    {
+        if(e is SelectorBar bar && bar.SelectedItem is SelectorBarItem item)
+        {
+            if (item != null)
+            {
+var selector = item.Tag; 
+                var season = selector switch
+                {
+                    "SelectorSpring" => MediaSeason.Spring,
+                    "SelectorSummer" => MediaSeason.Summer,
+                    "SelectorFall" => MediaSeason.Fall,
+                    "SelectorWinter" => MediaSeason.Winter,
+                    _ => MediaSeason.Winter,
+                };
+                AnimeList.Clear();
+                SelectedSeason = season;
+                SelectedSeasonBar=item;
+                OnPropertyChanged(nameof(SelectedSeason)); 
+            await LoadData(SelectedSeason, SelectedYear, 1);
+            }
+            
         }
+        
     }
 
     [RelayCommand]
@@ -118,6 +135,17 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
             await LoadData(selectedSeason, SelectedYear); 
         }
     }
+
+
+    [RelayCommand]
+    private void OnItemClick(AnilistModels.Media? clickedItem)
+    {
+        if (clickedItem != null)
+        {
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(DetailViewModel).FullName!, clickedItem));
+        }
+    }
+
 
     private void LoadCurrentSeason()
     {

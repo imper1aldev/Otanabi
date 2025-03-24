@@ -2,17 +2,199 @@
     x:Class="Otanabi.Views.DetailPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:anilistModels="using:Otanabi.Core.AnilistModels"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid x:Name="ContentArea">
+    <Page.Resources>
+        <SolidColorBrush x:Key="BackgroundDf" Color="#402c2d2f" />
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+    <Grid
+        x:Name="ContentArea"
+        CornerRadius="0,0,0,0"
+        RowSpacing="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Padding="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.Background>
+                <ImageBrush
+                    ImageSource="{x:Bind ViewModel.BannerImage, Mode=OneWay}"
+                    Opacity="0.3"
+                    Stretch="UniformToFill" />
+            </Grid.Background>
+            <!--#region Portrait-->
+            <Image Width="250" Source="{x:Bind ViewModel.SelectedMedia.CoverImage.ExtraLarge, Mode=OneWay}" />
+            <!--#endregion-->
+
+            <!--#region Info-->
+            <StackPanel
+                Grid.Column="1"
+                Margin="20,0,0,0"
+                Padding="15,15,15,0"
+                Background="{StaticResource BackgroundDf}"
+                CornerRadius="10"
+                Spacing="10">
+                <TextBlock
+                    Margin="{StaticResource XXSmallTopMargin}"
+                    IsTextSelectionEnabled="True"
+                    Style="{ThemeResource TitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.SelectedMedia.Title.Romaji, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.English, Mode=OneWay}" />
+                    <TextBlock Text="-   -" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.Native, Mode=OneWay}" />
+                    <TextBlock Text="-   -" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.Romaji, Mode=OneWay}" />
+                </StackPanel>
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.SelectedMedia.Genres, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <controls:WrapLayout HorizontalSpacing="10" VerticalSpacing="10" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Border>
+                                <Button
+                                    Content="{Binding}"
+                                    FontSize="10"
+                                    Style="{StaticResource ButtonRevealStyle}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Description, Mode=OneWay}" TextWrapping="Wrap" />
+            </StackPanel>
+            <!--#endregion-->
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Margin="0,0,10,10"
+            ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!--#region SidePanel-->
+            <StackPanel
+                Grid.Column="0"
+                Width="250"
+                Padding="15,15,0,0"
+                Background="#175d6262"
+                CornerRadius="8,8,8,8"
+                Orientation="Vertical"
+                Spacing="15">
+
+                <Button
+                    Width="Auto"
+                    Command="{x:Bind ViewModel.OpenLinkCommand}"
+                    Content="Open in Anilist" />
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Format :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Format, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Status :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Status, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Start Date :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Year, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Month, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Day, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="End Date :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Year, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Month, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Day, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Episodes :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Episodes, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Season:" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Season, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.SeasonYear, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Average Score :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.AverageScore, Mode=OneWay}" />
+                    <Run Text="%" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Mean Score :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.MeanScore, Mode=OneWay}" />
+                    <Run Text="%" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Popularity :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Popularity, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+            <!--#endregion-->
+            <!--#region Details-->
+            <!--<StackPanel Grid.Column="1">-->
+            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1">
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.SelectedMedia.StreamingEpisodes, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <UniformGridLayout
+                            ItemsStretch="Fill"
+                            MinColumnSpacing="10"
+                            MinItemWidth="400"
+                            MinRowSpacing="10" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="anilistModels:MediaStreamingEpisode">
+                            <Grid CornerRadius="8">
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="100" />
+                                </Grid.RowDefinitions>
+                                <Grid.Background>
+                                    <ImageBrush
+                                        ImageSource="{x:Bind Thumbnail, Mode=OneWay}"
+                                        Opacity="0.3"
+                                        Stretch="UniformToFill" />
+                                </Grid.Background>
+                                <Border Background="{StaticResource BackgroundDf}">
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Title, Mode=OneWay}"
+                                        TextWrapping="Wrap" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
+            <!--</StackPanel>-->
+            <!--#endregion-->
+        </Grid>
+
     </Grid>
 </Page>

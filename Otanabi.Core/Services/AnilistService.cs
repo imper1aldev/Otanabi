@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using Otanabi.Core.Models;
 using ZeroQL.Client;
 
@@ -15,17 +16,21 @@ public class AnilistService
         _client = new ZeroQLClient(httpClient);
     }
 
-    public async Task<(List<Anime>, PageInfo)> GetSeasonal(
+    public async Task<(AnilistModels.Media[], PageInfo)> GetSeasonal(
         int page = 1,
         MediaSeason season = MediaSeason.Fall,
         int seasonYear = 2024,
         MediaStatus? status = MediaStatus.Finished,
         bool isAdult = false,
         MediaType type = MediaType.Anime,
-        MediaFormat format = MediaFormat.Tv
+        MediaFormat format = MediaFormat.Tv,
+        MediaSort[] sortFilter = null
     )
-    {
-        var sortFilter = new[] { MediaSort.PopularityDesc };
+    { 
+        sortFilter ??= new MediaSort[] { MediaSort.PopularityDesc };
+
+        
+
         var response = await _client.Query(q =>
             q.Page(
                 page: page,
@@ -40,43 +45,36 @@ public class AnilistService
                         isAdult: isAdult,
                         type: type,
                         sort: sortFilter,
-                        selector: m => new
+                        selector: m => new AnilistModels.Media
                         {
                             Id = m.Id,
                             IdMal = m.IdMal,
-                            Title = m.Title(t => new
+                            Title = m.Title(t => new AnilistModels.MediaTitle
                             {
                                 Romaji = t.Romaji(),
                                 Native = t.Native(),
                                 English = t.English(),
                             }),
                             Status = m.Status(),
-                            Description = m.Description(),
+                            Description =m.Description(),
                             Genres = m.Genres,
-                            CoverImage = m.CoverImage(ci => new { ExtraLarge = ci.ExtraLarge }),
+                            CoverImage = m.CoverImage(ci => new AnilistModels.MediaCoverImage{ ExtraLarge = ci.ExtraLarge }),
                         }
                     ),
                 }
             )
         );
-        var animes = new List<Anime>();
-        var mediaItems = response.Data.Media;
-
+         
         foreach (var media in response.Data.Media)
         {
-            animes.Add(
-                new Anime()
-                {
-                    Title = media.Title.Romaji,
-                    Cover = media.CoverImage.ExtraLarge,
-                    Description = RemoveHtmlTags(media.Description),
-                    GenreStr = string.Join(",", media.Genres),
-                }
-            );
+            media.Description = RemoveHtmlTags(media.Description);
         }
 
-        return (animes, response.Data.PageInfo);
+
+        return (response.Data.Media, response.Data.PageInfo);
     }
+
+   
 
     public async Task<(List<Anime>, PageInfo)> GetSeasonalFullDetail(
         int page = 1,
@@ -218,21 +216,20 @@ public class AnilistService
         return (animes, response.Data.PageInfo);
     }
 
-    public async Task<AnilistModels.Media> GetMediaAsync(int id)
-    {
+    public async Task<AnilistModels.Media> GetMediaAsync(int id) {
+         
+
         var response = await _client.Query(q =>
             q.Media(
                 id: id,
-                selector: m => new AnilistModels.Media()
-                {
-                    Title = m.Title(t => new AnilistModels.MediaTitle
-                    {
+                selector: m => new  {
+                    Title = m.Title(t => new  {
                         Romaji = t.Romaji(),
                         Native = t.Native(),
                         English = t.English(),
                     }),
                     BannerImage = m.BannerImage,
-                    CoverImage = m.CoverImage(ci => new AnilistModels.MediaCoverImage { ExtraLarge = ci.ExtraLarge, Color = ci.Color }),
+                    CoverImage = m.CoverImage(ci => new  { ExtraLarge = ci.ExtraLarge, Color = ci.Color }),
                     Description = m.Description(),
                     Genres = m.Genres,
                     MeanScore = m.MeanScore,
@@ -240,20 +237,71 @@ public class AnilistService
                     AverageScore = m.AverageScore,
                     Status = m.Status(),
                     Format = m.Format,
+                    StartDate = m.StartDate(sd => new { Year = sd.Year, Month = sd.Month, Day = sd.Day }),
+                    EndDate = m.EndDate(ed => new { Year = ed.Year, Month = ed.Month, Day = ed.Day }),
+                    Duration = m.Duration,
+                    Episodes = m.Episodes,
+                    Season = m.Season,
+                    SeasonYear = m.SeasonYear,
+                    streamingEpisodes = m.StreamingEpisodes(selector:se => new { Title = se.Title, Site = se.Site, Thumbnail = se.Thumbnail, Url = se.Url }),
                 }
             )
         );
-        /*Mutations to solve some problems*/
 
-        response.Data.Description = RemoveHtmlTags(response.Data.Description);
+        //response.Data.Description = RemoveHtmlTags(response.Data.Description);
 
-        /*End Mutations*/
+        var data = response.Data;
+        List<AnilistModels.MediaStreamingEpisode> episodes = [];
+        foreach (var item in data.streamingEpisodes)
+        {
+            var episode= new AnilistModels.MediaStreamingEpisode{Site=item.Site,Thumbnail=item.Thumbnail,Title=item.Title,Url=item.Url,Number= (int)GetEpisodeNumber(item.Title) };
+             episodes.Add(episode);
+        }
 
-        return response.Data;
+
+        if(episodes.Count== 0 )
+        {
+            for (int i = 0; i < data.Episodes; i++)
+            {
+               var episode = new AnilistModels.MediaStreamingEpisode { Site = "", Thumbnail = "//Assets/OtanabiSplash.png", Title = $"Episode {i}", Url = "", Number = i };
+             episodes.Add(episode);
+
+            }
+        }
+
+
+        var anime= new AnilistModels.Media
+        {
+            Id = id,
+            Title = new AnilistModels.MediaTitle{ English = response.Data.Title.English,Romaji=data.Title.Romaji,Native=data.Title.Native},
+            BannerImage = data.BannerImage,
+            CoverImage = new AnilistModels.MediaCoverImage{ Color=data.CoverImage.Color,ExtraLarge=data.CoverImage.ExtraLarge },
+            Description = RemoveHtmlTags(data.Description),
+            Genres = data.Genres,
+            MeanScore = data.MeanScore,
+            Popularity = data.Popularity,
+            AverageScore = data.AverageScore,
+            Status = data.Status,
+            Format =  data.Format,
+            StartDate = new AnilistModels.FuzzyDate{ Day=data.StartDate.Day, Month=data.StartDate.Month,Year=data.StartDate.Year },
+            EndDate = new AnilistModels.FuzzyDate{ Day=data.EndDate.Day, Month=data.EndDate.Month,Year=data.EndDate.Year },
+            Duration = data.Duration,
+            Episodes = data.Episodes,
+            Season = data.Season,
+            SeasonYear  = data.SeasonYear,
+            StreamingEpisodes = episodes.OrderBy(x=>x.Number).ToList(),
+        };
+
+
+        return anime;
     }
-
     private static string RemoveHtmlTags(string html)
     {
         return string.IsNullOrEmpty(html) ? html : Regex.Replace(html, @"<.*?>", string.Empty);
+    }
+    private static int? GetEpisodeNumber(string text)
+    {
+        Match match = Regex.Match(text, @"Episode (\d+)");
+        return match.Success ? int.Parse(match.Groups[1].Value) : (int?)null;
     }
 }
