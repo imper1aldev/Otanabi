@@ -70,7 +70,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    public async void PrepareVideo(History param)
+    public async Task PrepareVideo(History param)
     {
         if (IsLoadingVideo)
             return;

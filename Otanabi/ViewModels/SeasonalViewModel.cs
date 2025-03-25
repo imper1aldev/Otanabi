@@ -132,7 +132,7 @@ var selector = item.Tag;
             SelectedYear = year;
             OnPropertyChanged(nameof(SelectedYear));
             AnimeList.Clear();
-            await LoadData(selectedSeason, SelectedYear); 
+            await LoadData(SelectedSeason, SelectedYear); 
         }
     }
 
@@ -155,22 +155,22 @@ var selector = item.Tag;
         if ((month == 3 && day >= 20) || month == 4 || month == 5 || (month == 6 && day < 21))
         {
             SelectedSeasonBar = selectorBars.FirstOrDefault(x => x.Name == "SelectorSpring");
-            selectedSeason = MediaSeason.Spring;
+            SelectedSeason = MediaSeason.Spring;
         }
         else if ((month == 6 && day >= 21) || month == 7 || month == 8 || (month == 9 && day < 22))
         {
             SelectedSeasonBar = selectorBars.FirstOrDefault(x => x.Name == "SelectorSummer");
-            selectedSeason = MediaSeason.Summer;
+            SelectedSeason = MediaSeason.Summer;
         }
         else if ((month == 9 && day >= 22) || month == 10 || month == 11 || (month == 12 && day < 21))
         {
             SelectedSeasonBar = selectorBars.FirstOrDefault(x => x.Name == "SelectorFall");
-            selectedSeason = MediaSeason.Fall;
+            SelectedSeason = MediaSeason.Fall;
         }
         else
         {
             SelectedSeasonBar = selectorBars.FirstOrDefault(x => x.Name == "SelectorWinter");
-            selectedSeason = MediaSeason.Winter;
+            SelectedSeason = MediaSeason.Winter;
         }
         OnPropertyChanged(nameof(SelectedSeasonBar)); 
     }

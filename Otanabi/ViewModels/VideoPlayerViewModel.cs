@@ -458,7 +458,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
 
     [RelayCommand]
-    private async void onClickChap(ItemClickEventArgs args)
+    private async Task onClickChap(ItemClickEventArgs args)
     {
         if (args.ClickedItem is Chapter ct && ct.ChapterNumber != selectedChapter.ChapterNumber)
         {

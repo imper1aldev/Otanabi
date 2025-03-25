@@ -263,7 +263,7 @@ public class AnilistService
         {
             for (int i = 0; i < data.Episodes; i++)
             {
-               var episode = new AnilistModels.MediaStreamingEpisode { Site = "", Thumbnail = "//Assets/OtanabiSplash.png", Title = $"Episode {i}", Url = "", Number = i };
+               var episode = new AnilistModels.MediaStreamingEpisode { Site = "", Thumbnail = "//Assets/OtanabiSplash.png", Title = $"Episode {i+1}", Url = "", Number = i+1 };
              episodes.Add(episode);
 
             }

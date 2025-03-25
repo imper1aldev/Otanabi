@@ -102,6 +102,13 @@
                 Orientation="Vertical"
                 Spacing="15">
 
+                <ComboBox
+                    AllowFocusOnInteraction="True"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
+
+
                 <Button
                     Width="Auto"
                     Command="{x:Bind ViewModel.OpenLinkCommand}"
@@ -112,7 +119,7 @@
                 </TextBlock>
                 <TextBlock FontSize="15">
                     <Run FontWeight="Bold" Text="Status :" />
-                    <Run Text="{x:Bind ViewModel.SelectedMedia.Status, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.StatusString, Mode=OneWay}" />
                 </TextBlock>
                 <TextBlock FontSize="15">
                     <Run FontWeight="Bold" Text="Start Date :" />
