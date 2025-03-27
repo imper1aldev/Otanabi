@@ -1,15 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input; 
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Otanabi.Contracts.ViewModels; 
-using QlEntities = ZeroQL.Client;
-using Otanabi.Core.AnilistModels;
-using Otanabi.Core.Services;
-using Windows.System;
-using Otanabi.Core.Models;
-using System.Collections.ObjectModel;
 using Otanabi.Contracts.Services;
+using Otanabi.Contracts.ViewModels;
+using Otanabi.Core.Anilist.Enums;
+using Otanabi.Core.Anilist.Models;
+using Otanabi.Core.Models;
+using Otanabi.Core.Services;
 using Otanabi.Services;
+using Windows.System;
 
 namespace Otanabi.ViewModels;
 
@@ -36,8 +36,8 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     private string link;
 
     [ObservableProperty]
-    private bool isLoaded=false;
-    
+    private bool isLoaded = false;
+
     public string StatusString
     {
         get
@@ -46,11 +46,11 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             {
                 return SelectedMedia.Status switch
                 {
-                    QlEntities.MediaStatus.Finished => "Finished",
-                    QlEntities.MediaStatus.Releasing => "Releasing",
-                    QlEntities.MediaStatus.NotYetReleased => "Not Yet Released",
-                    QlEntities.MediaStatus.Cancelled => "Cancelled",
-                    _ => "Unknown"
+                    MediaStatus.Finished => "Finished",
+                    MediaStatus.Releasing => "Releasing",
+                    MediaStatus.NotYetReleased => "Not Yet Released",
+                    MediaStatus.Cancelled => "Cancelled",
+                    _ => "Unknown",
                 };
             }
 
@@ -58,11 +58,12 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public DetailViewModel( INavigationService navigationService, ILocalSettingsService localSettingsService) {
+    public DetailViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
+    {
         _navigationService = navigationService;
         _localSettingsService = localSettingsService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        }
+    }
 
     public void OnNavigatedFrom() { }
 
@@ -81,21 +82,22 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
 
     private async Task LoadMediaAsync(int id)
     {
-        var data = await _anilistService.GetMediaAsync(id);
+        var data = await _anilistService.GetMediaByIdAsync(id);
         BannerImage = data.BannerImage != null ? new BitmapImage(new Uri(data.BannerImage)) : new BitmapImage(new Uri(data.CoverImage.ExtraLarge));
 
-        Link =$"https://anilist.co/anime/{data.Id}";
+        Link = $"https://anilist.co/anime/{data.Id}";
         SelectedMedia = data;
-        IsLoaded=true;
+        IsLoaded = true;
         OnPropertyChanged(nameof(StatusString));
-    } 
+    }
 
-     [RelayCommand]
+    [RelayCommand]
     public void OpenLink()
     {
-        _dispatcherQueue.TryEnqueue(async() => await Launcher.LaunchUriAsync(new Uri(Link)));
+        _dispatcherQueue.TryEnqueue(async () => await Launcher.LaunchUriAsync(new Uri(Link)));
     }
-      private async Task GetProviders()
+
+    private async Task GetProviders()
     {
         if (Providers.Count == 0)
         {

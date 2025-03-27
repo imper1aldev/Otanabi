@@ -31,7 +31,7 @@
             <SelectorBar
                 x:Name="SelectorSeason"
                 AllowFocusOnInteraction="True"
-                SelectedItem="{x:Bind ViewModel.SelectedSeasonBar}">
+                SelectedItem="{x:Bind ViewModel.SelectedSeasonBar, Mode=TwoWay}">
                 <interactivity:Interaction.Behaviors>
                     <interactions:EventTriggerBehavior EventName="SelectionChanged">
                         <interactions:InvokeCommandAction Command="{x:Bind ViewModel.SeasonChangedCommand}" CommandParameter="{Binding ElementName=SelectorSeason}" />

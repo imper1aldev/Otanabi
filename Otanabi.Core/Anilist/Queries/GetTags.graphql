@@ -1,0 +1,1 @@
+query{genres:GenreCollection tags:MediaTagCollection{name description category isAdult}}

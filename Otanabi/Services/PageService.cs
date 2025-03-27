@@ -15,13 +15,14 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<SettingsViewModel, SettingsPage>();
-        Configure<SearchViewModel, SearchPage>();
+        Configure<ProviderSearchViewModel, ProviderSearchPage>();
         Configure<SearchDetailViewModel, SearchDetailPage>();
         Configure<VideoPlayerViewModel, VideoPlayerPage>();
         Configure<FavoritesViewModel, FavoritesPage>();
         Configure<HistoryViewModel, HistoryPage>();
         Configure<SeasonalViewModel, SeasonalPage>();
         Configure<DetailViewModel, DetailPage>();
+        Configure<SearchViewModel, SearchPage>();
     }
 
     public Type GetPageType(string key)

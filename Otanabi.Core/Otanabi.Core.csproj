@@ -17,12 +17,26 @@
     <PackageReference Include="RestSharp" Version="112.0.0" />
     <PackageReference Include="RestSharp.Serializers.NewtonsoftJson" Version="112.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
-    <PackageReference Include="ZeroQL" Version="7.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ZeroQLConfig Include="config.zeroql.json" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Update="Anilist\Queries\ById.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\ByIdFullDetail.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\GetTags.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\SearchQuery.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\Seasonal.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\SeasonalFullDetail.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Clean.ps1" CopyToOutputDirectory="Always" />
     <None Update="nlog.config" CopyToOutputDirectory="Always" />
     <None Update="update.ps1" CopyToOutputDirectory="Always" />

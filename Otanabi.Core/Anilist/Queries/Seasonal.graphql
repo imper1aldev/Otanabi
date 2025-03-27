@@ -1,0 +1,85 @@
+query (
+	$season: MediaSeason,
+	$year: Int,
+	$format: MediaFormat,
+	$excludeFormat: MediaFormat,
+	$status: MediaStatus,
+	$minEpisodes: Int,
+	$page: Int,
+	$perPage:Int 
+	 $sort: [MediaSort] = [POPULARITY_DESC, SCORE_DESC]
+){
+	Page(page: $page, perPage: $perPage) {
+		pageInfo {
+			hasNextPage
+			total
+		}
+		media(
+			season: $season
+			seasonYear: $year
+			format: $format,
+			format_not: $excludeFormat,
+			status: $status,
+			episodes_greater: $minEpisodes,
+			isAdult: false,
+			type: ANIME,
+			sort: $sort,
+		) {
+			
+id
+idMal
+title {
+	romaji
+	native
+	english
+}
+startDate {
+	year
+	month
+	day
+}
+endDate {
+	year
+	month
+	day
+}
+status
+season
+format
+genres
+synonyms
+duration
+popularity
+episodes
+source(version: 2)
+countryOfOrigin
+hashtag
+averageScore
+siteUrl
+description
+bannerImage
+isAdult
+seasonYear
+coverImage {
+	extraLarge
+	color
+}
+rankings {
+	rank
+	type
+	season
+	allTime
+}
+airingSchedule(
+	notYetAired: true
+	perPage: 2
+) {
+	nodes {
+		episode
+		airingAt
+	}
+}
+
+		}
+	}
+}

@@ -175,7 +175,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         bw.RunWorkerAsync();
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     public async void OpenPlayer(Chapter chapter)
     {
@@ -286,7 +288,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
                 { "Provider", SelectedAnime.Provider },
                 { "Method", SearchMethods.SearchByTag },
             };
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchViewModel).FullName!, data));
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(ProviderSearchViewModel).FullName!, data));
         }
     }
 }

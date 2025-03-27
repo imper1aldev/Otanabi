@@ -12,7 +12,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:local="using:Otanabi.UserControls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:Otanabi.Core.AnilistModels"
+    xmlns:models="using:Otanabi.Core.Anilist.Models"
     xmlns:ui="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 

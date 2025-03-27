@@ -58,8 +58,8 @@
                 </NavigationViewItem>
                 <NavigationViewItem
                     x:Uid="Shell_Search"
-                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel"
-                    Content="Search">
+                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.ProviderSearchViewModel"
+                    Content="Provider Search">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF6FA;" />
                     </NavigationViewItem.Icon>
@@ -73,6 +73,11 @@
                 <NavigationViewItem x:Uid="Shell_Seasonal" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SeasonalViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE787;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

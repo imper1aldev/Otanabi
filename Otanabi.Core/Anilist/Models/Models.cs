@@ -1,8 +1,6 @@
-using ZeroQL.Client;
+using Otanabi.Core.Anilist.Enums;
 
-//using Otanabi.Core.AnilistModels.Enums;
-
-namespace Otanabi.Core.AnilistModels;
+namespace Otanabi.Core.Anilist.Models;
 
 public interface ActivityUnion { }
 
@@ -12,27 +10,12 @@ public interface NotificationUnion { }
 
 public class StreamingEpisode
 {
-    public object Title
-    {
-        get;
-        set;
-    }
-    public object Thumbnail
-    {
-        get;
-        set;
-    }
-    public object Url
-    {
-        get;
-        set;
-    }
-    public object Site
-    {
-        get;
-        set;
-    }
+    public object Title { get; set; }
+    public object Thumbnail { get; set; }
+    public object Url { get; set; }
+    public object Site { get; set; }
 }
+
 public class ActivityLikeNotification
 {
     public ActivityUnion Activity { get; set; }
@@ -414,7 +397,7 @@ public class Media
     public List<MediaExternalLink> externalLinks { get; set; }
     public int? Favourites { get; set; }
     public MediaFormat? Format { get; set; }
-    public string?[]? Genres { get; set; }
+    public string[] Genres { get; set; }
     public string Hashtag { get; set; }
     public int Id { get; set; }
     public int? IdMal { get; set; }
@@ -665,10 +648,7 @@ public class MediaStreamingEpisode
     public string Thumbnail { get; set; }
     public string Title { get; set; }
     public string Url { get; set; }
-    public int Number
-    {
-        get; set;
-    }
+    public int Number { get; set; }
 }
 
 public class MediaSubmission
