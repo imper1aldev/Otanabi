@@ -279,7 +279,7 @@ public class AnilistService
                 Thumbnail = (string)item["thumbnail"],
                 Title = (string)item["title"],
                 Url = (string)item["url"],
-                Number = (int)GetEpisodeNumber((string)item["title"]),
+                Number = GetEpisodeNumber((string)item["title"]) ?? 0,
             };
             episodes.Add(episode);
         }
@@ -312,8 +312,15 @@ public class AnilistService
 
     private static int? GetEpisodeNumber(string text)
     {
-        Match match = Regex.Match(text, @"Episode (\d+)");
-        return match.Success ? int.Parse(match.Groups[1].Value) : (int?)null;
+        try
+        {
+            Match match = Regex.Match(text, @"Episode (\d+)");
+            return match.Success ? int.Parse(match.Groups[1].Value) : (int?)null;
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
     }
 
     private static MediaStatus ConvertToMediastatus(string param)
