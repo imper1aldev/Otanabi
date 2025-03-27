@@ -13,12 +13,9 @@ namespace Otanabi.Core.Services;
 
 public class AnilistService
 {
-    private readonly AnilistClient _client;
+    private AnilistClient _client = AnilistClient.Instance;
 
-    public AnilistService()
-    {
-        _client = new AnilistClient();
-    }
+    public AnilistService() { }
 
     public async Task<List<string>> GetTagsASync()
     {
@@ -36,7 +33,10 @@ public class AnilistService
         }
         foreach (var el in data["tags"])
         {
-            temp.Add((string)el["name"]);
+            if ((bool)el["isAdult"] == false)
+            {
+                temp.Add((string)el["name"]);
+            }
         }
 
         return temp;
@@ -125,33 +125,6 @@ public class AnilistService
         return (medias.ToArray(), pageinfo);
     }
 
-    public async Task<(List<Anime>, PageInfo)> GetSeasonalFullDetail(
-        int page = 1,
-        MediaSeason season = MediaSeason.Fall,
-        int seasonYear = 2024,
-        MediaStatus? status = MediaStatus.Finished,
-        bool isAdult = false
-    )
-    {
-        //var animes = new List<Anime>();
-        //var mediaItems = response.Data.Media;
-
-        //foreach (var media in mediaItems)
-        //{
-        //    animes.Add(
-        //        new Anime()
-        //        {
-        //            Title = media.Title.Romaji,
-        //            Cover = media.CoverImage.ExtraLarge,
-        //            Description = RemoveHtmlTags(media.Description),
-        //            GenreStr = string.Join(",", media.Genres),
-        //        }
-        //    );
-        //}
-
-        return (null, new PageInfo());
-    }
-
     public async Task<(Media[], PageInfo)> SearchMedia(
         int page,
         string searchTerm,
@@ -162,45 +135,35 @@ public class AnilistService
         string[] genres = null,
         MediaSort[] sortFilter = null,
         bool isAdult = false,
-        int perPage = 30
+        int perPage = 30,
+        MediaType type = MediaType.Anime
     )
     {
         sortFilter ??= new MediaSort[] { MediaSort.Popularity_Desc };
         var query = _client.GetQuery(QueryType.Search);
         var variables = new Dictionary<string, object>
         {
-            { "page", 1 },
+            { "page", page },
             { "perPage", perPage },
-            { "type", "ANIME" },
+            { "type", type.ToString().ToUpper() },
         };
-        if (!string.IsNullOrEmpty(searchTerm))
+
+        if (string.IsNullOrEmpty(searchTerm))
         {
-            variables.Add("search", searchTerm);
+            sortFilter ??= new[] { MediaSort.Trending_Desc };
         }
-        if (year != null)
+        else
         {
-            variables.Add("year", year);
+            variables["search"] = searchTerm;
         }
-        if (season != null)
-        {
-            variables.Add("season", season.ToString().ToUpper());
-        }
-        if (status != null)
-        {
-            variables.Add("status", status.ToString().ToUpper());
-        }
-        if (formats != null)
-        {
-            variables.Add("format", arrayToQuery(formats));
-        }
-        if (genres != null)
-        {
-            variables.Add("genres", genres);
-        }
-        if (sortFilter != null)
-        {
-            variables.Add("sort", arrayToQuery(sortFilter));
-        }
+
+        // Add optional parameters conditionally
+        AddIfNotNull(variables, "year", year);
+        AddIfNotNull(variables, "season", season?.ToString().ToUpper());
+        AddIfNotNull(variables, "status", status?.ToString().ToUpper());
+        AddIfNotNull(variables, "format", formats?.Any() == true ? arrayToQuery(formats) : null);
+        AddIfNotNull(variables, "genres", genres?.Any() == true ? genres : null);
+        AddIfNotNull(variables, "sort", sortFilter?.Any() == true ? arrayToQuery(sortFilter) : null);
 
         var response = await _client.SendQueryAsync(query, variables);
         var data = response["data"]["Page"];
@@ -254,7 +217,7 @@ public class AnilistService
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                System.Diagnostics.Debug.WriteLine(e);
                 throw;
             }
         }
@@ -407,5 +370,13 @@ public class AnilistService
         var test = arr.Select(x => x.ToString().ToUpper()).ToArray();
 
         return test.ToList();
+    }
+
+    private void AddIfNotNull(Dictionary<string, object> variables, string key, object value)
+    {
+        if (value != null)
+        {
+            variables[key] = value;
+        }
     }
 }

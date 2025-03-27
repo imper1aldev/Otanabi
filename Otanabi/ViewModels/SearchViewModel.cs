@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
@@ -14,15 +15,18 @@ namespace Otanabi.ViewModels;
 public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
     private readonly AnilistService _anilistService = new();
+    private readonly DispatcherQueue _dispatcherQueue;
+    private readonly INavigationService _navigationService;
+
+    #region Variables
     public MediaSeason[] Seasons { get; } = Enum.GetValues<MediaSeason>().ToArray();
     public MediaFormat[] Formats { get; } = Enum.GetValues<MediaFormat>().ToArray();
-
     public MediaStatus[] Statuses { get; } = Enum.GetValues<MediaStatus>().ToArray();
 
     [ObservableProperty]
-    private List<string> genres = new();
+    private List<string> genres = new List<string>();
 
-    public ObservableCollection<Media> SoruceMedia { get; } = new ObservableCollection<Media>();
+    public ObservableCollection<Media> SourceMedia { get; } = new ObservableCollection<Media>();
 
     public int[] Years
     {
@@ -70,8 +74,24 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private Nullable<int> selectedYear;
 
-    public SearchViewModel()
+    [ObservableProperty]
+    private bool isLoaded = false;
+
+    [ObservableProperty]
+    private bool hasMore = true;
+
+    [ObservableProperty]
+    private int currPage = 1;
+
+    [ObservableProperty]
+    private string searchQuery;
+
+    #endregion
+
+    public SearchViewModel(INavigationService navigationService)
     {
+        _navigationService = navigationService;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         SelectedGenres.CollectionChanged += (s, e) => OnPropertyChanged(nameof(GetSelectedGenres));
         SelectedFormats.CollectionChanged += (s, e) => OnPropertyChanged(nameof(GetSelectedFormats));
     }
@@ -85,7 +105,10 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     private async Task GetTags()
     {
-        Genres = new List<string>();
+        if (Genres.Count > 0)
+        {
+            return;
+        }
         var data = await _anilistService.GetTagsASync();
         foreach (var item in data)
         {
@@ -114,23 +137,55 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
     }
 
+    [RelayCommand]
+    private async void LoadMore()
+    {
+        if (!HasMore)
+        {
+            return;
+        }
+        CurrPage++;
+        await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    private void OnItemClick(Media? clickedItem)
+    {
+        if (clickedItem != null)
+        {
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(DetailViewModel).FullName!, clickedItem));
+        }
+    }
+
     public async void OnSearch(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
         //
+        SearchQuery = args.QueryText.ToString();
+        await LoadDataAsync();
+    }
 
-
-
-
-        var queryText = args.QueryText.ToString();
+    private async Task LoadDataAsync()
+    {
         var data = await _anilistService.SearchMedia(
-            page: 2,
+            page: CurrPage,
             season: SelectedSeason,
             status: SelectedStatus,
-            searchTerm: queryText,
+            searchTerm: SearchQuery,
             year: SelectedYear,
             formats: SelectedFormats.Count > 0 ? SelectedFormats.ToArray() : null,
             genres: SelectedGenres.Count > 0 ? SelectedGenres.ToArray() : null
         );
-        var tt = data;
+        var pageInfo = data.Item2;
+        HasMore = (bool)pageInfo.HasNextPage;
+
+        if (CurrPage == 1)
+        {
+            SourceMedia.Clear();
+        }
+
+        foreach (var item in data.Item1)
+        {
+            SourceMedia.Add(item);
+        }
     }
 }

@@ -74,7 +74,9 @@ query (
     ) {
       id
       title {
-        userPreferred
+	    romaji
+	    native
+	    english
       }
       coverImage {
         extraLarge
