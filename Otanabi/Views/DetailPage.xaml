@@ -52,6 +52,7 @@
                 Spacing="10">
                 <TextBlock
                     Margin="{StaticResource XXSmallTopMargin}"
+                    AllowFocusOnInteraction="True"
                     IsTextSelectionEnabled="True"
                     Style="{ThemeResource TitleTextBlockStyle}"
                     Text="{x:Bind ViewModel.SelectedMedia.Title.Romaji, Mode=OneWay}" />
@@ -106,13 +107,26 @@
                     AllowFocusOnInteraction="True"
                     DisplayMemberPath="Name"
                     ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
-                    SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}" />
-
+                    SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+                <Button
+                    Width="Auto"
+                    Command="{x:Bind ViewModel.SearchReferencesCommand}"
+                    Content="Search in provider"
+                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
 
                 <Button
                     Width="Auto"
                     Command="{x:Bind ViewModel.OpenLinkCommand}"
                     Content="Open in Anilist" />
+                <TextBlock
+                    AllowFocusOnInteraction="True"
+                    FontSize="15"
+                    IsTextSelectionEnabled="True">
+                    <Run FontWeight="Bold" Text="Anilist ID :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Id, Mode=OneWay}" />
+                </TextBlock>
+
                 <TextBlock FontSize="15">
                     <Run FontWeight="Bold" Text="Format :" />
                     <Run Text="{x:Bind ViewModel.SelectedMedia.Format, Mode=OneWay}" />
@@ -176,7 +190,6 @@
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate x:DataType="anilistModels:MediaStreamingEpisode">
                             <Grid CornerRadius="8">
-
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="100" />
                                 </Grid.RowDefinitions>

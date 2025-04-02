@@ -58,6 +58,25 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         }
     }
 
+    public bool IsPlayeable
+    {
+        get
+        {
+            if (IsLoaded)
+            {
+                return SelectedMedia.Status switch
+                {
+                    MediaStatus.Finished => true,
+                    MediaStatus.Releasing => true,
+                    MediaStatus.NotYetReleased => false,
+                    MediaStatus.Cancelled => false,
+                    _ => false,
+                };
+            }
+            return false;
+        }
+    }
+
     public DetailViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
     {
         _navigationService = navigationService;
@@ -89,10 +108,11 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         SelectedMedia = data;
         IsLoaded = true;
         OnPropertyChanged(nameof(StatusString));
+        OnPropertyChanged(nameof(IsPlayeable));
     }
 
     [RelayCommand]
-    public void OpenLink()
+    private void OpenLink()
     {
         _dispatcherQueue.TryEnqueue(async () => await Launcher.LaunchUriAsync(new Uri(Link)));
     }
@@ -112,4 +132,20 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
 
         await Task.CompletedTask;
     }
+
+    [RelayCommand]
+    private async Task SearchReferences()
+    {
+        var data = await SearchEngineService.SearchByName(SelectedMedia.Title, SelectedProvider);
+        ;
+    }
+
+    /*
+     the chapters need to be based on the following rules
+     * 1): If is finised get all the chapters SelectedMedia.Episodes
+     * 2): if the status is airing only show the chapters less than SelectedMedia.nextAiringEpisode.episode i'll check if is possible to add the nextairing with a timer but make it without a eventclick
+     * 3): if the status is notyetreleased show a counter with the time left to the first episode
+     * 4): if is a movie or a single cap ova/ona show only 1 item with the prefix "Episode-#"
+     * 5): if is a (movie/ona/ova)  with multiple parts (most common in ovas/onas) show the prefix "Episode-#"
+    */
 }
