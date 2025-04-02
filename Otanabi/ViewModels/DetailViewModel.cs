@@ -140,7 +140,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         ;
     }
 
-    /*
+    /* TODO : Chapter comminucation between detailview to provider to VideoView
      the chapters need to be based on the following rules
      * 1): If is finised get all the chapters SelectedMedia.Episodes
      * 2): if the status is airing only show the chapters less than SelectedMedia.nextAiringEpisode.episode i'll check if is possible to add the nextairing with a timer but make it without a eventclick
