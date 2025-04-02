@@ -284,7 +284,7 @@ public class AnilistService
             episodes.Add(episode);
         }
 
-        if (episodes.Count == 0)
+        if (episodes.Count == 0 && (int?)data["episodes"] != null)
         {
             for (int i = 0; i < (int)data["episodes"]; i++)
             {
