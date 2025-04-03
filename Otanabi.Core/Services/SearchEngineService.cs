@@ -14,14 +14,23 @@ public sealed class SearchEngineService
     //search the anime title
     //will return a list of possibile anime/s
 
-    public static async Task<object> SearchByName(MediaTitle searchTerm, Provider provider)
+    public static async Task<(Anime, List<Anime>)> SearchByName(MediaTitle searchTerm, Provider provider)
     {
         var animeService = new SearchAnimeService();
         var data = await animeService.SearchAnimeAsync(searchTerm.Romaji, 1, provider);
         var searchTerms = new[] { searchTerm.Romaji, searchTerm.English, searchTerm.Native };
 
-        var result = data.Select(x => new { x.Title, x.Url }).Where(x => searchTerms.Contains(x.Title)).ToList();
-        return result;
+        var result = data.Where(x => searchTerms.Contains(x.Title)).ToList().FirstOrDefault();
+        var fullResult = data.ToList();
+        return (result, fullResult);
+    }
+
+    public static async Task<Anime> GetAnimeDetail(Anime anime)
+    {
+        var animeService = new SearchAnimeService();
+        var data = await animeService.GetAnimeDetailsAsync(anime);
+
+        return data;
     }
 
     //using the provider url

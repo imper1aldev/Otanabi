@@ -270,36 +270,59 @@ public class AnilistService
             Season = ConvertToMediaSeason((string)data["season"]),
             SeasonYear = (int?)data["seasonYear"] ?? 0,
         };
-        List<MediaStreamingEpisode> episodes = [];
-        foreach (var item in data["streamingEpisodes"])
-        {
-            var episode = new MediaStreamingEpisode
-            {
-                Site = (string)item["site"],
-                Thumbnail = (string)item["thumbnail"],
-                Title = (string)item["title"],
-                Url = (string)item["url"],
-                Number = GetEpisodeNumber((string)item["title"]) ?? 0,
-            };
-            episodes.Add(episode);
-        }
 
-        if (episodes.Count == 0 && (int?)data["episodes"] != null)
+        try
         {
-            for (int i = 0; i < (int)data["episodes"]; i++)
+            anime.NextAiringEpisode = new AiringSchedule
+            {
+                Episode = (int?)data["nextAiringEpisode"]["episode"] ?? 0,
+                TimeUntilAiring = (int?)data["nextAiringEpisode"]["timeUntilAiring"] ?? 0,
+                AiringAt = (int?)data["nextAiringEpisode"]["airingAt"] ?? 0,
+            };
+        }
+        catch (Exception) { }
+
+        List<MediaStreamingEpisode> episodes = [];
+        List<MediaStreamingEpisode> StramingEpisodes = [];
+        List<MediaStreamingEpisode> TmpEpisodes = [];
+        if (anime.Status != MediaStatus.NotYetReleased)
+        {
+            var episodeLimiter = (int?)data["episodes"] ?? 0;
+
+            if (anime.Status == MediaStatus.Releasing)
+            {
+                episodeLimiter = (int)data["nextAiringEpisode"]?["episode"] - 1;
+            }
+            for (int i = 0; i < episodeLimiter; i++)
             {
                 var episode = new MediaStreamingEpisode
                 {
                     Site = "",
                     Thumbnail = "//Assets/OtanabiSplash.png",
                     Title = $"Episode {i + 1}",
-                    Url = "",
                     Number = i + 1,
                 };
-                episodes.Add(episode);
+                TmpEpisodes.Add(episode);
             }
-        }
 
+            foreach (var item in data["streamingEpisodes"])
+            {
+                var episode = new MediaStreamingEpisode
+                {
+                    Site = "",
+                    Thumbnail = (string)item["thumbnail"],
+                    Title = (string)item["title"],
+                    Number = GetEpisodeNumber((string)item["title"]) ?? 1,
+                };
+                StramingEpisodes.Add(episode);
+            }
+
+            var episodesToRemove = new HashSet<int>(StramingEpisodes.Select(x => x.Number));
+            TmpEpisodes = TmpEpisodes.Where(x => !episodesToRemove.Contains(x.Number)).ToList();
+
+            episodes = TmpEpisodes.Union(StramingEpisodes).ToList();
+            episodes = episodes.OrderByDescending(x => x.Number).ToList();
+        }
         anime.StreamingEpisodes = episodes;
 
         return anime;

@@ -649,6 +649,7 @@ public class MediaStreamingEpisode
     public string Title { get; set; }
     public string Url { get; set; }
     public int Number { get; set; }
+    public bool IsValid { get; set; }
 }
 
 public class MediaSubmission

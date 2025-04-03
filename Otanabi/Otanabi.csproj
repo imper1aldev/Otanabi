@@ -42,6 +42,7 @@
     <None Remove="Styles\NavigationViewStyles.xaml" />
     <None Remove="UserControls\AnimeDetailCollectionControl.xaml" />
     <None Remove="UserControls\AnimePaneControl.xaml" />
+    <None Remove="UserControls\EpisodeCollectionControl.xaml" />
 
     <None Remove="views\embeddeds\PatchNotesDialog.xaml" />
   </ItemGroup>
@@ -86,6 +87,9 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <Page Update="UserControls\EpisodeCollectionControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="UserControls\AnimeDetailCollectionControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Dynamic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -9,6 +11,7 @@ using Otanabi.Core.Anilist.Models;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.Services;
+using Otanabi.UserControls;
 using Windows.System;
 
 namespace Otanabi.ViewModels;
@@ -34,6 +37,15 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     private string link;
+
+    /*Match Anilist detail with provider*/
+    private Anime _localAnime;
+
+    /**/
+
+    public ObservableCollection<MediaStreamingEpisode> EpisodeList { get; } = new ObservableCollection<MediaStreamingEpisode>();
+
+    private EpisodeCollectionControl _episodeCollectionControl;
 
     [ObservableProperty]
     private bool isLoaded = false;
@@ -88,14 +100,11 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
+        GC.Collect();
         await GetProviders();
-        if (parameter is Media media)
+        if (parameter is Media media && SelectedMedia == null)
         {
             await LoadMediaAsync(media.Id);
-        }
-        else
-        {
-            await LoadMediaAsync(175443);
         }
     }
 
@@ -105,10 +114,21 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         BannerImage = data.BannerImage != null ? new BitmapImage(new Uri(data.BannerImage)) : new BitmapImage(new Uri(data.CoverImage.ExtraLarge));
 
         Link = $"https://anilist.co/anime/{data.Id}";
+
+        if (data.Status != MediaStatus.NotYetReleased)
+        {
+            foreach (var episode in data.StreamingEpisodes)
+            {
+                EpisodeList.Add(episode);
+            }
+        }
+
         SelectedMedia = data;
         IsLoaded = true;
+        EpisodesLoaded();
         OnPropertyChanged(nameof(StatusString));
         OnPropertyChanged(nameof(IsPlayeable));
+        await SearchReferences();
     }
 
     [RelayCommand]
@@ -133,13 +153,79 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         await Task.CompletedTask;
     }
 
-    [RelayCommand]
+    public void LoadEpisodeComponent(EpisodeCollectionControl episodeCollectionControl)
+    {
+        _episodeCollectionControl = episodeCollectionControl;
+        _episodeCollectionControl.EpisodeSelected += async (s, e) =>
+        {
+            //load video from episode selected
+            Debug.Print($"Episode selected: {e.Number}");
+
+            if (_localAnime != null)
+            {
+                var ep = _localAnime.Chapters.Where(x => x.ChapterNumber == e.Number).FirstOrDefault();
+                if (ep != null)
+                {
+                    Debug.Print($"Episode selected: {ep.Url}");
+                    await OpenPlayer(ep);
+                }
+            }
+        };
+    }
+
+    private void EpisodesLoaded()
+    {
+        var data = SelectedMedia.NextAiringEpisode;
+        _episodeCollectionControl.LoadNextAiringData();
+    }
+
     private async Task SearchReferences()
     {
         var data = await SearchEngineService.SearchByName(SelectedMedia.Title, SelectedProvider);
-        ;
+        var exactMatch = data.Item1;
+        var otherMatches = data.Item2;
+
+        if (exactMatch != null)
+        {
+            _localAnime = await _searchAnimeService.GetAnimeDetailsAsync(exactMatch);
+        }
     }
 
+    public async Task OpenPlayer(Chapter chapter)
+    {
+        //IsLoadingVideo = true;
+        try
+        {
+            //App.AppState.TryGetValue("Incognito", out var incognito);  Incognito mode
+            dynamic data = new ExpandoObject();
+            //data.History = (bool)incognito ? new History() { Id = 0 } : await _Db.GetOrCreateHistoryByCap(chapter.Id);
+            data.History = new History() { Id = 0 };
+            data.Chapter = chapter;
+            data.AnimeTitle = _localAnime.Title;
+            data.ChapterList = _localAnime.Chapters.ToList();
+            data.Provider = _localAnime.Provider;
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                try
+                {
+                    _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
+                }
+                catch (Exception ex)
+                {
+                    // Log the error
+                    Debug.WriteLine($"Navigation error: {ex.Message}");
+                }
+            });
+            //IsLoadingVideo = false;
+        }
+        catch (Exception e)
+        {
+            //IsLoadingVideo = false;
+            //ErrorMessage = e.Message.ToString();
+            //ErrorActive = true;
+            return;
+        }
+    }
     /* TODO : Chapter comminucation between detailview to provider to VideoView
      the chapters need to be based on the following rules
      * 1): If is finised get all the chapters SelectedMedia.Episodes

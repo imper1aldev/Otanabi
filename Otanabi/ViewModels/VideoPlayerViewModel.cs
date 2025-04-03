@@ -618,14 +618,26 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
         _dispatcherQueue.TryEnqueue(() =>
         {
-            MainTimerForSave.Stop();
-            MainTimerForSave.Dispose();
-            MPE.Source = null;
-            if (MPE.MediaPlayer != null)
+            try
             {
-                MPE.MediaPlayer.Pause();
-                MPE.MediaPlayer.Source = null;
+                MainTimerForSave.Stop();
+                MainTimerForSave.Dispose();
+
+                if (MPE != null)
+                {
+                    MPE.Source = null;
+                    if (MPE.MediaPlayer != null)
+                    {
+                        MPE.MediaPlayer.Pause();
+                        MPE.MediaPlayer.Source = null;
+                    }
+                }
             }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
             //cant dispose the media player because it will crash the app
             GC.Collect();
         });

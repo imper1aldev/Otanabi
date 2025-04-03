@@ -5,11 +5,14 @@
     xmlns:anilistModels="using:Otanabi.Core.Anilist.Models"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:customControls="using:Otanabi.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
     xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="Page_Loaded"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.Resources>
         <SolidColorBrush x:Key="BackgroundDf" Color="#402c2d2f" />
@@ -109,11 +112,11 @@
                     ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
                     SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}"
                     Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
-                <Button
+                <!--<Button
                     Width="Auto"
                     Command="{x:Bind ViewModel.SearchReferencesCommand}"
                     Content="Search in provider"
-                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />-->
 
                 <Button
                     Width="Auto"
@@ -178,40 +181,12 @@
             <!--#endregion-->
             <!--#region Details-->
             <!--<StackPanel Grid.Column="1">-->
-            <ScrollViewer x:Name="MainScrollViewer" Grid.Column="1">
-                <ItemsRepeater ItemsSource="{x:Bind ViewModel.SelectedMedia.StreamingEpisodes, Mode=OneWay}">
-                    <ItemsRepeater.Layout>
-                        <UniformGridLayout
-                            ItemsStretch="Fill"
-                            MinColumnSpacing="10"
-                            MinItemWidth="400"
-                            MinRowSpacing="10" />
-                    </ItemsRepeater.Layout>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="anilistModels:MediaStreamingEpisode">
-                            <Grid CornerRadius="8">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="100" />
-                                </Grid.RowDefinitions>
-                                <Grid.Background>
-                                    <ImageBrush
-                                        ImageSource="{x:Bind Thumbnail, Mode=OneWay}"
-                                        Opacity="0.3"
-                                        Stretch="UniformToFill" />
-                                </Grid.Background>
-                                <Border Background="{StaticResource BackgroundDf}">
-                                    <TextBlock
-                                        Grid.Row="0"
-                                        HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Text="{x:Bind Title, Mode=OneWay}"
-                                        TextWrapping="Wrap" />
-                                </Border>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
+            <customControls:EpisodeCollectionControl
+                x:Name="ECcontrol"
+                Grid.Column="1"
+                Margin="0,0,0,10"
+                ItemsSource="{x:Bind ViewModel.EpisodeList, Mode=OneWay}"
+                NextAiring="{x:Bind ViewModel.SelectedMedia.NextAiringEpisode, Mode=OneWay}" />
             <!--</StackPanel>-->
             <!--#endregion-->
         </Grid>
