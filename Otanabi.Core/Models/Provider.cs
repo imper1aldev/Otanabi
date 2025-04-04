@@ -16,6 +16,8 @@ public class Provider : IProvider
 
     public bool Active { get; set; } = true;
 
+    public bool IsTrackeable { get; set; } = false;
+
     [Ignore]
     public Anime[]? Animes { get; set; }
 }

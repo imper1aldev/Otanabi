@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
 using System.Web;
+using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
-using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 
 namespace Otanabi.Extensions.Extractors;
@@ -18,6 +18,7 @@ public class AnimeflvExtractor : IExtractor
     internal readonly string originUrl = "https://www3.animeflv.net";
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
+    internal readonly bool IsTrackeable = true;
 
     public string GetSourceName()
     {
@@ -36,7 +37,8 @@ public class AnimeflvExtractor : IExtractor
             Name = sourceName,
             Url = originUrl,
             Type = Type,
-            Persistent = Persistent
+            Persistent = Persistent,
+            IsTrackeable = IsTrackeable,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -65,14 +67,13 @@ public class AnimeflvExtractor : IExtractor
 
         foreach (var nodo in doc.DocumentNode.CssSelect(".Anime"))
         {
-            Anime anime =
-                new()
-                {
-                    Title = nodo.SelectSingleNode(".//h3").InnerText,
-                    Url = nodo.Descendants("a").First().GetAttributeValue("href"),
-                    Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src"),
-                    Provider = (Provider)GenProvider()
-                };
+            Anime anime = new()
+            {
+                Title = nodo.SelectSingleNode(".//h3").InnerText,
+                Url = nodo.Descendants("a").First().GetAttributeValue("href"),
+                Cover = nodo.SelectSingleNode(".//div/figure/img").GetAttributeValue("src"),
+                Provider = (Provider)GenProvider(),
+            };
             anime.ProviderId = anime.Provider.Id;
             anime.Type = GetAnimeTypeByStr(nodo.SelectSingleNode(".//a/div/span").InnerText);
 
@@ -97,42 +98,25 @@ public class AnimeflvExtractor : IExtractor
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;
 
-        anime.Title = node.CssSelect(
-                "div.Wrapper > div > div > div.Ficha.fchlt > div.Container > h1"
-            )
-            .First()
-            .InnerText;
-        var coverTmp = node.CssSelect(
-                "div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img"
-            )
+        anime.Title = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > h1").First().InnerText;
+        var coverTmp = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > div.AnimeCover > div > figure > img")
             .First()
             .GetAttributeValue("src");
         anime.Cover = string.Concat(originUrl, coverTmp);
-        anime.Description = node.CssSelect(
-                "div.Wrapper > div > div > div.Container > div > main > section"
-            )
+        anime.Description = node.CssSelect("div.Wrapper > div > div > div.Container > div > main > section")
             .First()
             .CssSelect("div.Description > p")
             .First()
             .InnerText;
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
-        var tempType = node.CssSelect(
-                "div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span"
-            )
-            .First()
-            .InnerText;
+        var tempType = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container > span").First().InnerText;
         anime.Type = GetAnimeTypeByStr(tempType);
 
-        anime.Status = node.CssSelect(
-                "div.Wrapper > div > div > div.Container > div > aside > p > span"
-            )
-            .First()
-            .InnerText;
+        anime.Status = node.CssSelect("div.Wrapper > div > div > div.Container > div > aside > p > span").First().InnerText;
 
         var genres = node.CssSelect(".Nvgnrs a").Select(x => WebUtility.HtmlDecode(x.InnerText)).ToList();
         anime.GenreStr = string.Join(",", genres);
-
 
         var identifier = GetUriIdentify(node.InnerHtml, anime.Status);
         anime.Chapters = GetChaptersByregex(node.InnerHtml, identifier);
@@ -191,9 +175,7 @@ public class AnimeflvExtractor : IExtractor
         var match = Regex.Match(text, pattern);
         if (match.Success)
         {
-            var innerArrays = match
-                .Groups[1]
-                .Value.Split(new string[] { "],[" }, StringSplitOptions.None);
+            var innerArrays = match.Groups[1].Value.Split(new string[] { "],[" }, StringSplitOptions.None);
             var chaptherOrder = 0;
             foreach (var innerArray in innerArrays)
             {
@@ -202,7 +184,7 @@ public class AnimeflvExtractor : IExtractor
                 {
                     Url = string.Concat("/ver/", chapIdentifier[1], "-", chaptherOrder),
                     ChapterNumber = chaptherOrder,
-                    Name = string.Concat(chapIdentifier[2], " ", chaptherOrder)
+                    Name = string.Concat(chapIdentifier[2], " ", chaptherOrder),
                 };
 
                 chapters.Add(chapter);
@@ -254,7 +236,7 @@ public class AnimeflvExtractor : IExtractor
                         Url = (string)vsource["url"],
                         Ads = (int)vsource["ads"],
                         Title = (string)vsource["title"],
-                        Allow_mobile = (bool)vsource["allow_mobile"]
+                        Allow_mobile = (bool)vsource["allow_mobile"],
                     };
                     sources.Add(vSouce);
                 }

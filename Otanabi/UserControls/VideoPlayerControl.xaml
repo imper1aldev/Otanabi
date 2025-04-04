@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Otanabi.UserControls.VideoPlayerControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Otanabi.Converters"
+    xmlns:converters1="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Otanabi.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:usercontrols="using:Otanabi.UserControls"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:LongToDoubleConverter x:Key="LongToDoubleConverter" />
+        <converters1:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters1:StringFormatConverter x:Key="StringFormatConverter" />
+    </UserControl.Resources>
+    <Grid x:Name="VideoContainer">
+        <!--<MediaPlayerElement
+            x:Name="AMediaPlayer"
+            Width="Auto"
+            Height="Auto"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            x:Load="{x:Bind IsLoadPlayer, Mode=OneWay}"
+            AreTransportControlsEnabled="True"
+            PointerPressed="AMediaPlayer_PointerPressed"
+            PosterSource="ms-appx:///Assets/OtanabiHres.png">
+            <MediaPlayerElement.TransportControls>
+                <usercontrols:AnimeMediaTransportControls
+                    FastPlayFallbackBehaviour="Skip"
+                    FullScreenCommand="{Binding FullScreenCommand}"
+                    IsCompact="True"
+                    IsFullScreen="{Binding IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    IsNextEnabled="{Binding IsEnabledNext, Mode=OneWay}"
+                    IsNextTrackButtonVisible="True"
+                    IsPanelOpen="{Binding IsChapPanelOpen, Mode=OneWay}"
+                    IsPlaybackRateButtonVisible="True"
+                    IsPlaybackRateEnabled="True"
+                    IsPrevEnabled="{Binding IsEnabledPrev, Mode=OneWay}"
+                    IsPreviousTrackButtonVisible="True"
+                    IsSeekBarVisible="True"
+                    IsZoomButtonVisible="False"
+                    IsZoomEnabled="True"
+                    NextCommand="{Binding NextChapterCommand}"
+                    OpenPanelCommand="{Binding ToggleChapPanelCommand}"
+                    PreviusCommand="{Binding PrevChapterCommand}"
+                    SkipIntroCommand="{Binding SkipIntroCommand}" />
+            </MediaPlayerElement.TransportControls>
+        </MediaPlayerElement>-->
+    </Grid>
+</UserControl>

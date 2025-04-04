@@ -50,6 +50,9 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private bool isLoaded = false;
 
+    [ObservableProperty]
+    private bool isLoadedMerge = false;
+
     public string StatusString
     {
         get
@@ -102,7 +105,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     {
         GC.Collect();
         await GetProviders();
-        if (parameter is Media media && SelectedMedia == null)
+        if (parameter is Media media && (SelectedMedia == null || SelectedMedia.Id != media.Id))
         {
             await LoadMediaAsync(media.Id);
         }
@@ -114,6 +117,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         BannerImage = data.BannerImage != null ? new BitmapImage(new Uri(data.BannerImage)) : new BitmapImage(new Uri(data.CoverImage.ExtraLarge));
 
         Link = $"https://anilist.co/anime/{data.Id}";
+        EpisodeList.Clear();
 
         if (data.Status != MediaStatus.NotYetReleased)
         {
@@ -121,6 +125,10 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             {
                 EpisodeList.Add(episode);
             }
+        }
+        else
+        {
+            IsLoadedMerge = true;
         }
 
         SelectedMedia = data;
@@ -142,7 +150,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         if (Providers.Count == 0)
         {
             Providers.Clear();
-            var provs = _searchAnimeService.GetProviders();
+            var provs = _searchAnimeService.GetProviders().Where(prov => prov.IsTrackeable).ToList();
             foreach (var item in provs)
             {
                 Providers.Add(item);
@@ -153,24 +161,30 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         await Task.CompletedTask;
     }
 
+    [RelayCommand]
+    private async Task ProviderChanged()
+    {
+        IsLoadedMerge = false;
+        await SearchReferences();
+    }
+
     public void LoadEpisodeComponent(EpisodeCollectionControl episodeCollectionControl)
     {
         _episodeCollectionControl = episodeCollectionControl;
-        _episodeCollectionControl.EpisodeSelected += async (s, e) =>
-        {
-            //load video from episode selected
-            Debug.Print($"Episode selected: {e.Number}");
+    }
 
-            if (_localAnime != null)
+    [RelayCommand]
+    private async Task LoadEpisode(MediaStreamingEpisode episode)
+    {
+        if (_localAnime != null)
+        {
+            var ep = _localAnime.Chapters.Where(x => x.ChapterNumber == episode.Number).FirstOrDefault();
+            if (ep != null)
             {
-                var ep = _localAnime.Chapters.Where(x => x.ChapterNumber == e.Number).FirstOrDefault();
-                if (ep != null)
-                {
-                    Debug.Print($"Episode selected: {ep.Url}");
-                    await OpenPlayer(ep);
-                }
+                Debug.Print($"Episode selected: {ep.Url}");
+                await OpenPlayer(ep);
             }
-        };
+        }
     }
 
     private void EpisodesLoaded()
@@ -188,6 +202,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         if (exactMatch != null)
         {
             _localAnime = await _searchAnimeService.GetAnimeDetailsAsync(exactMatch);
+            IsLoadedMerge = true;
         }
     }
 
@@ -204,18 +219,8 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             data.AnimeTitle = _localAnime.Title;
             data.ChapterList = _localAnime.Chapters.ToList();
             data.Provider = _localAnime.Provider;
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                try
-                {
-                    _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
-                }
-                catch (Exception ex)
-                {
-                    // Log the error
-                    Debug.WriteLine($"Navigation error: {ex.Message}");
-                }
-            });
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data));
+
             //IsLoadingVideo = false;
         }
         catch (Exception e)

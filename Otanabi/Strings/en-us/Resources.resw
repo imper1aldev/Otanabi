@@ -182,4 +182,7 @@
   <data name="Shell_Detail.Content" xml:space="preserve">
     <value>Detail</value>
   </data>
+  <data name="Shell_TestVideo.Content" xml:space="preserve">
+    <value>TestVideo</value>
+  </data>
 </root>

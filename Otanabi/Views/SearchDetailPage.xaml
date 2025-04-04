@@ -238,7 +238,6 @@
                 VerticalAlignment="Center"
                 Background="LightGray"
                 IsActive="True" />
-
         </StackPanel>
 
         <Grid

@@ -111,7 +111,13 @@
                     DisplayMemberPath="Name"
                     ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
                     SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}"
-                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                    <interactivity:Interaction.Behaviors>
+                        <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ProviderChangedCommand}" />
+                        </interactions:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                </ComboBox>
                 <!--<Button
                     Width="Auto"
                     Command="{x:Bind ViewModel.SearchReferencesCommand}"
@@ -181,12 +187,41 @@
             <!--#endregion-->
             <!--#region Details-->
             <!--<StackPanel Grid.Column="1">-->
+            <StackPanel
+                x:Name="LoadingVideo"
+                Grid.Column="1"
+                Width="Auto"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Visibility="{x:Bind ViewModel.IsLoadedMerge, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+                <TextBlock
+                    Margin="0,0,15,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Mergin chapters, please wait ..." />
+                <ProgressRing
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="LightGray"
+                    IsActive="True" />
+            </StackPanel>
+
+
             <customControls:EpisodeCollectionControl
                 x:Name="ECcontrol"
                 Grid.Column="1"
                 Margin="0,0,0,10"
                 ItemsSource="{x:Bind ViewModel.EpisodeList, Mode=OneWay}"
-                NextAiring="{x:Bind ViewModel.SelectedMedia.NextAiringEpisode, Mode=OneWay}" />
+                NextAiring="{x:Bind ViewModel.SelectedMedia.NextAiringEpisode, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.IsLoadedMerge, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                <interactivity:Interaction.Behaviors>
+                    <interactions:EventTriggerBehavior EventName="EpisodeSelected">
+                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadEpisodeCommand}" />
+                    </interactions:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+
+            </customControls:EpisodeCollectionControl>
             <!--</StackPanel>-->
             <!--#endregion-->
         </Grid>

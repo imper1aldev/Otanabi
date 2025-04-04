@@ -56,28 +56,35 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE728;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem
-                    x:Uid="Shell_Search"
-                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.ProviderSearchViewModel"
-                    Content="Provider Search">
+
+
+
+
+                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xF6FA;" />
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xF6FA;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_Seasonal"
+                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SeasonalViewModel"
+                    Content="Seasonal">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE787;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem
+                    x:Uid="Shell_ProviderSearch"
+                    helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.ProviderSearchViewModel"
+                    Content="Explore Providers">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEDE4;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
                 <NavigationViewItem x:Uid="Shell_History" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.HistoryViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE81C;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Seasonal" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SeasonalViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE787;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Search" helpers:NavigationHelper.NavigateTo="Otanabi.ViewModels.SearchViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
