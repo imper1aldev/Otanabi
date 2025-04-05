@@ -94,7 +94,8 @@ public partial class App : Application
                     services.AddTransient<DetailPage>();
                     services.AddTransient<SearchViewModel>();
                     services.AddTransient<SearchPage>();
-
+                    services.AddTransient<ScheduleViewModel>();
+                    services.AddTransient<SchedulePage>();
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
                 }

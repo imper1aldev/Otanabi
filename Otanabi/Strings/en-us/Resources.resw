@@ -185,4 +185,7 @@
   <data name="Shell_TestVideo.Content" xml:space="preserve">
     <value>TestVideo</value>
   </data>
+  <data name="Shell_Schedule.Content" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
 </root>

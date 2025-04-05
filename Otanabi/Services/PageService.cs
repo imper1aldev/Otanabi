@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+
 using Microsoft.UI.Xaml.Controls;
+
 using Otanabi.Contracts.Services;
 using Otanabi.ViewModels;
 using Otanabi.Views;
@@ -21,6 +23,7 @@ public class PageService : IPageService
         Configure<SeasonalViewModel, SeasonalPage>();
         Configure<DetailViewModel, DetailPage>();
         Configure<SearchViewModel, SearchPage>();
+        Configure<ScheduleViewModel, SchedulePage>();
     }
 
     public Type GetPageType(string key)
