@@ -47,7 +47,7 @@ public class ServerConventions
             },
             new Convention {
                 Name = "VidHide",
-                PossibleNames = ["vidhide", "filelions.top", "vid.", "nika"]
+                PossibleNames = ["vidhide", "filelions.top", "vid.", "nika", "niikaplayerr"]
             },
             new Convention {
                 Name = "Voe",
