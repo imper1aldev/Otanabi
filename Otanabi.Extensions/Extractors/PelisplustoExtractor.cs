@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
@@ -83,7 +83,6 @@ public class PelisplustoExtractor : IExtractor
                     Provider = (Provider)GenProvider()
                 };
             anime.ProviderId = anime.Provider.Id;
-            //anime.Type = GetAnimeTypeByStr(nodo.CssSelect("a .item__image .typeItem").FirstOrDefault()?.InnerText);
             anime.Type = GetAnimeTypeByStr(nodo.CssSelect("a .item__image span").FirstOrDefault()?.InnerText);
 
             animeList.Add(anime);
@@ -134,7 +133,55 @@ public class PelisplustoExtractor : IExtractor
                 Extraval = doc.DocumentNode.CssSelect(".home__slider_content div h1.slugh1")?.FirstOrDefault()?.InnerText
             });
         }
+        else
+        {
+            var scriptNode = doc.DocumentNode.SelectNodes("//script")?.FirstOrDefault(node => node.InnerText.Contains("const seasonUrl ="));
 
+            if (scriptNode == null)
+            {
+                return chapters;
+            }
+
+            var scriptContent = scriptNode.InnerText;
+
+            var jsonStr = scriptContent.SubstringAfter("seasonsJson = ").SubstringBefore(";");
+
+            if (string.IsNullOrWhiteSpace(jsonStr))
+            {
+                return chapters;
+            }
+
+            var seasonsJson = JsonNode.Parse(jsonStr)?.AsObject();
+            if (seasonsJson == null)
+            {
+                return chapters;
+            }
+
+            var index = 0;
+            foreach (var entry in seasonsJson)
+            {
+                var episodeArray = entry.Value.AsArray().Reverse();
+
+                foreach (var episodeElement in episodeArray)
+                {
+                    index++;
+                    var epObj = episodeElement.AsObject();
+                    var season = epObj["season"]?.ToString();
+                    var ep = epObj["episode"]?.ToString();
+                    var title = epObj["title"]?.ToString();
+
+                    var chapter = new Chapter()
+                    {
+                        ChapterNumber = index,
+                        Name = $"T{season} - E{ep} - {title}",
+                        Url = $"{requestUrl}/season/{season}/episode/{ep}"
+                    };
+                    chapters.Add(chapter);
+                }
+            }
+
+            chapters.Reverse();
+        }
         return chapters;
     }
 
@@ -146,7 +193,7 @@ public class PelisplustoExtractor : IExtractor
         {
             throw new Exception("Anime could not be found");
         }
-        var videoUrls = new List<string>();
+
         var sources = new List<VideoSource>();
         var regIsUrl = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
         foreach (var li in doc.DocumentNode.SelectNodes("//div[contains(@class,'bg-tabs')]//ul/li"))
@@ -175,8 +222,7 @@ public class PelisplustoExtractor : IExtractor
             if (urlToUse.Contains("/player/"))
             {
                 var playerDoc = await oWeb.LoadFromWebAsync(urlToUse);
-                var scriptNode = playerDoc.DocumentNode
-                    .SelectSingleNode("//script[contains(text(),'window.onload')]");
+                var scriptNode = playerDoc.DocumentNode.SelectSingleNode("//script[contains(text(),'window.onload')]");
                 var scriptContent = scriptNode?.InnerText ?? "";
 
                 videoUrl = FetchUrls(scriptContent).FirstOrDefault() ?? "";
@@ -189,13 +235,11 @@ public class PelisplustoExtractor : IExtractor
             videoUrl = videoUrl.Replace("https://sblanh.com", "https://lvturbo.com");
             videoUrl = Regex.Replace(videoUrl, @"([a-zA-Z0-9]{0,8}[a-zA-Z0-9_-]+)=https:\/\/ww3\.pelisplus\.to.*", "");
 
-            videoUrls.Add(videoUrl);
-
             var serverName = _serverConventions.GetServerName(server);
             sources.Add(new VideoSource()
             {
                 Server = serverName,
-                Title = serverName,
+                Title = $"{prefix} {serverName}",
                 Url = videoUrl,
             });
         }
@@ -206,14 +250,10 @@ public class PelisplustoExtractor : IExtractor
     {
         if (string.IsNullOrWhiteSpace(text))
         {
-            return new List<string>();
+            return [];
         }
-
         var linkRegex = new Regex(@"(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])");
-        return linkRegex.Matches(text)
-                        .Cast<Match>()
-                        .Select(m => m.Value.Trim('"'))
-                        .ToList();
+        return linkRegex.Matches(text).Cast<Match>().Select(m => m.Value.Trim('"')).ToList();
     }
 
     private static string GetLang(string input)
@@ -223,8 +263,6 @@ public class PelisplustoExtractor : IExtractor
         if (new[] { "2", "eng", "sub" }.Any(x => input.Contains(x))) return "[SUB]";
         return "";
     }
-
-
 
     private static AnimeType GetAnimeTypeByStr(string strType)
     {
