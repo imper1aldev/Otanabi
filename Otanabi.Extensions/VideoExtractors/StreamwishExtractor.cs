@@ -18,7 +18,16 @@ public class StreamwishExtractor : IVideoExtractor
             if (packedScript != null && Unpacker.IsPacked(packedScript.InnerText))
             {
                 var unpacked = Unpacker.UnpackAndCombine(packedScript.InnerText);
-                var streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(["\"}"], StringSplitOptions.None)[0];
+                var streamUrl = "";
+                if (unpacked != null && unpacked.Contains("var links=", StringComparison.OrdinalIgnoreCase))
+                {
+                    streamUrl = unpacked.SubstringAfter("hls2\":\"").Split(["\"}"], StringSplitOptions.None)[0];
+                }
+                else
+                {
+                    streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(["\"}"], StringSplitOptions.None)[0];
+                }
+
                 var subtitles = ExtractSubtitles(unpacked);
                 return new(streamUrl, subtitles, null);
             }

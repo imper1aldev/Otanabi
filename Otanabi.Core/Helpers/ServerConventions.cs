@@ -5,30 +5,31 @@ namespace Otanabi.Core.Helpers;
 public class ServerConventions
 {
     internal List<Convention> Conventions =
-        new()
-        {
-            //new Convention
-            //{
-            //    Name = "Okru",
-            //    PossibleNames = new string[] { "ok-ru", "okru", "OKRU" }
-            //},
+        [
+            new Convention
+            {
+                Name = "Okru",
+                PossibleNames = ["ok-ru", "okru", "OKRU"]
+            },
             new Convention
             {
                 Name = "Streamwish",
-                PossibleNames = new string[] { "sw", "SW", "Streamwish", "streamwish" }
+                PossibleNames = ["sw", "SW", "Streamwish", "streamwish"]
             },
             new Convention
             {
                 Name = "Streamtape",
-                PossibleNames = new string[] { "stape", "Stape","Streamtape","streamtape" }
+                PossibleNames = ["stape", "Stape","Streamtape","streamtape"]
             },
-            new Convention { Name = "Juro", PossibleNames = new string[] { "juro" } },
-            //new Convention
-            //{
-            //    Name = "Yourupload",
-            //    PossibleNames = new string[] { "yourupload", "Yourupload", "yu", "YU" }
-            //}
-        };
+            new Convention {
+                Name = "Juro",
+                PossibleNames = ["juro"]
+            },
+            new Convention {
+                Name = "Mp4Upload",
+                PossibleNames = ["mp4", "mp4upload"]
+            }
+        ];
 
     public string GetServerName(string serverName)
     {

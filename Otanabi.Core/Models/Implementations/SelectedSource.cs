@@ -32,6 +32,7 @@ public class SelectedSource
     {
         get; set;
     }
+
     public List<Track> Subtitles
     {
         get; set;
@@ -44,5 +45,9 @@ public class SelectedSource
     {
         get;
         set;
+    }
+    public string ContentType
+    {
+        get; set;
     }
 }
