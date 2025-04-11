@@ -36,6 +36,7 @@ public class SelectSourceService
                 tempUrl = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
                 if (!string.IsNullOrEmpty(tempUrl.StreamUrl))
                 {
+                    tempUrl.Subtitles ??= [];
                     tempUrl.Subtitles.AddRange(source.Subtitles);
 
                     streamUrl = tempUrl.StreamUrl;

@@ -9,7 +9,6 @@ public class OkruExtractor : IVideoExtractor
 {
     public async Task<SelectedSource> GetStreamAsync(string url)
     {
-        // url = "https://ok.ru/videoembed/947875089023";
         var streaminUrl = "";
         try
         {
@@ -28,9 +27,9 @@ public class OkruExtractor : IVideoExtractor
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-
+            Console.WriteLine($"Error extracting master URL: {ex.Message}");
         }
         return new(streaminUrl, null);
     }

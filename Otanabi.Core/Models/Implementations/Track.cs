@@ -21,4 +21,8 @@ public class Track : ITrack
     {
         get; set;
     }
+    public string Kind
+    {
+        get; set;
+    }
 }

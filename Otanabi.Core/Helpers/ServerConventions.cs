@@ -14,7 +14,7 @@ public class ServerConventions
             new Convention
             {
                 Name = "Streamwish",
-                PossibleNames = ["sw", "SW", "Streamwish", "streamwish"]
+                PossibleNames = ["sw", "SW", "Streamwish", "streamwish", "wish"]
             },
             new Convention
             {
@@ -28,6 +28,34 @@ public class ServerConventions
             new Convention {
                 Name = "Mp4Upload",
                 PossibleNames = ["mp4", "mp4upload"]
+            },
+            new Convention {
+                Name = "StreamHideVid",
+                PossibleNames = ["vidhide", "VidHidePro", "luluvdo", "vidhideplus", "Earnvids", "streamvid", "guccihide", "streamhide"]
+            },
+            new Convention {
+                Name = "Filemoon",
+                PossibleNames = ["filemoon", "fmoon", "moon", "moonplayer"]
+            },
+            new Convention {
+                Name = "Fastream",
+                PossibleNames = ["fastream"]
+            },
+            new Convention {
+                Name = "SendVid",
+                PossibleNames = ["SendVid", "Send", "sendvid"]
+            },
+            new Convention {
+                Name = "VidHide",
+                PossibleNames = ["vidhide", "filelions.top", "vid.", "nika"]
+            },
+            new Convention {
+                Name = "Voe",
+                PossibleNames = ["voe", "launchreliantcleaverriver", "robertordercharacter", "donaldlineelse"]
+            },
+            new Convention {
+                Name = "VidGuard",
+                PossibleNames = ["listeamed", "VidGuard", "vidg", "vembed", "guard", "bembed", "vgfplay"]
             }
         ];
 
@@ -36,7 +64,8 @@ public class ServerConventions
         var convention = "";
         try
         {
-            convention = Conventions.First(e => e.PossibleNames.Contains(serverName)).Name;
+            var lowerServerName = serverName.ToLowerInvariant();
+            convention = Conventions.First(e => e.PossibleNames.Any(name => name.Equals(lowerServerName, StringComparison.OrdinalIgnoreCase))).Name;
         }
         catch (Exception) { }
         return convention;
