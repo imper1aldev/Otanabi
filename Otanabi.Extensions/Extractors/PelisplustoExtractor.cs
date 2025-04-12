@@ -15,7 +15,7 @@ public class PelisplustoExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
     internal readonly int extractorId = 5;
-    internal readonly string sourceName = "Pelisplusto";
+    internal readonly string sourceName = "PelisPlusTo";
     internal readonly string originUrl = "https://ww3.pelisplus.to";
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIE";
@@ -120,7 +120,124 @@ public class PelisplustoExtractor : IExtractor
         return anime;
     }
 
-    private List<Chapter> GetChapters(string requestUrl, HtmlDocument doc)
+    public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
+    {
+        var oWeb = new HtmlWeb();
+        var doc = await oWeb.LoadFromWebAsync(requestUrl);
+        if (oWeb.StatusCode != HttpStatusCode.OK)
+        {
+            throw new Exception("Anime could not be found");
+        }
+
+        var sources = new List<VideoSource>();
+        var regIsUrl = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
+        foreach (var li in doc.DocumentNode.SelectNodes("//div[contains(@class,'bg-tabs')]//ul/li"))
+        {
+            var parentDiv = li.ParentNode?.ParentNode;
+            var buttonText = parentDiv?.SelectSingleNode(".//button")?.InnerText?.Trim().ToLower();
+            var prefix = GetLang(buttonText);
+            var server = li.SelectSingleNode("span").InnerText?.SubstringBefore("-").Trim();
+
+            var encoded = li.GetAttributeValue("data-server", "");
+            var decodedBytes = Convert.FromBase64String(encoded);
+            var decoded = Encoding.UTF8.GetString(decodedBytes);
+
+            string urlToUse;
+            if (!regIsUrl.IsMatch(decoded))
+            {
+                var reEncoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(encoded));
+                urlToUse = $"{originUrl}/player/{reEncoded}";
+            }
+            else
+            {
+                urlToUse = decoded;
+            }
+
+            string videoUrl;
+            if (urlToUse.Contains("/player/"))
+            {
+                var playerDoc = await oWeb.LoadFromWebAsync(urlToUse);
+                var scriptNode = playerDoc.DocumentNode.SelectSingleNode("//script[contains(text(),'window.onload')]");
+                var scriptContent = scriptNode?.InnerText ?? "";
+
+                videoUrl = FetchUrls(scriptContent).FirstOrDefault() ?? "";
+            }
+            else
+            {
+                videoUrl = urlToUse;
+            }
+
+            videoUrl = videoUrl.Replace("https://sblanh.com", "https://lvturbo.com");
+            videoUrl = Regex.Replace(videoUrl, @"([a-zA-Z0-9]{0,8}[a-zA-Z0-9_-]+)=https:\/\/ww3\.pelisplus\.to.*", "");
+
+            var serverName = _serverConventions.GetServerName(server);
+            sources.Add(new VideoSource()
+            {
+                Server = serverName,
+                Title = $"{prefix} {serverName}",
+                Url = videoUrl,
+            });
+        }
+        return sources.ToArray();
+    }
+
+    public static string GenerateTagString(Tag[] tags)
+    {
+        var result = "";
+        for (var i = 0; i < tags.Length; i++)
+        {
+            result += $"{tags[i].Value}";
+            if (i < tags.Length - 1)
+            {
+                result += "&";
+            }
+        }
+        return result;
+    }
+
+    public Tag[] GetTags()
+    {
+        return
+        [
+            new() { Name = "Peliculas", Value = "peliculas"},
+            new() { Name = "Series", Value = "series"},
+            new() { Name = "Doramas", Value = "doramas"},
+            new() { Name = "Animes", Value = "animes"},
+            new() { Name = "Acción", Value = "genero/accion"},
+            new() { Name = "Action & Adventure", Value = "genero/action-adventure"},
+            new() { Name = "Animación", Value = "genero/animacion"},
+            new() { Name = "Aventura", Value = "genero/aventura"},
+            new() { Name = "Bélica", Value = "genero/belica"},
+            new() { Name = "Ciencia ficción", Value = "genero/ciencia-ficcion"},
+            new() { Name = "Comedia", Value = "genero/comedia"},
+            new() { Name = "Crimen", Value = "genero/crimen"},
+            new() { Name = "Documental", Value = "genero/documental"},
+            new() { Name = "Dorama", Value = "genero/dorama"},
+            new() { Name = "Drama", Value = "genero/drama"},
+            new() { Name = "Familia", Value = "genero/familia"},
+            new() { Name = "Fantasía", Value = "genero/fantasia"},
+            new() { Name = "Guerra", Value = "genero/guerra"},
+            new() { Name = "Historia", Value = "genero/historia"},
+            new() { Name = "Horror", Value = "genero/horror"},
+            new() { Name = "Kids", Value = "genero/kids"},
+            new() { Name = "Misterio", Value = "genero/misterio"},
+            new() { Name = "Música", Value = "genero/musica"},
+            new() { Name = "Musical", Value = "genero/musical"},
+            new() { Name = "Película de TV", Value = "genero/pelicula-de-tv"},
+            new() { Name = "Reality", Value = "genero/reality"},
+            new() { Name = "Romance", Value = "genero/romance"},
+            new() { Name = "Sci-Fi & Fantasy", Value = "genero/sci-fi-fantasy"},
+            new() { Name = "Soap", Value = "genero/soap"},
+            new() { Name = "Suspense", Value = "genero/suspense"},
+            new() { Name = "Terror", Value = "genero/terror"},
+            new() { Name = "War & Politics", Value = "genero/war-politics"},
+            new() { Name = "Western", Value = "genero/western"}
+        ];
+    }
+
+    #region Private methods
+
+    private static List<Chapter> GetChapters(string requestUrl, HtmlDocument doc)
     {
         var chapters = new List<Chapter>();
         if (requestUrl.Contains("/pelicula/"))
@@ -185,67 +302,6 @@ public class PelisplustoExtractor : IExtractor
         return chapters;
     }
 
-    public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
-    {
-        var oWeb = new HtmlWeb();
-        var doc = await oWeb.LoadFromWebAsync(requestUrl);
-        if (oWeb.StatusCode != HttpStatusCode.OK)
-        {
-            throw new Exception("Anime could not be found");
-        }
-
-        var sources = new List<VideoSource>();
-        var regIsUrl = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
-        foreach (var li in doc.DocumentNode.SelectNodes("//div[contains(@class,'bg-tabs')]//ul/li"))
-        {
-            var parentDiv = li.ParentNode?.ParentNode;
-            var buttonText = parentDiv?.SelectSingleNode(".//button")?.InnerText?.Trim().ToLower();
-            var prefix = GetLang(buttonText);
-            var server = li.SelectSingleNode("span").InnerText?.SubstringBefore("-").Trim();
-
-            var encoded = li.GetAttributeValue("data-server", "");
-            var decodedBytes = Convert.FromBase64String(encoded);
-            var decoded = Encoding.UTF8.GetString(decodedBytes);
-
-            string urlToUse;
-            if (!regIsUrl.IsMatch(decoded))
-            {
-                var reEncoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(encoded));
-                urlToUse = $"{originUrl}/player/{reEncoded}";
-            }
-            else
-            {
-                urlToUse = decoded;
-            }
-
-            string videoUrl;
-            if (urlToUse.Contains("/player/"))
-            {
-                var playerDoc = await oWeb.LoadFromWebAsync(urlToUse);
-                var scriptNode = playerDoc.DocumentNode.SelectSingleNode("//script[contains(text(),'window.onload')]");
-                var scriptContent = scriptNode?.InnerText ?? "";
-
-                videoUrl = FetchUrls(scriptContent).FirstOrDefault() ?? "";
-            }
-            else
-            {
-                videoUrl = urlToUse;
-            }
-
-            videoUrl = videoUrl.Replace("https://sblanh.com", "https://lvturbo.com");
-            videoUrl = Regex.Replace(videoUrl, @"([a-zA-Z0-9]{0,8}[a-zA-Z0-9_-]+)=https:\/\/ww3\.pelisplus\.to.*", "");
-
-            var serverName = _serverConventions.GetServerName(server);
-            sources.Add(new VideoSource()
-            {
-                Server = serverName,
-                Title = $"{prefix} {serverName}",
-                Url = videoUrl,
-            });
-        }
-        return sources.ToArray();
-    }
-
     private static List<string> FetchUrls(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -276,57 +332,5 @@ public class PelisplustoExtractor : IExtractor
         };
     }
 
-    public static string GenerateTagString(Tag[] tags)
-    {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
-    }
-
-    public Tag[] GetTags()
-    {
-        return
-        [
-            new() { Name = "Peliculas", Value = "peliculas"},
-            new() { Name = "Series", Value = "series"},
-            new() { Name = "Doramas", Value = "doramas"},
-            new() { Name = "Animes", Value = "animes"},
-            new() { Name = "Acción", Value = "genero/accion"},
-            new() { Name = "Action & Adventure", Value = "genero/action-adventure"},
-            new() { Name = "Animación", Value = "genero/animacion"},
-            new() { Name = "Aventura", Value = "genero/aventura"},
-            new() { Name = "Bélica", Value = "genero/belica"},
-            new() { Name = "Ciencia ficción", Value = "genero/ciencia-ficcion"},
-            new() { Name = "Comedia", Value = "genero/comedia"},
-            new() { Name = "Crimen", Value = "genero/crimen"},
-            new() { Name = "Documental", Value = "genero/documental"},
-            new() { Name = "Dorama", Value = "genero/dorama"},
-            new() { Name = "Drama", Value = "genero/drama"},
-            new() { Name = "Familia", Value = "genero/familia"},
-            new() { Name = "Fantasía", Value = "genero/fantasia"},
-            new() { Name = "Guerra", Value = "genero/guerra"},
-            new() { Name = "Historia", Value = "genero/historia"},
-            new() { Name = "Horror", Value = "genero/horror"},
-            new() { Name = "Kids", Value = "genero/kids"},
-            new() { Name = "Misterio", Value = "genero/misterio"},
-            new() { Name = "Música", Value = "genero/musica"},
-            new() { Name = "Musical", Value = "genero/musical"},
-            new() { Name = "Película de TV", Value = "genero/pelicula-de-tv"},
-            new() { Name = "Reality", Value = "genero/reality"},
-            new() { Name = "Romance", Value = "genero/romance"},
-            new() { Name = "Sci-Fi & Fantasy", Value = "genero/sci-fi-fantasy"},
-            new() { Name = "Soap", Value = "genero/soap"},
-            new() { Name = "Suspense", Value = "genero/suspense"},
-            new() { Name = "Terror", Value = "genero/terror"},
-            new() { Name = "War & Politics", Value = "genero/war-politics"},
-            new() { Name = "Western", Value = "genero/western"}
-        ];
-    }
+    #endregion
 }
