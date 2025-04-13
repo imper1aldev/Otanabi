@@ -37,31 +37,28 @@ public static class StringExtensions
         Array.Reverse(charArray);
         return new string(charArray);
     }
-    public static string SubstringAfter(this string value, string a)
+    public static string SubstringAfter(this string str, string delimiter)
     {
-        var start = value.IndexOf(a);
-        if (start != -1)
-        {
-            start += a.Length;
-            return value.Substring(start);
-        }
+        if (string.IsNullOrEmpty(str) || delimiter == null)
+            return str;
 
-        return string.Empty;
+        int index = str.IndexOf(delimiter);
+        if (index == -1)
+            return str;
+
+        return str.Substring(index + delimiter.Length);
     }
 
-    public static string SubstringBefore(this string value, string stopAt)
+    public static string SubstringBefore(this string str, string delimiter)
     {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            var charLocation = value.IndexOf(stopAt, StringComparison.Ordinal);
+        if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(delimiter))
+            return str;
 
-            if (charLocation > 0)
-            {
-                return value.Substring(0, charLocation);
-            }
-        }
+        int index = str.IndexOf(delimiter);
+        if (index == -1)
+            return str;
 
-        return string.Empty;
+        return str.Substring(0, index);
     }
 
     public static string DecodeBase64(this string value) =>

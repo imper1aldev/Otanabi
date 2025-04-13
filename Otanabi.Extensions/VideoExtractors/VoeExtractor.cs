@@ -12,13 +12,7 @@ public class VoeExtractor : IVideoExtractor
     private static readonly Regex LinkRegex = new(@"(http|https):\/\/([\w_-]+(?:\.[\w_-]+)+)([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])", RegexOptions.Compiled);
     private static readonly Regex Base64Regex = new(@"'.*?'", RegexOptions.Compiled);
     private static readonly Regex ScriptBase64Regex = new(@"(let|var)\s+\w+\s*=\s*'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)';", RegexOptions.Compiled);
-
-    private readonly HttpClient _client;
-
-    public VoeExtractor(HttpClient client)
-    {
-        _client = client;
-    }
+    private readonly HttpClient _client = new();
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {

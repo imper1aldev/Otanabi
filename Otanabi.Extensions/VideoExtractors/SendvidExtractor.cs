@@ -6,12 +6,7 @@ namespace Otanabi.Extensions.VideoExtractors;
 
 public class SendvidExtractor : IVideoExtractor
 {
-    private readonly HttpClient _client;
-
-    public SendvidExtractor(HttpClient client)
-    {
-        _client = client;
-    }
+    private readonly HttpClient _client = new();
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {

@@ -12,16 +12,9 @@ namespace Otanabi.Extensions.VideoExtractors;
 
 public class FastreamExtractor : IVideoExtractor
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client = new();
     private readonly HttpRequestHeaders _headers;
-
     private const string FastreamUrl = "https://fastream.to";
-
-    public FastreamExtractor(HttpClient client, HttpRequestHeaders headers)
-    {
-        _client = client;
-        _headers = headers;
-    }
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {

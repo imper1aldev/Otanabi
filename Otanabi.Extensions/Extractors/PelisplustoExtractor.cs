@@ -296,8 +296,6 @@ public class PelisplustoExtractor : IExtractor
                     chapters.Add(chapter);
                 }
             }
-
-            chapters.Reverse();
         }
         return chapters;
     }

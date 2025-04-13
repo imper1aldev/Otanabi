@@ -304,7 +304,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
                 if (server == selectedServer)
                 {
                     flyoutItem.IsEnabled = false;
-                    flyoutItem.Icon = new FontIcon { Glyph = "\u2713" };
+                    flyoutItem.Icon = new SymbolIcon(Symbol.Accept);
                 }
                 flyoutItem.Click += ServerFlyoutItem_Click;
                 _serverFlyout.Items.Add(flyoutItem);

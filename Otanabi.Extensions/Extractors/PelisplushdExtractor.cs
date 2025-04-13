@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -171,7 +170,7 @@ public class PelisplushdExtractor : IExtractor
                     var sortedEmbeds = embed["sortedEmbeds"] as JArray ?? [];
                     return sortedEmbeds.Select(x => (
                         Lang: GetLang(videoLang),
-                        OnClick: DecryptLink(x.Value<string>("link"), "", decryptUtf8),
+                        OnClick: AESDecryptor.DecryptLink(x.Value<string>("link"), key, decryptUtf8),
                         Server: x.Value<string>("servername")
                     ));
                 }).ToList();
@@ -320,7 +319,6 @@ public class PelisplushdExtractor : IExtractor
                 chapters.Add(chapter);
                 index++;
             }
-            chapters.Reverse();
         }
         return chapters;
     }
@@ -371,73 +369,6 @@ public class PelisplushdExtractor : IExtractor
         catch
         {
             return "invalid";
-        }
-    }
-
-    public static string DecryptLink(string encryptedBase64, string secretKey)
-    {
-        try
-        {
-            var key = Encoding.UTF8.GetBytes(secretKey);
-            var encryptedBytes = Convert.FromBase64String(encryptedBase64);
-
-            using var aes = Aes.Create();
-            aes.Key = key;
-            aes.Mode = CipherMode.ECB;
-            aes.Padding = PaddingMode.PKCS7;
-
-            using var decryptor = aes.CreateDecryptor();
-            var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
-
-            return Encoding.UTF8.GetString(decryptedBytes);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error al descifrar: " + ex.Message);
-            return null;
-        }
-    }
-
-    public static string DecryptLink(string encryptedLinkBase64, string secretKey, bool isUtf8)
-    {
-        try
-        {
-            if (isUtf8)
-            {
-                return DecryptLink(encryptedLinkBase64, secretKey);
-            }
-
-            var encryptedData = Convert.FromBase64String(encryptedLinkBase64);
-
-            // Extraer IV (primeros 16 bytes)
-            var iv = new byte[16];
-            Array.Copy(encryptedData, 0, iv, 0, 16);
-
-            // Extraer datos cifrados (resto)
-            byte[] encryptedBytes = new byte[encryptedData.Length - 16];
-            Array.Copy(encryptedData, 16, encryptedBytes, 0, encryptedBytes.Length);
-
-            // Configurar AES
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(secretKey.PadRight(32).Substring(0, 32)); // Asegurar 256 bits
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (ICryptoTransform decryptor = aes.CreateDecryptor())
-                using (MemoryStream ms = new MemoryStream(encryptedBytes))
-                using (CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                using (StreamReader sr = new StreamReader(cs, Encoding.UTF8))
-                {
-                    return sr.ReadToEnd();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error al descifrar: {ex}");
-            return null;
         }
     }
 

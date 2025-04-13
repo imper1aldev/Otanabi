@@ -8,12 +8,7 @@ namespace Otanabi.Extensions.VideoExtractors;
 
 public class FilemoonExtractor : IVideoExtractor
 {
-    private readonly HttpClient _client;
-
-    public FilemoonExtractor(HttpClient client)
-    {
-        _client = client;
-    }
+    private readonly HttpClient _client = new();
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {
