@@ -49,10 +49,10 @@ public class ServerConventions
                 Name = "VidHide",
                 PossibleNames = ["vidhide", "filelions.top", "vid.", "nika", "niikaplayerr"]
             },
-            new Convention {
-                Name = "Voe",
-                PossibleNames = ["voe", "launchreliantcleaverriver", "robertordercharacter", "donaldlineelse"]
-            },
+            //new Convention {
+            //    Name = "Voe",
+            //    PossibleNames = ["voe", "launchreliantcleaverriver", "robertordercharacter", "donaldlineelse"]
+            //}, This does get the video but it is not played.
             new Convention {
                 Name = "VidGuard",
                 PossibleNames = ["listeamed", "VidGuard", "vidg", "vembed", "guard", "bembed", "vgfplay"]

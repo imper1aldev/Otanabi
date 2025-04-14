@@ -50,19 +50,14 @@ public class PelisplushdExtractor : IExtractor
     {
         var animeList = new List<Anime>();
 
-        var url = originUrl;
-
+        string url;
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            if (page > 1)
-            {
-                return animeList.ToArray();
-            }
-            url += $"/api/search/{HttpUtility.UrlEncode(searchTerm)}";
+            url = $"{originUrl}/search?s={HttpUtility.UrlEncode(searchTerm)}&page={page}";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = string.Concat(originUrl, $"/{GenerateTagString(tags)}", $"?page={page}");
+            url = $"{originUrl}/{GenerateTagString(tags)}?page={page}";
         }
         else
         {
@@ -257,37 +252,26 @@ public class PelisplushdExtractor : IExtractor
         [
             new() { Name = "Peliculas", Value = "peliculas"},
             new() { Name = "Series", Value = "series"},
-            new() { Name = "Doramas", Value = "doramas"},
+            new() { Name = "Doramas", Value = "generos/dorama"},
             new() { Name = "Animes", Value = "animes"},
-            new() { Name = "Acción", Value = "genero/accion"},
-            new() { Name = "Action & Adventure", Value = "genero/action-adventure"},
-            new() { Name = "Animación", Value = "genero/animacion"},
-            new() { Name = "Aventura", Value = "genero/aventura"},
-            new() { Name = "Bélica", Value = "genero/belica"},
-            new() { Name = "Ciencia ficción", Value = "genero/ciencia-ficcion"},
-            new() { Name = "Comedia", Value = "genero/comedia"},
-            new() { Name = "Crimen", Value = "genero/crimen"},
-            new() { Name = "Documental", Value = "genero/documental"},
-            new() { Name = "Dorama", Value = "genero/dorama"},
-            new() { Name = "Drama", Value = "genero/drama"},
-            new() { Name = "Familia", Value = "genero/familia"},
-            new() { Name = "Fantasía", Value = "genero/fantasia"},
-            new() { Name = "Guerra", Value = "genero/guerra"},
-            new() { Name = "Historia", Value = "genero/historia"},
-            new() { Name = "Horror", Value = "genero/horror"},
-            new() { Name = "Kids", Value = "genero/kids"},
-            new() { Name = "Misterio", Value = "genero/misterio"},
-            new() { Name = "Música", Value = "genero/musica"},
-            new() { Name = "Musical", Value = "genero/musical"},
-            new() { Name = "Película de TV", Value = "genero/pelicula-de-tv"},
-            new() { Name = "Reality", Value = "genero/reality"},
-            new() { Name = "Romance", Value = "genero/romance"},
-            new() { Name = "Sci-Fi & Fantasy", Value = "genero/sci-fi-fantasy"},
-            new() { Name = "Soap", Value = "genero/soap"},
-            new() { Name = "Suspense", Value = "genero/suspense"},
-            new() { Name = "Terror", Value = "genero/terror"},
-            new() { Name = "War & Politics", Value = "genero/war-politics"},
-            new() { Name = "Western", Value = "genero/western"}
+            new() { Name = "Acción", Value = "generos/accion"},
+            new() { Name = "Animación", Value = "generos/animacion"},
+            new() { Name = "Aventura", Value = "generos/aventura"},
+            new() { Name = "Ciencia Ficción", Value = "generos/ciencia-ficcion"},
+            new() { Name = "Comedia", Value = "generos/comedia"},
+            new() { Name = "Crimen", Value = "generos/crimen"},
+            new() { Name = "Documental", Value = "generos/documental"},
+            new() { Name = "Drama", Value = "generos/drama"},
+            new() { Name = "Fantasía", Value = "generos/fantasia"},
+            new() { Name = "Foreign", Value = "generos/foreign"},
+            new() { Name = "Guerra", Value = "generos/guerra"},
+            new() { Name = "Historia", Value = "generos/historia"},
+            new() { Name = "Misterio", Value = "generos/misterio"},
+            new() { Name = "Pelicula de Televisión", Value = "generos/pelicula-de-la-television"},
+            new() { Name = "Romance", Value = "generos/romance"},
+            new() { Name = "Suspense", Value = "generos/suspense"},
+            new() { Name = "Terror", Value = "generos/terror"},
+            new() { Name = "Western", Value = "generos/western"},
         ];
     }
 
