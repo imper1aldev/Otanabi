@@ -286,11 +286,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
+                LoadServers();
                 if (activeCc)
                 {
                     try
                     {
-                        LoadServers();
                         foreach (var track in data.Subtitles)
                         {
                             var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(track.File);
@@ -377,7 +377,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Servers.Clear();
             foreach (var source in videoSources)
             {
-                Servers.Add(source.Server);
+                if (!string.IsNullOrEmpty(source.Server))
+                {
+                    Servers.Add(source.Server);
+                }
             }
 
             if (MPE?.TransportControls is AnimeMediaTransportControls controls)

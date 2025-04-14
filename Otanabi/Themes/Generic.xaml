@@ -644,11 +644,11 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton
-                                                x:Name="QualitiesButton"
+                                                x:Name="ServersButton"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
-                                                ToolTipService.ToolTip="Quality">
+                                                ToolTipService.ToolTip="Choose Server">
                                                 <AppBarButton.Icon>
-                                                    <FontIcon Glyph="&#xe93e;" />
+                                                    <FontIcon Glyph="&#xE774;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton

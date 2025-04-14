@@ -9,7 +9,7 @@ namespace Otanabi.UserControls;
 
 public sealed partial class AnimeMediaTransportControls : MediaTransportControls
 {
-    private AppBarButton _qualitiesButton;
+    private AppBarButton _serversButton;
 
     private readonly MenuFlyout _serverFlyout = new() { Placement = FlyoutPlacementMode.Top };
 
@@ -213,10 +213,10 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         {
             skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
         }
-        _qualitiesButton = GetTemplateChild("QualitiesButton") as AppBarButton;
-        if (_qualitiesButton != null)
+        _serversButton = GetTemplateChild("ServersButton") as AppBarButton;
+        if (_serversButton != null)
         {
-            _qualitiesButton.Flyout = _serverFlyout;
+            _serversButton.Flyout = _serverFlyout;
         }
     }
 
@@ -227,7 +227,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         var mtc = d as AnimeMediaTransportControls;
         var flyout = mtc._serverFlyout;
 
-        if (mtc._qualitiesButton is null)
+        if (mtc._serversButton is null)
         {
             Debug.WriteLine("QualitiesButton es null.");
             return;
@@ -247,12 +247,12 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
             var serverList = servers.ToList();
             if (serverList.Count == 1)
             {
-                mtc._qualitiesButton.Visibility = Visibility.Collapsed;
+                mtc._serversButton.Visibility = Visibility.Collapsed;
             }
             else if (serverList.Count > 1)
             {
-                mtc._qualitiesButton.IsEnabled = true;
-                mtc._qualitiesButton.Visibility = Visibility.Visible;
+                mtc._serversButton.IsEnabled = true;
+                mtc._serversButton.Visibility = Visibility.Visible;
                 foreach (var server in serverList)
                 {
                     var flyoutItem = new MenuFlyoutItem { Text = server };
@@ -274,7 +274,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
 
     public void UpdateServers(IEnumerable<string> servers, string selectedServer)
     {
-        if (_qualitiesButton != null)
+        if (_serversButton != null)
         {
             UpdateFlyout(servers, selectedServer);
         }
@@ -292,12 +292,12 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         var serverList = servers.ToList();
         if (serverList.Count == 1)
         {
-            _qualitiesButton.Visibility = Visibility.Collapsed;
+            _serversButton.Visibility = Visibility.Collapsed;
         }
         else if (serverList.Count > 1)
         {
-            _qualitiesButton.IsEnabled = true;
-            _qualitiesButton.Visibility = Visibility.Visible;
+            _serversButton.IsEnabled = true;
+            _serversButton.Visibility = Visibility.Visible;
             foreach (var server in serverList)
             {
                 var flyoutItem = new MenuFlyoutItem { Text = server };
