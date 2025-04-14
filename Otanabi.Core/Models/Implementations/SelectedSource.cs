@@ -28,6 +28,11 @@ public class SelectedSource
         Headers = headers;
     }
 
+    public string Server
+    {
+        get; set;
+    }
+
     public string StreamUrl
     {
         get; set;

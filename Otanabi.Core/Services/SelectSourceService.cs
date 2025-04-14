@@ -21,6 +21,7 @@ public class SelectSourceService
     {
         HttpHeaders headers = new HttpClient().DefaultRequestHeaders;
         var streamUrl = "";
+        var serverName = string.Empty;
         var subtitles = new List<Track>();
         try
         {
@@ -36,6 +37,7 @@ public class SelectSourceService
                 tempUrl = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
                 if (!string.IsNullOrEmpty(tempUrl.StreamUrl))
                 {
+                    serverName = source.Server;
                     tempUrl.Subtitles ??= [];
                     tempUrl.Subtitles.AddRange(source.Subtitles);
 
@@ -56,6 +58,9 @@ public class SelectSourceService
             throw;
         }
         //return (streamUrl, subUrl, headers);
-        return new(streamUrl, subtitles, headers);
+        return new(streamUrl, subtitles, headers)
+        {
+            Server = serverName
+        };
     }
 }

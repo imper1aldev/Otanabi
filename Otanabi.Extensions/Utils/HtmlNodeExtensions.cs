@@ -33,13 +33,11 @@ public static class HtmlNodeExtensions
         return !attrValue.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static string GetAbsoluteUrl(this HtmlNode node, string attrName, string basePath)
+    public static string GetAbsoluteUrl(this HtmlNode node, string attrName, string basePath)
     {
         var value = node.GetAttributeValue(attrName, "");
-
         try
         {
-            // Intenta convertir a URI absoluta, combinando con basePath si es necesario
             var uri = new Uri(value, UriKind.RelativeOrAbsolute);
             if (!uri.IsAbsoluteUri && Uri.TryCreate(new Uri(basePath), uri, out Uri? resolved))
                 return resolved.ToString();
@@ -48,7 +46,6 @@ public static class HtmlNodeExtensions
         }
         catch
         {
-            // En caso de error de formato, regresamos el valor crudo
             return value;
         }
     }

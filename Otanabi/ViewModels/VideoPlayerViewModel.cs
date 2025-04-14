@@ -277,6 +277,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //(streamUrl, subUrl, headers)
         var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
 
+        if (data != null && data.Server != SelectedServer)
+        {
+            SelectedServer = data.Server;
+        }
+
         activeCc = data.Subtitles.Count != 0;
 
         ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
@@ -354,6 +359,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                 });
                             };
                             MPE.MediaPlayer.Play();
+                            if (MPE.MediaPlayer.CanSeek && selectedHistory.SecondsWatched > 0)
+                            {
+                                seekTo(selectedHistory.SecondsWatched - 2);
+                            }
                         }
                     }
                 });
@@ -653,6 +662,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public void setMediaPlayer(MediaPlayerElement mediaPlayerElement)
     {
         MPE = mediaPlayerElement;
+    }
+
+    public void seekTo(long msec)
+    {
+        try
+        {
+            MPE.MediaPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(msec);
+        }
+        catch (Exception)
+        {
+            logger.LogInfo("current time cannot be seek");
+        }
     }
 
     private void OnWindowPresenterChanged(object? sender, EventArgs e)

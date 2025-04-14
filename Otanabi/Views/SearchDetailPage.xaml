@@ -268,6 +268,8 @@
                             <StackPanel Orientation="Horizontal" Visibility="{x:Bind History, Mode=OneWay, Converter={StaticResource EmptyObjectToObjectConverter}}">
                                 <TextBlock Margin="0,0,10,0" Text="Last seen :" />
                                 <TextBlock Text="{Binding Path=History.WatchedDate}" />
+                                <TextBlock Margin="10,0,10,0" Text="Time watched :" />
+                                <TextBlock Text="{Binding Path=History.TimeString}" />
                             </StackPanel>
                         </StackPanel>
                     </DataTemplate>
