@@ -95,8 +95,8 @@ public class AnimefenixExtractor : IExtractor
         Anime anime = new();
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;
-        anime.Title = node.CssSelect("h1.text-4xl")?.FirstOrDefault()?.InnerText?.Trim();
-        anime.Description = node.CssSelect(".mb-6 p.text-gray-300")?.FirstOrDefault()?.InnerText?.Trim();
+        anime.Title = node.CssSelect("h1.text-4xl")?.FirstOrDefault()?.InnerText?.TrimAll();
+        anime.Description = node.CssSelect(".mb-6 p.text-gray-300")?.FirstOrDefault()?.InnerText?.TrimAll();
         anime.Cover = node.CssSelect("#blur_img")?.FirstOrDefault()?.GetImageUrl(originUrl);
         anime.Cover ??= node.CssSelect("#anime_image")?.FirstOrDefault()?.GetImageUrl(originUrl);
         anime.Provider = (Provider)GenProvider();
@@ -107,9 +107,9 @@ public class AnimefenixExtractor : IExtractor
         anime.RemoteID = requestUrl.Replace("/", "");
         anime.Type = GetAnimeTypeByStr(node.CssSelect(".text-gray-300 .mb-2")?.FirstOrDefault()?.InnerText?.ToLower()?.SubstringAfter("tipo:")?.Trim());
         anime.Chapters = [];
-        foreach (var item in node.CssSelect(".divide-y li > a"))
+        foreach (var item in node.CssSelect(".divide-y li > a").Reverse())
         {
-            var title = item.CssSelect(".font-semibold")?.FirstOrDefault()?.InnerText?.Trim();
+            var title = item.CssSelect(".font-semibold")?.FirstOrDefault()?.InnerText?.TrimAll();
             anime.Chapters.Add(new Chapter()
             {
                 Url = item.GetAbsoluteUrl("href", originUrl),

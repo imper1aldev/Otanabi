@@ -77,7 +77,7 @@ public class PelisplustoExtractor : IExtractor
             Anime anime =
                 new()
                 {
-                    Title = nodo.CssSelect("a h2").FirstOrDefault()?.InnerText,
+                    Title = nodo.CssSelect("a h2").FirstOrDefault()?.InnerText?.TrimAll(),
                     Url = nodo.CssSelect("a").First().GetAttributeValue("href"),
                     Cover = nodo.CssSelect("a .item__image picture img").FirstOrDefault()?.GetAttributeValue("data-src"),
                     Provider = (Provider)GenProvider()
@@ -104,8 +104,8 @@ public class PelisplustoExtractor : IExtractor
         Anime anime = new();
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;
-        anime.Title = node.CssSelect(".home__slider_content div h1.slugh1")?.FirstOrDefault()?.InnerText;
-        anime.Description = node.CssSelect(".home__slider_content .description p")?.FirstOrDefault()?.InnerText;
+        anime.Title = node.CssSelect(".home__slider_content div h1.slugh1")?.FirstOrDefault()?.InnerText?.TrimAll();
+        anime.Description = node.CssSelect(".home__slider_content .description p")?.FirstOrDefault()?.InnerText?.TrimAll();
         anime.Provider = (Provider)GenProvider();
         anime.ProviderId = anime.Provider.Id;
         anime.Status = "Finalizado";

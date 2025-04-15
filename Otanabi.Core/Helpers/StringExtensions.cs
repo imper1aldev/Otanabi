@@ -89,4 +89,16 @@ public static class StringExtensions
 
         return input.Remove(0, prefixLen);
     }
+
+    public static string TrimAll(this string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return string.Empty;
+        }
+
+        var cleaned = input.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+        cleaned = Regex.Replace(cleaned, @"\s{2,}", " ");
+        return cleaned.Trim();
+    }
 }

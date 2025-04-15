@@ -70,7 +70,7 @@ public class PelisplushdExtractor : IExtractor
         foreach (var nodo in doc.DocumentNode.CssSelect("div.Posters a.Posters-link"))
         {
             Anime anime = new();
-            anime.Title = nodo.CssSelect("div.listing-content p").FirstOrDefault()?.InnerText;
+            anime.Title = nodo.CssSelect("div.listing-content p").FirstOrDefault()?.InnerText?.TrimAll();
             anime.Cover = nodo.CssSelect("img").FirstOrDefault()?.GetAttributeValue("src");
             anime.Url = nodo.GetAttributeValue("href").Replace("/w154/", "/w200/");
             anime.Provider = (Provider)GenProvider();
@@ -97,8 +97,8 @@ public class PelisplushdExtractor : IExtractor
         Anime anime = new();
         var node = doc.DocumentNode.SelectSingleNode("/html/body");
         anime.Url = requestUrl;
-        anime.Title = node.CssSelect("h1.m-b-5")?.FirstOrDefault()?.InnerText?.Trim();
-        anime.Description = node.CssSelect("div.col-sm-4 div.text-large")?.FirstOrDefault()?.InnerText?.Trim();
+        anime.Title = node.CssSelect("h1.m-b-5")?.FirstOrDefault()?.InnerText?.TrimAll();
+        anime.Description = node.CssSelect("div.col-sm-4 div.text-large")?.FirstOrDefault()?.InnerText?.TrimAll();
         var img = FetchUrls(node.CssSelect(".img-fluid")?.FirstOrDefault().OuterHtml).FirstOrDefault();
         anime.Cover = img?.Replace("/w154/", "/w500/");
         anime.Provider = (Provider)GenProvider();
@@ -297,7 +297,7 @@ public class PelisplushdExtractor : IExtractor
                 var chapter = new Chapter()
                 {
                     ChapterNumber = index,
-                    Name = item.InnerText,
+                    Name = item.InnerText?.TrimAll(),
                     Url = item.GetAttributeValue("href"),
                 };
                 chapters.Add(chapter);
