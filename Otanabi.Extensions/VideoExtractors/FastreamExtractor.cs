@@ -1,12 +1,8 @@
-﻿using HtmlAgilityPack;
+﻿using System.Net.Http.Headers;
+using HtmlAgilityPack;
+using JsUnpacker;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using System.Net.Http.Headers;
-using JsUnpacker;
 
 namespace Otanabi.Extensions.VideoExtractors;
 

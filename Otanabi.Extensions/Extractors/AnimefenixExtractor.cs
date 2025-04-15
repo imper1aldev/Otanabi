@@ -1,16 +1,12 @@
 ﻿using System.Net;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
 using ScrapySharp.Extensions;
 using static Otanabi.Extensions.Utils.HtmlNodeExtensions;
-using static ScrapySharp.Core.Token;
 
 namespace Otanabi.Extensions.Extractors;
 

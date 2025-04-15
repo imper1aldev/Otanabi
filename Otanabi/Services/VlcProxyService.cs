@@ -1,7 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using LibVLCSharp.Shared;
 using Otanabi.Contracts.Services;
-using Otanabi.Core.Models;
 
 namespace Otanabi.Services;
 public class VlcProxyService : IVlcProxyService

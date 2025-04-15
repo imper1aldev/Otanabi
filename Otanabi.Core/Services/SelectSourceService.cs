@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Otanabi.Core.Helpers;
+﻿using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 namespace Otanabi.Core.Services;
 public class SelectSourceService
@@ -20,7 +19,7 @@ public class SelectSourceService
     public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
         var headers = new HttpClient().DefaultRequestHeaders;
-        var (streamUrl, serverName, useVlc, subtitles) = ("", string.Empty, false, new List<Track>());
+        var (streamUrl, serverName, useVlc, subtitles) = (string.Empty, string.Empty, false, new List<Track>());
 
         try
         {
@@ -32,7 +31,10 @@ public class SelectSourceService
                 var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
                 var selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
 
-                if (string.IsNullOrEmpty(selected.StreamUrl)) continue;
+                if (string.IsNullOrEmpty(selected.StreamUrl))
+                {
+                    continue;
+                }
 
                 serverName = source.Server;
                 selected.Subtitles ??= [];

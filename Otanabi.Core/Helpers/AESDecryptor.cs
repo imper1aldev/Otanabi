@@ -1,6 +1,5 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using System.Text.Unicode;
 
 namespace Otanabi.Core.Helpers;
 

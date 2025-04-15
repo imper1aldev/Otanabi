@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Otanabi.Core.Models;
+﻿using Otanabi.Core.Models;
 
 namespace Otanabi.Extensions.Contracts.VideoExtractors;
 public interface IVideoExtractor

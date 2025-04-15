@@ -1,9 +1,9 @@
-﻿using HtmlAgilityPack;
+﻿using System.Text.RegularExpressions;
+using HtmlAgilityPack;
 using JsUnpacker;
 using Newtonsoft.Json;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
-using System.Text.RegularExpressions;
 
 namespace Otanabi.Extensions.VideoExtractors;
 
