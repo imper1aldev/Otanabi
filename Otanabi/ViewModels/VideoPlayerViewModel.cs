@@ -366,6 +366,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     LoadingVideo = false;
                                 });
                             };
+                            MPE.MediaPlayer.MediaFailed += (sender, args) =>
+                            {
+                                _dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    IsErrorVideo = true;
+                                    IsPaused = true;
+                                    LoadingVideo = false;
+                                });
+                            };
                             MPE.MediaPlayer.Play();
                             if (MPE.MediaPlayer.CanSeek && selectedHistory.SecondsWatched > 0)
                             {
