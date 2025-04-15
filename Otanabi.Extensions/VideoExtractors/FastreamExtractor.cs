@@ -13,19 +13,13 @@ namespace Otanabi.Extensions.VideoExtractors;
 public class FastreamExtractor : IVideoExtractor
 {
     private readonly HttpClient _client = new();
-    private readonly HttpRequestHeaders _headers;
     private const string FastreamUrl = "https://fastream.to";
+    private readonly HttpRequestHeaders _headers = new HttpClient().DefaultRequestHeaders;
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {
         try
         {
-            //// Set headers for the request
-            //var videoHeaders = _headers
-            //    .Clone()
-            //    .Add("Referer", $"{FastreamUrl}/")
-            //    .Add("Origin", FastreamUrl);
-
             // Step 1: Get the initial document
             var firstDoc = await _client.GetStringAsync(url);
             var htmlDoc = new HtmlDocument();
@@ -68,14 +62,12 @@ public class FastreamExtractor : IVideoExtractor
             // Step 4: Extract the video URL
             var videoUrl = scriptData.SubstringAfter("file:\"").SubstringBefore("\"").Trim();
 
-            if (videoUrl.Contains(".m3u8"))
-            {
-                return new SelectedSource(videoUrl, null);
-            }
-            else
-            {
-                return new SelectedSource(videoUrl, null);
-            }
+            // Set headers for the request
+            _headers.Add("Referer", $"{FastreamUrl}/");
+            _headers.Referrer = new Uri($"{FastreamUrl}/");
+            _headers.Add("Origin", FastreamUrl);
+
+            return new(videoUrl, _headers);
         }
         catch (Exception ex)
         {

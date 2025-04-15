@@ -19,48 +19,40 @@ public class SelectSourceService
 
     public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
-        HttpHeaders headers = new HttpClient().DefaultRequestHeaders;
-        var streamUrl = "";
-        var serverName = string.Empty;
-        var subtitles = new List<Track>();
+        var headers = new HttpClient().DefaultRequestHeaders;
+        var (streamUrl, serverName, useVlc, subtitles) = ("", string.Empty, false, new List<Track>());
+
         try
         {
-            var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
-            var orderedSources = MoveToFirst([.. videoSources], item);
-            //subUrl = item.Subtitle ?? "";
+            var preferredSource = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
+            var orderedSources = MoveToFirst([.. videoSources], preferredSource);
+
             foreach (var source in orderedSources)
             {
-                SelectedSource tempUrl = new();
-                var reflex = _classReflectionHelper.GetMethodFromVideoSource(source);
-                var method = reflex.Item1;
-                var instance = reflex.Item2;
-                tempUrl = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
-                if (!string.IsNullOrEmpty(tempUrl.StreamUrl))
-                {
-                    serverName = source.Server;
-                    tempUrl.Subtitles ??= [];
-                    tempUrl.Subtitles.AddRange(source.Subtitles);
+                var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
+                var selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
 
-                    streamUrl = tempUrl.StreamUrl;
-                    subtitles = tempUrl.Subtitles;
-                    if (tempUrl.Headers != null)
-                    {
-                        headers = tempUrl.Headers;
-                    }
-                    break;
-                }
+                if (string.IsNullOrEmpty(selected.StreamUrl)) continue;
+
+                serverName = source.Server;
+                selected.Subtitles ??= [];
+                selected.Subtitles.AddRange(source.Subtitles);
+                (streamUrl, subtitles, useVlc) = (selected.StreamUrl, selected.Subtitles, selected.UseVlcProxy);
+                headers = selected.Headers ?? headers;
+                break;
             }
         }
         catch (Exception e)
         {
             logger.LogFatal("Failed on load video extension {0}", e.Message);
-            streamUrl = "";
             throw;
         }
-        //return (streamUrl, subUrl, headers);
-        return new(streamUrl, subtitles, headers)
+
+        return new SelectedSource(streamUrl, subtitles, headers)
         {
-            Server = serverName
+            Server = serverName,
+            UseVlcProxy = useVlc
         };
     }
+
 }

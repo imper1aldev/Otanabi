@@ -1,11 +1,14 @@
-﻿using HtmlAgilityPack;
+﻿using System.Net.Http.Headers;
+using HtmlAgilityPack;
 using JsUnpacker;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
 
 namespace Otanabi.Extensions.VideoExtractors;
-internal class Mp4UploadExtractor : IVideoExtractor
+public class Mp4UploadExtractor : IVideoExtractor
 {
+    private readonly HttpRequestHeaders _headers = new HttpClient().DefaultRequestHeaders;
+
     public async Task<SelectedSource> GetStreamAsync(string url)
     {
         try
@@ -27,7 +30,10 @@ internal class Mp4UploadExtractor : IVideoExtractor
             var videoUrl = packedScript.SubstringAfter(".src(").SubstringBefore(")")
                 .SubstringAfter("src:").SubstringAfter("\"").SubstringBefore("\"");
 
-            return new(videoUrl, null);
+            _headers.Add("Referrer", "https://mp4upload.com/");
+            _headers.Referrer = new Uri("https://mp4upload.com/");
+
+            return new(videoUrl, _headers);
         }
         catch (Exception)
         {

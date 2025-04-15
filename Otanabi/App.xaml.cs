@@ -80,6 +80,7 @@ public partial class App : Application
                     services.AddSingleton<IPageService, PageService>();
                     services.AddSingleton<INavigationService, NavigationService>();
                     services.AddSingleton<IWindowPresenterService, WindowPresenterService>();
+                    services.AddSingleton<IVlcProxyService, VlcProxyService>();
 
                     // Core Services
                     services.AddSingleton<IFileService, FileService>();
@@ -109,6 +110,7 @@ public partial class App : Application
         App.GetService<IAppNotificationService>().Initialize();
 
         UnhandledException += App_UnhandledException;
+        LibVLCSharp.Shared.Core.Initialize();
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

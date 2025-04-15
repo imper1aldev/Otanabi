@@ -23,6 +23,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 {
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
+    private readonly IVlcProxyService _vlcProxyService;
     private readonly IWindowPresenterService _windowPresenterService;
     private readonly WindowEx _windowEx;
 
@@ -94,7 +95,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
-    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
+    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService, IVlcProxyService vlcProxyService)
     {
         _navigationService = navigationService;
         _windowPresenterService = windowPresenterService;
@@ -102,6 +103,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         _windowPresenterService = windowPresenterService;
         _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
+        _vlcProxyService = vlcProxyService;
 
         _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
@@ -277,6 +279,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         //(streamUrl, subUrl, headers)
         var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
 
+        if (data != null && data.UseVlcProxy)
+        {
+            var newServer = await _vlcProxyService.StartProxyAsync(data.StreamUrl, data.Headers);
+            data.StreamUrl = newServer;
+        }
+
         if (data != null && data.Server != SelectedServer)
         {
             SelectedServer = data.Server;
@@ -291,7 +299,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
-                LoadServers();
+                await LoadServers();
                 if (activeCc)
                 {
                     try
@@ -690,6 +698,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             MainTimerForSave.Stop();
             MainTimerForSave.Dispose();
+            _vlcProxyService.Dispose();
             MPE.Source = null;
             if (MPE.MediaPlayer != null)
             {

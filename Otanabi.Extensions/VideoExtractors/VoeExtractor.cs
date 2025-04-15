@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
@@ -13,6 +14,7 @@ public class VoeExtractor : IVideoExtractor
     private static readonly Regex Base64Regex = new(@"'.*?'", RegexOptions.Compiled);
     private static readonly Regex ScriptBase64Regex = new(@"(let|var)\s+\w+\s*=\s*'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)';", RegexOptions.Compiled);
     private readonly HttpClient _client = new();
+    private readonly HttpRequestHeaders _headers = new HttpClient().DefaultRequestHeaders;
 
     public async Task<SelectedSource> GetStreamAsync(string url)
     {
@@ -24,9 +26,10 @@ public class VoeExtractor : IVideoExtractor
 
             var needsRedirect = doc.DocumentNode.SelectSingleNode("//script[contains(text(),'localStorage')]")?.InnerText;
 
+            var redirectUrl = string.Empty;
             if (!string.IsNullOrEmpty(needsRedirect))
             {
-                var redirectUrl = needsRedirect.SubstringAfter("window.location.href = '").SubstringBefore("';");
+                redirectUrl = needsRedirect.SubstringAfter("window.location.href = '").SubstringBefore("';");
                 html = await _client.GetStringAsync(redirectUrl);
                 doc.LoadHtml(html);
             }
@@ -74,8 +77,9 @@ public class VoeExtractor : IVideoExtractor
 
             if (!string.IsNullOrWhiteSpace(playlistUrl))
             {
-                Console.WriteLine($"[VoeExtractor] Playlist URL: {playlistUrl}");
-                return new(playlistUrl, null, null);
+                _headers.Add("Referer", redirectUrl);
+                _headers.Referrer = new Uri(redirectUrl);
+                return new(playlistUrl, _headers);
             }
         }
         catch (Exception ex)
