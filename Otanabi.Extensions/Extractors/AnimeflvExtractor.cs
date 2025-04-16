@@ -60,6 +60,8 @@ public class AnimeflvExtractor : IExtractor
             url += $"&q={HttpUtility.UrlEncode(searchTerm)}";
         }
 
+        url += "&order=added";
+
         var oWeb = new HtmlWeb();
         var doc = await oWeb.LoadFromWebAsync(url);
 

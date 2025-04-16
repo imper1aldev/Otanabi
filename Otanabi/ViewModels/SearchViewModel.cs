@@ -83,12 +83,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             if (Source.Count == 0)
             {
                 var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-
                 if (provdef != 0)
                 {
                     var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
                     if (tmp != null)
+                    {
                         SelectedProvider = tmp;
+                    }
                 }
                 await Task.CompletedTask;
                 await LoadMainAnimePage();
@@ -101,11 +102,21 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         Providers.Clear();
         var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs)
+        foreach (var item in provs.OrderBy(x => x.Id))
         {
             Providers.Add(item);
         }
         SelectedProvider = provs[0];
+
+        var selectedProviderId = await _localSettingsService.ReadSettingAsync<int>("SelectedProviderId");
+        if (selectedProviderId != 0)
+        {
+            var tmp = Providers.FirstOrDefault(p => p.Id == selectedProviderId);
+            if (tmp != null)
+            {
+                SelectedProvider = tmp;
+            }
+        }
         await Task.CompletedTask;
     }
 
@@ -202,7 +213,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem));
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                _localSettingsService.SaveSettingAsync("SelectedProviderId", SelectedProvider.Id);
+                _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem);
+            });
         }
     }
 
@@ -229,6 +244,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         ResetData();
         LoadTags();
+        await _localSettingsService.SaveSettingAsync("SelectedProviderId", SelectedProvider.Id);
         await LoadMainAnimePage();
     }
 

@@ -26,4 +26,8 @@ public interface IProvider
     {
         get; set;
     }
+    bool IsNsfw
+    {
+        get; set;
+    }
 }

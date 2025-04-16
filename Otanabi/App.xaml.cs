@@ -118,7 +118,7 @@ public partial class App : Application
         logger.LogFatal("App Crashed {0}", e.Message);
     }
 
-    protected override async void OnLaunched(LaunchActivatedEventArgs args)
+    protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
         await App.GetService<IActivationService>().ActivateAsync(args);

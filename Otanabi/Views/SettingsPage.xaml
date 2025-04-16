@@ -53,8 +53,6 @@
                 </ComboBox>
             </controls:SettingsCard>
 
-
-
             <controls:SettingsCard
                 x:Name="settingsCard"
                 Margin="0,10,0,0"
@@ -77,6 +75,22 @@
                 </ComboBox>
             </controls:SettingsCard>
 
+            <controls:SettingsCard
+                x:Name="nsfwSetting"
+                Margin="0,10,0,0"
+                Header="Enable NSFW providers?"
+                Description="Adult content"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}">
+                <ToggleSwitch
+                    Width="100"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    IsOn="{x:Bind ViewModel.IsNsfwEnabled, Mode=TwoWay}"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    CornerRadius="4">
+                </ToggleSwitch>
+            </controls:SettingsCard>
 
             <TextBlock
                 Margin="0,10,0,0"

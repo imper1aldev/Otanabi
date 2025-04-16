@@ -33,7 +33,8 @@ public class HstreamExtractor : IExtractor
             Name = sourceName,
             Url = originUrl,
             Type = Type,
-            Persistent = Persistent
+            Persistent = Persistent,
+            IsNsfw = true
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)

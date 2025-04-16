@@ -27,6 +27,10 @@ public class Provider : IProvider
     {
         get; set;
     }
+    public bool IsNsfw
+    {
+        get; set;
+    }
 
     [Ignore]
     public Anime[]? Animes
