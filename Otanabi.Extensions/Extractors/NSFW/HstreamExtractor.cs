@@ -209,6 +209,7 @@ public class HstreamExtractor : IExtractor
                 Title = "Juro",
                 Code = dest,
                 Url = dest,
+                IsLocalSource = true,
                 Subtitles = [
                     new() {
                         File = $"{urlBase}/eng.ass",

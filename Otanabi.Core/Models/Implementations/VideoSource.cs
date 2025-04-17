@@ -36,4 +36,8 @@ public class VideoSource : IVideoSource
     {
         get; set;
     } = [];
+    public bool IsLocalSource
+    {
+        get; set;
+    }
 }

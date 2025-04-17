@@ -30,10 +30,10 @@ public interface IVideoSource
     {
         get; set;
     }
-    //string Subtitle
-    //{
-    //    get; set;
-    //}
+    bool IsLocalSource
+    {
+        get; set;
+    }
     List<Track> Subtitles
     {
         get; set;

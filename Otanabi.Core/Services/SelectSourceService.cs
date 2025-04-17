@@ -28,8 +28,19 @@ public class SelectSourceService
 
             foreach (var source in orderedSources)
             {
-                var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
-                var selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
+                var selected = new SelectedSource();
+                if (source.IsLocalSource)
+                {
+                    selected = new(source.Url ?? source.Code, source.Subtitles, null)
+                    {
+                        Server = source.Server
+                    };
+                }
+                else
+                {
+                    var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
+                    selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
+                }
 
                 if (string.IsNullOrEmpty(selected.StreamUrl))
                 {
