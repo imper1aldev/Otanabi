@@ -1,8 +1,6 @@
-﻿using System.Collections.Immutable;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
@@ -24,7 +22,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private int currPage = 1;
     private readonly int maxItemsFirstLoad = 35;
 
-    public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
+    public ObservableCollection<Anime> Source { get; } = [];
 
     [ObservableProperty]
     private bool isLoading = false;
@@ -39,7 +37,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
 
-    private Tag[] OriginalTags = Array.Empty<Tag>();
+    private Tag[] OriginalTags = [];
 
     public SearchViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
     {
@@ -85,12 +83,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             if (Source.Count == 0)
             {
                 var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-
                 if (provdef != 0)
                 {
                     var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
                     if (tmp != null)
+                    {
                         SelectedProvider = tmp;
+                    }
                 }
                 await Task.CompletedTask;
                 await LoadMainAnimePage();
@@ -102,12 +101,23 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private async Task GetProviders()
     {
         Providers.Clear();
+        var isNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
         var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs)
+        foreach (var item in provs.Where(p => isNsfwEnabled || !p.IsNsfw).OrderBy(x => x.Id))
         {
             Providers.Add(item);
         }
         SelectedProvider = provs[0];
+
+        var selectedProviderId = await _localSettingsService.ReadSettingAsync<int>("SelectedProviderId");
+        if (selectedProviderId != 0)
+        {
+            var tmp = Providers.FirstOrDefault(p => p.Id == selectedProviderId);
+            if (tmp != null)
+            {
+                SelectedProvider = tmp;
+            }
+        }
         await Task.CompletedTask;
     }
 
@@ -187,7 +197,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     private void ResetData()
     {
@@ -202,7 +214,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem));
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                _localSettingsService.SaveSettingAsync("SelectedProviderId", SelectedProvider.Id);
+                _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem);
+            });
         }
     }
 
@@ -229,6 +245,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         ResetData();
         LoadTags();
+        await _localSettingsService.SaveSettingAsync("SelectedProviderId", SelectedProvider.Id);
         await LoadMainAnimePage();
     }
 

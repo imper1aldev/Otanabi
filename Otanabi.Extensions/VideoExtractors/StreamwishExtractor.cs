@@ -1,38 +1,54 @@
-﻿using Otanabi.Extensions.Contracts.VideoExtractors;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using JsUnpacker;
-using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using Otanabi.Core.Models;
+using Otanabi.Extensions.Contracts.VideoExtractors;
 namespace Otanabi.Extensions.VideoExtractors;
 public class StreamwishExtractor : IVideoExtractor
 {
-    public async Task<(string,HttpHeaders)> GetStreamAsync(string url)
+    public async Task<SelectedSource> GetStreamAsync(string url)
     {
-        var streamUrl = "";
         try
         {
-            HtmlWeb oWeb = new HtmlWeb();
-            HtmlDocument doc = await oWeb.LoadFromWebAsync(url);
+            HtmlWeb oWeb = new();
+            var doc = await oWeb.LoadFromWebAsync(url);
+            var packedScript = doc.DocumentNode.Descendants()
+                .FirstOrDefault(x => x.Name == "script" && x.InnerText?.Contains("eval") == true);
 
-            var packed = doc.DocumentNode.Descendants()
-                         .FirstOrDefault(x => x.Name == "script" && x.InnerText?.Contains("eval") == true);
-            var unpacked = "";
-            if (Unpacker.IsPacked(packed?.InnerText))
+            if (packedScript != null && Unpacker.IsPacked(packedScript.InnerText))
             {
-                unpacked = Unpacker.UnpackAndCombine(packed?.InnerText);
-            }
-            else
-            {
-                //not valid pack
-                return (streamUrl = "",null);
-            }
+                var unpacked = Unpacker.UnpackAndCombine(packedScript.InnerText);
+                var streamUrl = "";
+                if (unpacked != null && unpacked.Contains("var links=", StringComparison.OrdinalIgnoreCase))
+                {
+                    streamUrl = unpacked.SubstringAfter("hls2\":\"").Split(["\"}"], StringSplitOptions.None)[0];
+                }
+                else
+                {
+                    streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(["\"}"], StringSplitOptions.None)[0];
+                }
 
-            streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(new[] { "\"}" }, StringSplitOptions.None)[0];
-
+                var subtitles = ExtractSubtitles(unpacked);
+                return new(streamUrl, subtitles, null);
+            }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Console.WriteLine(e.ToString());
+            Console.WriteLine($"Error extracting video stream: {ex.Message}");
         }
-        return (streamUrl,null);
+        return new();
+    }
+
+    public static List<Track> ExtractSubtitles(string script)
+    {
+        try
+        {
+            var subtitleStr = script.SubstringAfter("tracks").SubstringAfter("[").SubstringBefore("]");
+            return JsonConvert.DeserializeObject<List<Track>>($"[{subtitleStr}]");
+        }
+        catch (Exception)
+        {
+            return [];
+        }
     }
 }

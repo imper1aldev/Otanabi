@@ -1,19 +1,28 @@
-﻿using Microsoft.UI.Input;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Otanabi.ViewModels;
-using Windows.Media.Playback;
 
 namespace Otanabi.Views;
 
 public sealed partial class VideoPlayerPage : Page
 {
-    public VideoPlayerViewModel ViewModel { get; }
+    public VideoPlayerViewModel ViewModel
+    {
+        get;
+    }
+
+    //public VideoPlayerPage()
+    //{
+    //    ViewModel = App.GetService<VideoPlayerViewModel>();
+    //    InitializeComponent();
+    //    AMediaPlayer.Loaded += OnPlayerLoaded;
+    //}
 
     public VideoPlayerPage()
     {
         ViewModel = App.GetService<VideoPlayerViewModel>();
+        this.DataContext = ViewModel; // Asigna el ViewModel como DataContext
         InitializeComponent();
-        AMediaPlayer.Loaded += OnPlayerLoaded;  
+        AMediaPlayer.Loaded += OnPlayerLoaded;
     }
 
     private void OnPlayerLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -23,5 +32,5 @@ public sealed partial class VideoPlayerPage : Page
             ViewModel.setMediaPlayer(AMediaPlayer);
             ViewModel.InitializedCommand.Execute(null);
         }
-    }  
+    }
 }

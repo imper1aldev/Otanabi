@@ -1,5 +1,4 @@
-﻿using System.Formats.Tar;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace Otanabi.Converters;
@@ -16,7 +15,7 @@ public class AssSubtitleSource
             var assContent = await DownloadAssFileAsync(url);
             //using (File.WriteAllText(Path.Combine(tempFolder, "subtitles.ass"), assContent))
             using (
-                StreamWriter writer = new StreamWriter(
+                var writer = new StreamWriter(
                     Path.Combine(tempFolder, $"{guid}.ass"),
                     false
                 )

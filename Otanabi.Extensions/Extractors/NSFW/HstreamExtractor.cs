@@ -1,10 +1,10 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using HtmlAgilityPack;
+using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
-using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
 
@@ -33,7 +33,8 @@ public class HstreamExtractor : IExtractor
             Name = sourceName,
             Url = originUrl,
             Type = Type,
-            Persistent = Persistent
+            Persistent = Persistent,
+            IsNsfw = true
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -208,13 +209,20 @@ public class HstreamExtractor : IExtractor
                 Title = "Juro",
                 Code = dest,
                 Url = dest,
-                Subtitle = $"{urlBase}/eng.ass"
+                IsLocalSource = true,
+                Subtitles = [
+                    new() {
+                        File = $"{urlBase}/eng.ass",
+                        Label = "English"
+                    }
+                ]
             };
             videoSources.Add(vsouce);
         }
 
         return videoSources.ToArray();
     }
+
     public static string GenerateTagString(Tag[] tags)
     {
         var result = "";
@@ -228,10 +236,11 @@ public class HstreamExtractor : IExtractor
         }
         return result;
     }
+
     public Tag[] GetTags()
     {
-        return new Tag[]
-        {
+        return
+        [
             new() { Name = "3D", Value = "3d" },
             new() { Name = "4K", Value = "4k" },
             new() { Name = "Ahegao", Value = "ahegao" },
@@ -295,6 +304,6 @@ public class HstreamExtractor : IExtractor
             new() { Name = "Virgin", Value = "virgin" },
             new() { Name = "X-Ray,", Value = "x-ray" },
             new() { Name = "Yuri", Value = "yuri" }
-        };
+        ];
     }
 }

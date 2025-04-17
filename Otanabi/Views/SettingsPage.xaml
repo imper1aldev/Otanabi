@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:models="using:Otanabi.Core.Models"
     mc:Ignorable="d">
     <Page.Resources>
         <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
@@ -53,8 +54,6 @@
                 </ComboBox>
             </controls:SettingsCard>
 
-
-
             <controls:SettingsCard
                 x:Name="settingsCard"
                 Margin="0,10,0,0"
@@ -66,9 +65,28 @@
                     Height="50"
                     HorizontalAlignment="Right"
                     AllowFocusOnInteraction="True"
-                    DisplayMemberPath="Name"
                     ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
                     SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:Provider">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                   Text="{x:Bind Name}"
+                                   HorizontalAlignment="Left" />
+                                <TextBlock Grid.Column="1"
+                                   Text="+18"
+                                   Foreground="Red"
+                                   FontSize="14"
+                                   Margin="8,0,0,0"
+                                   HorizontalAlignment="Right"
+                                   Visibility="{x:Bind IsNsfw, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
                     <interactivity:Interaction.Behaviors>
                         <core:EventTriggerBehavior EventName="SelectionChanged">
                             <core:InvokeCommandAction Command="{x:Bind ViewModel.ChangedProviderCommand}" />
@@ -77,6 +95,22 @@
                 </ComboBox>
             </controls:SettingsCard>
 
+            <controls:SettingsCard
+                x:Name="nsfwSetting"
+                Margin="0,10,0,0"
+                Header="Enable NSFW providers?"
+                Description="Adult content"
+                HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}">
+                <ToggleSwitch
+                    Width="100"
+                    Height="40"
+                    HorizontalAlignment="Right"
+                    IsOn="{x:Bind ViewModel.IsNsfwEnabled, Mode=TwoWay}"
+                    Foreground="White"
+                    FontWeight="SemiBold"
+                    CornerRadius="4">
+                </ToggleSwitch>
+            </controls:SettingsCard>
 
             <TextBlock
                 Margin="0,10,0,0"

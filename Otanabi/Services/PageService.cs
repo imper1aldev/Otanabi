@@ -1,10 +1,8 @@
-﻿using Otanabi.Contracts.Services;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Controls;
+using Otanabi.Contracts.Services;
 using Otanabi.ViewModels;
 using Otanabi.Views;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-
-using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.Services;
 

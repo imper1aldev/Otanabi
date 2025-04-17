@@ -644,6 +644,14 @@
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
                                             <AppBarButton
+                                                x:Name="ServersButton"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Choose Server">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE774;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>
+                                            <AppBarButton
                                                 x:Name="CCSelectionButton"
                                                 AllowFocusOnInteraction="False"
                                                 MediaTransportControlsHelper.DropoutOrder="15"

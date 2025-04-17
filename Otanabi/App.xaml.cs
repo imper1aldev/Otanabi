@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Otanabi.Activation;
 using Otanabi.Contracts.Services;
 using Otanabi.Core.Contracts.Services;
-using Otanabi.Core.Database;
 using Otanabi.Core.Services;
 using Otanabi.Models;
 using Otanabi.Notifications;
@@ -23,7 +22,10 @@ public partial class App : Application
     // https://docs.microsoft.com/dotnet/core/extensions/dependency-injection
     // https://docs.microsoft.com/dotnet/core/extensions/configuration
     // https://docs.microsoft.com/dotnet/core/extensions/logging
-    public IHost Host { get; }
+    public IHost Host
+    {
+        get;
+    }
 
     public static T GetService<T>()
         where T : class
@@ -46,7 +48,10 @@ public partial class App : Application
     //public WindowEx MainWindow => m_window;
 
 
-    public static UIElement? AppTitlebar { get; set; }
+    public static UIElement? AppTitlebar
+    {
+        get; set;
+    }
 
     public App()
     {
@@ -75,6 +80,7 @@ public partial class App : Application
                     services.AddSingleton<IPageService, PageService>();
                     services.AddSingleton<INavigationService, NavigationService>();
                     services.AddSingleton<IWindowPresenterService, WindowPresenterService>();
+                    services.AddSingleton<IVlcProxyService, VlcProxyService>();
 
                     // Core Services
                     services.AddSingleton<IFileService, FileService>();
@@ -104,6 +110,7 @@ public partial class App : Application
         App.GetService<IAppNotificationService>().Initialize();
 
         UnhandledException += App_UnhandledException;
+        LibVLCSharp.Shared.Core.Initialize();
     }
 
     private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -111,7 +118,7 @@ public partial class App : Application
         logger.LogFatal("App Crashed {0}", e.Message);
     }
 
-    protected override async void OnLaunched(LaunchActivatedEventArgs args)
+    protected async override void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
         await App.GetService<IActivationService>().ActivateAsync(args);

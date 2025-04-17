@@ -1,15 +1,18 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Otanabi.UserControls;
 using Otanabi.ViewModels;
 
 namespace Otanabi.UserControls;
 
 public sealed partial class AnimeMediaTransportControls : MediaTransportControls
 {
+    private AppBarButton _serversButton;
+
+    private readonly MenuFlyout _serverFlyout = new() { Placement = FlyoutPlacementMode.Top };
+
     public AnimeMediaTransportControls()
     {
         DefaultStyleKey = typeof(AnimeMediaTransportControls);
@@ -128,6 +131,18 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
             )
         )
     );
+    public static readonly DependencyProperty ServersProperty = DependencyProperty.Register(
+        nameof(Servers),
+        typeof(IEnumerable<string>),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null, OnServersChanged)
+    );
+
+    public IEnumerable<string> Servers
+    {
+        get => (IEnumerable<string>)GetValue(ServersProperty);
+        set => SetValue(ServersProperty, value);
+    }
 
     public bool IsNextEnabled
     {
@@ -197,6 +212,103 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         if (GetTemplateChild("SkipIntroButton") is Button skipIntroButton)
         {
             skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
+        }
+        _serversButton = GetTemplateChild("ServersButton") as AppBarButton;
+        if (_serversButton != null)
+        {
+            _serversButton.Flyout = _serverFlyout;
+        }
+    }
+
+    private static void OnServersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        Debug.WriteLine("OnServersChanged ejecutado.");
+
+        var mtc = d as AnimeMediaTransportControls;
+        var flyout = mtc._serverFlyout;
+
+        if (mtc._serversButton is null)
+        {
+            Debug.WriteLine("QualitiesButton es null.");
+            return;
+        }
+
+        Debug.WriteLine($"Número de servidores: {(e.NewValue as IEnumerable<string>)?.Count()}");
+
+        foreach (var item in flyout.Items.OfType<MenuFlyoutItem>())
+        {
+            item.Click -= mtc.ServerFlyoutItem_Click;
+        }
+
+        flyout.Items.Clear();
+
+        if (e.NewValue is IEnumerable<string> servers)
+        {
+            var serverList = servers.ToList();
+            if (serverList.Count == 1)
+            {
+                mtc._serversButton.Visibility = Visibility.Collapsed;
+            }
+            else if (serverList.Count > 1)
+            {
+                mtc._serversButton.IsEnabled = true;
+                mtc._serversButton.Visibility = Visibility.Visible;
+                foreach (var server in serverList)
+                {
+                    var flyoutItem = new MenuFlyoutItem { Text = server };
+                    flyoutItem.Click += mtc.ServerFlyoutItem_Click;
+                    flyout.Items.Add(flyoutItem);
+                }
+            }
+        }
+    }
+
+    private void ServerFlyoutItem_Click(object sender, RoutedEventArgs e)
+    {
+        var selectedServer = (sender as MenuFlyoutItem).Text;
+        if (DataContext is VideoPlayerViewModel viewModel)
+        {
+            viewModel.SelectServerCommand.Execute(selectedServer);
+        }
+    }
+
+    public void UpdateServers(IEnumerable<string> servers, string selectedServer)
+    {
+        if (_serversButton != null)
+        {
+            UpdateFlyout(servers, selectedServer);
+        }
+    }
+
+    private void UpdateFlyout(IEnumerable<string> servers, string selectedServer)
+    {
+        foreach (var item in _serverFlyout.Items.OfType<MenuFlyoutItem>())
+        {
+            item.Click -= ServerFlyoutItem_Click;
+        }
+
+        _serverFlyout.Items.Clear();
+
+        var serverList = servers.ToList();
+        if (serverList.Count == 1)
+        {
+            _serversButton.Visibility = Visibility.Collapsed;
+        }
+        else if (serverList.Count > 1)
+        {
+            _serversButton.IsEnabled = true;
+            _serversButton.Visibility = Visibility.Visible;
+            foreach (var server in serverList)
+            {
+                var flyoutItem = new MenuFlyoutItem { Text = server };
+                if (server == selectedServer)
+                {
+                    flyoutItem.IsEnabled = false;
+                    flyoutItem.Icon = new SymbolIcon(Symbol.Accept);
+                }
+                flyoutItem.Click += ServerFlyoutItem_Click;
+                _serverFlyout.Items.Add(flyoutItem);
+            }
         }
     }
 }

@@ -175,7 +175,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         bw.RunWorkerAsync();
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     public async void OpenPlayer(Chapter chapter)
     {

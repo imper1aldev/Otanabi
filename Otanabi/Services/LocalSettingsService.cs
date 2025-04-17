@@ -1,12 +1,9 @@
-﻿using Otanabi.Contracts.Services;
+﻿using Microsoft.Extensions.Options;
+using Otanabi.Contracts.Services;
 using Otanabi.Core.Contracts.Services;
 using Otanabi.Core.Helpers;
 using Otanabi.Helpers;
 using Otanabi.Models;
-
-using Microsoft.Extensions.Options;
-
-using Windows.ApplicationModel;
 using Windows.Storage;
 
 namespace Otanabi.Services;

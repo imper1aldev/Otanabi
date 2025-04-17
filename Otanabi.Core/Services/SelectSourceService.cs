@@ -1,11 +1,11 @@
-﻿using Otanabi.Core.Models;
-using Otanabi.Core.Helpers;
-using System.Net.Http.Headers;
+﻿using Otanabi.Core.Helpers;
+using Otanabi.Core.Models;
 namespace Otanabi.Core.Services;
 public class SelectSourceService
 {
     private readonly ClassReflectionHelper _classReflectionHelper = new();
     private readonly LoggerService logger = new();
+
     internal static List<T> MoveToFirst<T>(List<T> list, T item)
     {
         var newList = new List<T>(list);
@@ -16,40 +16,56 @@ public class SelectSourceService
         return newList;
     }
 
-    public async Task<(string, string,HttpHeaders)> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
+    public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
     {
-        var streamUrl = "";
-        var subUrl = "";
-        HttpHeaders headers=new HttpClient().DefaultRequestHeaders;
+        var headers = new HttpClient().DefaultRequestHeaders;
+        var (streamUrl, serverName, useVlc, subtitles) = (string.Empty, string.Empty, false, new List<Track>());
+
         try
         {
-            var item = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
-            var orderedSources = MoveToFirst(videoSources.ToList(), item);
-            subUrl = item.Subtitle != null ? item.Subtitle : "";
+            var preferredSource = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
+            var orderedSources = MoveToFirst([.. videoSources], preferredSource);
+
             foreach (var source in orderedSources)
             {
-                (string,HttpHeaders) tempUrl;
-                var reflex = _classReflectionHelper.GetMethodFromVideoSource(source);
-                var method = reflex.Item1;
-                var instance = reflex.Item2;
-                tempUrl = await (Task<(string, HttpHeaders)>)method.Invoke(instance, new object[] { source.CheckedUrl });
-                if (!string.IsNullOrEmpty(tempUrl.Item1))
+                var selected = new SelectedSource();
+                if (source.IsLocalSource)
                 {
-                    streamUrl = tempUrl.Item1;
-                    if(tempUrl.Item2 != null) {
-                        headers = tempUrl.Item2;
-                    }
-                    break;
+                    selected = new(source.Url ?? source.Code, source.Subtitles, null)
+                    {
+                        Server = source.Server
+                    };
+                }
+                else
+                {
+                    var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
+                    selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
                 }
 
+                if (string.IsNullOrEmpty(selected.StreamUrl))
+                {
+                    continue;
+                }
+
+                serverName = source.Server;
+                selected.Subtitles ??= [];
+                selected.Subtitles.AddRange(source.Subtitles);
+                (streamUrl, subtitles, useVlc) = (selected.StreamUrl, selected.Subtitles, selected.UseVlcProxy);
+                headers = selected.Headers ?? headers;
+                break;
             }
         }
         catch (Exception e)
         {
             logger.LogFatal("Failed on load video extension {0}", e.Message);
-            streamUrl = "";
             throw;
         }
-        return (streamUrl, subUrl,headers);
+
+        return new SelectedSource(streamUrl, subtitles, headers)
+        {
+            Server = serverName,
+            UseVlcProxy = useVlc
+        };
     }
+
 }

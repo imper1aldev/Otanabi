@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Controls;
@@ -37,7 +36,9 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
         _navigationService = navigationService;
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     public async void OnNavigatedTo(object parameter)
     {

@@ -1,7 +1,6 @@
-﻿using Otanabi.ViewModels;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Otanabi.ViewModels;
 
 namespace Otanabi.Views;
 
@@ -17,7 +16,7 @@ public sealed partial class SettingsPage : Page
         ViewModel = App.GetService<SettingsViewModel>();
         ViewModel.OnPatchNotes += OnPatchNotes;
         ViewModel.OnUpdatePressed += OnUpdatePressed;
-        InitializeComponent(); 
+        InitializeComponent();
     }
 
     private async void OnPatchNotes(object sender, (string notes, string version, bool avaible) e)

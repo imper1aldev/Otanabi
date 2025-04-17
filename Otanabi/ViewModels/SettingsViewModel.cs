@@ -1,17 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
-using Otanabi.Contracts.Services;
-using Otanabi.Contracts.ViewModels;
-using Otanabi.Core.Helpers;
-using Otanabi.Core.Models;
-using Otanabi.Core.Services;
-using Otanabi.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
+using Otanabi.Contracts.Services;
+using Otanabi.Contracts.ViewModels;
+using Otanabi.Core.Models;
+using Otanabi.Core.Services;
+using Otanabi.Helpers;
 using Windows.ApplicationModel;
 
 namespace Otanabi.ViewModels;
@@ -41,13 +40,19 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private int selectedThemeIndex;
 
+    [ObservableProperty]
+    private bool isNsfwEnabled;
+
     private bool updateAvailable = false;
 
-    public ICommand SwitchThemeCommand { get; }
+    public ICommand SwitchThemeCommand
+    {
+        get;
+    }
 
     [ObservableProperty]
     private Provider selectedProvider;
-    public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
+    public ObservableCollection<Provider> Providers { get; } = [];
 
     public SettingsViewModel(
         IThemeSelectorService themeSelectorService,
@@ -113,17 +118,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-
-
+        //IsNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
 
         await GetProviders();
+
         var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
 
         if (provdef != 0)
         {
             var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
-            SelectedProvider = tmp != null ? tmp : new();
+            SelectedProvider = tmp ?? new();
         }
+
         var currentTheme = _themeSelectorService.Theme;
 
         switch (currentTheme)
@@ -145,16 +151,34 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void OnNavigatedFrom() { }
+    public void OnNavigatedFrom()
+    {
+    }
 
     private async Task GetProviders()
     {
+        Providers.Clear();
+        var bNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
+        if (bNsfwEnabled)
+        {
+            IsNsfwEnabled = bNsfwEnabled;
+        }
         var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs)
+        foreach (var item in provs.Where(p => IsNsfwEnabled || !p.IsNsfw).OrderBy(x => x.Id))
         {
             Providers.Add(item);
         }
         SelectedProvider = provs[0];
+
+        var selectedProviderId = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
+        if (selectedProviderId != 0)
+        {
+            var tmp = Providers.FirstOrDefault(p => p.Id == selectedProviderId);
+            if (tmp != null)
+            {
+                SelectedProvider = tmp;
+            }
+        }
         await Task.CompletedTask;
     }
 
@@ -165,6 +189,18 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         {
             await _localSettingsService.SaveSettingAsync<int>("ProviderId", SelectedProvider.Id);
         }
+    }
+
+    partial void OnIsNsfwEnabledChanged(bool value)
+    {
+        EnableNsfwCommand.Execute(null);
+    }
+
+    [RelayCommand]
+    private async Task EnableNsfw(object parameter)
+    {
+        await _localSettingsService.SaveSettingAsync<bool>("EnableNsfwContent", IsNsfwEnabled);
+        await GetProviders();
     }
 
     [RelayCommand]

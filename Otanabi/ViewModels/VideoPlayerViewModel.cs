@@ -1,9 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Timers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -13,6 +11,7 @@ using Otanabi.Converters;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.Models.Enums;
+using Otanabi.UserControls;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System;
@@ -24,6 +23,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 {
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
+    private readonly IVlcProxyService _vlcProxyService;
     private readonly IWindowPresenterService _windowPresenterService;
     private readonly WindowEx _windowEx;
 
@@ -54,7 +54,13 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly string AppCurTitle = "";
     private bool IsPaused = false;
     private bool IsDisposed = false;
-    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
+    public ObservableCollection<Chapter> ChapterList { get; } = [];
+
+    [ObservableProperty]
+    public ObservableCollection<string> servers = [];
+
+    [ObservableProperty]
+    private string selectedServer;
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -81,14 +87,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private bool loadingVideo = false;
 
     private string animeTitle = "";
-    private string activeCC = "";
+
+    private bool activeCc = false;
 
     private DateTime _lastClickTime;
     private const int DoubleClickThreshold = 200;
     private DateTime _lastChangedCap;
     private const int ChangeChapThreshold = 2000;
 
-    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService)
+    public VideoPlayerViewModel(INavigationService navigationService, IWindowPresenterService windowPresenterService, IVlcProxyService vlcProxyService)
     {
         _navigationService = navigationService;
         _windowPresenterService = windowPresenterService;
@@ -96,6 +103,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         _windowPresenterService = windowPresenterService;
         _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
+        _vlcProxyService = vlcProxyService;
 
         _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
@@ -180,8 +188,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     {
         dynamic param = parameter as dynamic;
 
-        //VideoUrl = param.Url;
-        //ChapterName = param.ChapterName;
         animeTitle = param.AnimeTitle;
         if (
             (param.History is History hs)
@@ -266,36 +272,55 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;
         var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
-        var data = await _selectSourceService.SelectSourceAsync(videoSources);
+        if (videoSources != null && (videoSources.FirstOrDefault(e => e.Server == SelectedServer) ?? videoSources[0]) is VideoSource item)
+        {
+            SelectedServer = item.Server;
+        }
+        //(streamUrl, subUrl, headers)
+        var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
 
-        activeCC = data.Item2;
+        if (data != null && data.UseVlcProxy)
+        {
+            var newServer = await _vlcProxyService.StartProxyAsync(data.StreamUrl, data.Headers);
+            data.StreamUrl = newServer;
+        }
+
+        if (data != null && data.Server != SelectedServer)
+        {
+            SelectedServer = data.Server;
+        }
+
+        activeCc = data.Subtitles.Count != 0;
 
         ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
-        if (!string.IsNullOrEmpty(data.Item1))
+        if (!string.IsNullOrEmpty(data.StreamUrl))
         {
-            VideoUrl = MediaSource.CreateFromUri(new Uri(data.Item1));
-
+            VideoUrl = MediaSource.CreateFromUri(new Uri(data.StreamUrl));
             if (MPE != null)
             {
                 MpItem = new MediaPlaybackItem(VideoUrl);
-                if (!string.IsNullOrEmpty(activeCC))
+                await LoadServers();
+                if (activeCc)
                 {
                     try
                     {
-                        var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(activeCC);
-                        var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
-                        timedTextSource.Resolved += (sender, args) =>
+                        foreach (var track in data.Subtitles)
                         {
-                            if (args.Error != null)
+                            var srtPath = await AssSubtitleSource.SaveSrtToTempFolderAsync(track.File);
+                            var timedTextSource = TimedTextSource.CreateFromUri(new Uri(srtPath));
+                            timedTextSource.Resolved += (sender, args) =>
                             {
-                                logger.LogInfo(message: $"Error on timed text source: {args.Error.ToString}");
-                            }
-                            foreach (var track in args.Tracks)
-                            {
-                                track.Label = track.Label == "" ? "English" : track.Label;
-                            }
-                        };
-                        MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
+                                if (args.Error != null)
+                                {
+                                    logger.LogInfo(message: $"Error on timed text source for track {track.Label}: {args.Error}");
+                                }
+                                foreach (var timedTrack in args.Tracks)
+                                {
+                                    timedTrack.Label = string.IsNullOrEmpty(timedTrack.Label) ? track.Label : timedTrack.Label;
+                                }
+                            };
+                            MpItem.Source.ExternalTimedTextSources.Add(timedTextSource);
+                        }
                         MpItem.TimedMetadataTracksChanged += (sender, args) =>
                         {
                             MpItem.TimedMetadataTracks.SetPresentationMode(0, TimedMetadataTrackPresentationMode.PlatformPresented);
@@ -341,7 +366,20 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     LoadingVideo = false;
                                 });
                             };
+                            MPE.MediaPlayer.MediaFailed += (sender, args) =>
+                            {
+                                _dispatcherQueue.TryEnqueue(() =>
+                                {
+                                    IsErrorVideo = true;
+                                    IsPaused = true;
+                                    LoadingVideo = false;
+                                });
+                            };
                             MPE.MediaPlayer.Play();
+                            if (MPE.MediaPlayer.CanSeek && selectedHistory.SecondsWatched > 0)
+                            {
+                                seekTo(selectedHistory.SecondsWatched - 2);
+                            }
                         }
                     }
                 });
@@ -357,9 +395,46 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowEx.Title = ChapterName;
     }
 
+    private async Task LoadServers()
+    {
+        try
+        {
+            var videoSources = await _searchAnimeService.GetVideoSources(selectedChapter.Url, selectedProvider);
+            Servers.Clear();
+            foreach (var source in videoSources)
+            {
+                if (!string.IsNullOrEmpty(source.Server))
+                {
+                    Servers.Add(source.Server);
+                }
+            }
+
+            if (MPE?.TransportControls is AnimeMediaTransportControls controls)
+            {
+                controls.UpdateServers(Servers, SelectedServer);
+            }
+        }
+        catch (Exception e)
+        {
+            logger.LogError("Could not load servers ", e.Message.ToString());
+        }
+    }
+
     public void OnNavigatedFrom()
     {
         Dispose();
+    }
+
+    [RelayCommand]
+    private async Task SelectServer(string server)
+    {
+        if (string.IsNullOrEmpty(server))
+        {
+            return;
+        }
+
+        SelectedServer = server;
+        await LoadVideo(selectedChapter);
     }
 
     [RelayCommand]
@@ -390,7 +465,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     [RelayCommand]
     private void ClickFull()
     {
-        DateTime now = DateTime.Now;
+        var now = DateTime.Now;
         TimeSpan interval = now - _lastClickTime;
 
         if (interval.TotalMilliseconds <= DoubleClickThreshold)
@@ -606,6 +681,18 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         MPE = mediaPlayerElement;
     }
 
+    public void seekTo(long msec)
+    {
+        try
+        {
+            MPE.MediaPlayer.PlaybackSession.Position = TimeSpan.FromSeconds(msec);
+        }
+        catch (Exception)
+        {
+            logger.LogInfo("current time cannot be seek");
+        }
+    }
+
     private void OnWindowPresenterChanged(object? sender, EventArgs e)
     {
         OnPropertyChanged(nameof(IsNotFullScreen));
@@ -620,6 +707,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             MainTimerForSave.Stop();
             MainTimerForSave.Dispose();
+            _vlcProxyService.Dispose();
             MPE.Source = null;
             if (MPE.MediaPlayer != null)
             {

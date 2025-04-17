@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using System.Text;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 public static class StringExtensions
 {
@@ -8,7 +8,7 @@ public static class StringExtensions
         var startIndex = str.IndexOf(start);
         if (startIndex == -1)
             return "";
-        
+
         startIndex += start.Length;
 
         var endIndex = str.IndexOf(end, startIndex);
@@ -37,31 +37,28 @@ public static class StringExtensions
         Array.Reverse(charArray);
         return new string(charArray);
     }
-    public static string SubstringAfter(this string value, string a)
+    public static string SubstringAfter(this string str, string delimiter)
     {
-        var start = value.IndexOf(a);
-        if (start != -1)
-        {
-            start += a.Length;
-            return value.Substring(start);
-        }
+        if (string.IsNullOrEmpty(str) || delimiter == null)
+            return str;
 
-        return string.Empty;
+        int index = str.IndexOf(delimiter);
+        if (index == -1)
+            return str;
+
+        return str.Substring(index + delimiter.Length);
     }
 
-    public static string SubstringBefore(this string value, string stopAt)
+    public static string SubstringBefore(this string str, string delimiter)
     {
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            var charLocation = value.IndexOf(stopAt, StringComparison.Ordinal);
+        if (string.IsNullOrEmpty(str) || string.IsNullOrEmpty(delimiter))
+            return str;
 
-            if (charLocation > 0)
-            {
-                return value.Substring(0, charLocation);
-            }
-        }
+        int index = str.IndexOf(delimiter);
+        if (index == -1)
+            return str;
 
-        return string.Empty;
+        return str.Substring(0, index);
     }
 
     public static string DecodeBase64(this string value) =>
@@ -76,7 +73,7 @@ public static class StringExtensions
 
     public static string RemoveWhitespaces(this string input) =>
         input.ReplaceWhitespaces(string.Empty);
-     
+
     public static string RemovePrefix(this string input, string prefix)
     {
         if (input.StartsWith(prefix))
@@ -91,5 +88,17 @@ public static class StringExtensions
             return string.Empty;
 
         return input.Remove(0, prefixLen);
+    }
+
+    public static string TrimAll(this string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return string.Empty;
+        }
+
+        var cleaned = input.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+        cleaned = Regex.Replace(cleaned, @"\s{2,}", " ");
+        return cleaned.Trim();
     }
 }

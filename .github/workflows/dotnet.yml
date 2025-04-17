@@ -29,7 +29,7 @@ env:
   PUBLISH_TRIM_MODE: partial # or full
 
   # Configuring GitHub Release
-  IS_PRE_RELEASE: false
+  IS_PRE_RELEASE: true
   SKIP_IF_RELEASE_EXIST: true
   MAKE_LATEST: true
   ALLOW_UPDATES: false

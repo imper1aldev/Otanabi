@@ -1,7 +1,6 @@
-﻿using Otanabi.Contracts.Services;
+﻿using Microsoft.UI.Xaml;
+using Otanabi.Contracts.Services;
 using Otanabi.ViewModels;
-
-using Microsoft.UI.Xaml;
 
 namespace Otanabi.Activation;
 

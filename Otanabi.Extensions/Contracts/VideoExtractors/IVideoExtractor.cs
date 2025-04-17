@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Headers;
+﻿using Otanabi.Core.Models;
 
 namespace Otanabi.Extensions.Contracts.VideoExtractors;
 public interface IVideoExtractor
 {
-    Task<(string,HttpHeaders?)> GetStreamAsync(string url);
+    Task<SelectedSource> GetStreamAsync(string url);
 }

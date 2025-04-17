@@ -1,7 +1,5 @@
-﻿using Otanabi.Core.Helpers;
+﻿using Microsoft.UI.Windowing;
 using Otanabi.Helpers;
-using Microsoft.UI.Windowing;
-using System;
 using Windows.UI.ViewManagement;
 
 namespace Otanabi;
