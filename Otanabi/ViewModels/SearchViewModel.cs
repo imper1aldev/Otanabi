@@ -101,8 +101,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     private async Task GetProviders()
     {
         Providers.Clear();
+        var isNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
         var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs.OrderBy(x => x.Id))
+        foreach (var item in provs.Where(p => isNsfwEnabled || !p.IsNsfw).OrderBy(x => x.Id))
         {
             Providers.Add(item);
         }

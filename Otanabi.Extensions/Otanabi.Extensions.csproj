@@ -24,4 +24,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="ScrapySharp" Version="3.0.0" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Extractors\Doramas\" />
+	</ItemGroup>
 </Project>

@@ -25,8 +25,16 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
+        var fullPath = Path.Combine(folderPath, fileName);
         var fileContent = JsonConvert.SerializeObject(content);
-        File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
+
+        using (var stream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+        {
+            using (var writer = new StreamWriter(stream, Encoding.UTF8))
+            {
+                writer.Write(fileContent);
+            }
+        }
     }
 
     public void Delete(string folderPath, string fileName)
