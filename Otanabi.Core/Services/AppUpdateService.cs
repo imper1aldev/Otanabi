@@ -9,12 +9,10 @@ public class AppUpdateService
 {
     private readonly HttpService _http = new();
     private readonly ClassReflectionHelper reflectionHelper = new();
-    private readonly string gitUrl =
-        "https://raw.githubusercontent.com/imper1aldev/Otanabi/master/Otanabi/version.v";
-    private readonly string gitRelease =
-        "https://api.github.com/repos/imper1aldev/Otanabi/releases";
-    internal string UserAgent =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0";
+    private readonly string gitUrl = "https://raw.githubusercontent.com/imper1aldev/Otanabi/master/Otanabi/version.v";
+    private readonly string gitRelease = "https://api.github.com/repos/imper1aldev/Otanabi/releases";
+    private readonly string gitDownloadPath = "https://github.com/imper1aldev/Otanabi/releases/download/";
+    internal string UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0";
 
     public async Task<string> CheckGitHubVersion()
     {
@@ -55,7 +53,7 @@ public class AppUpdateService
     public async Task UpdateApp()
     {
         var tag = await GetLastReleaseTag();
-        var updateUrl = $"https://github.com/havsalazar/Otanabi/releases/download/{tag}/Otanabi-{tag}-x64.zip";
+        var updateUrl = $"{gitDownloadPath}{tag}/Otanabi-{tag}-x64.zip";
         var currDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         await DownloadAndInstallUpdate(updateUrl, currDir);
