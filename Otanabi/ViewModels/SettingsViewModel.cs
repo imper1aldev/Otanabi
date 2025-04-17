@@ -158,28 +158,23 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private async Task GetProviders()
     {
         Providers.Clear();
-        var bNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
-        if (bNsfwEnabled)
+
+        IsNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
+
+        var filteredProviders = _searchAnimeService
+            .GetProviders()
+            .Where(p => IsNsfwEnabled || !p.IsNsfw)
+            .OrderBy(p => p.Id)
+            .ToList();
+
+        foreach (var provider in filteredProviders)
         {
-            IsNsfwEnabled = bNsfwEnabled;
+            Providers.Add(provider);
         }
-        var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs.Where(p => IsNsfwEnabled || !p.IsNsfw).OrderBy(x => x.Id))
-        {
-            Providers.Add(item);
-        }
-        SelectedProvider = provs[0];
 
         var selectedProviderId = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-        if (selectedProviderId != 0)
-        {
-            var tmp = Providers.FirstOrDefault(p => p.Id == selectedProviderId);
-            if (tmp != null)
-            {
-                SelectedProvider = tmp;
-            }
-        }
-        await Task.CompletedTask;
+
+        SelectedProvider = filteredProviders.FirstOrDefault(p => p.Id == selectedProviderId) ?? filteredProviders.FirstOrDefault();
     }
 
     [RelayCommand]
