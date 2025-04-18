@@ -2,7 +2,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Web;
 using HtmlAgilityPack;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
@@ -58,7 +57,7 @@ public class PelisplustoExtractor : IExtractor
             {
                 return animeList.ToArray();
             }
-            url += $"/api/search/{HttpUtility.UrlEncode(searchTerm)}";
+            url += $"/api/search/{Uri.EscapeDataString(searchTerm)}";
         }
         else if (tags != null && tags.Length > 0)
         {
