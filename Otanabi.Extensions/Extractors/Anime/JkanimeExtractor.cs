@@ -18,10 +18,6 @@ public class JkanimeExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
 
-    public string GetSourceName() => sourceName;
-
-    public string GetUrl() => originUrl;
-
     public IProvider GenProvider() =>
         new Provider
         {

@@ -6,7 +6,6 @@ using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
 using ScrapySharp.Extensions;
-using static Otanabi.Extensions.Utils.HtmlNodeExtensions;
 
 namespace Otanabi.Extensions.Extractors;
 

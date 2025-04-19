@@ -19,16 +19,6 @@ public class PelisplustoExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIE";
 
-    public string GetSourceName()
-    {
-        return sourceName;
-    }
-
-    public string GetUrl()
-    {
-        return originUrl;
-    }
-
     public IProvider GenProvider() =>
         new Provider
         {

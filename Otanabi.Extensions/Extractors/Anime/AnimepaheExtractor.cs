@@ -14,10 +14,6 @@ public class AnimepaheExtractor : IExtractor
     internal readonly bool Persistent = false;
     internal readonly string Type = "ANIME";
 
-    public string GetSourceName() => sourceName;
-
-    public string GetUrl() => originUrl;
-
     public IProvider GenProvider() =>
         new Provider
         {

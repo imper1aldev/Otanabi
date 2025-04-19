@@ -19,12 +19,7 @@ public class HstreamExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
 
-    //internal readonly HttpService HService =  new ();
     private static readonly HttpClient client = new();
-
-    public string GetSourceName() => sourceName;
-
-    public string GetUrl() => originUrl;
 
     public IProvider GenProvider() =>
         new Provider

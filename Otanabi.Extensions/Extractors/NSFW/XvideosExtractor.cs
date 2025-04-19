@@ -17,16 +17,6 @@ public class XvideosExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIES";
 
-    public string GetSourceName()
-    {
-        return sourceName;
-    }
-
-    public string GetUrl()
-    {
-        return originUrl;
-    }
-
     public IProvider GenProvider() =>
         new Provider
         {
