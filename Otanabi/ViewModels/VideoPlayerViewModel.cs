@@ -155,7 +155,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                     if (MPE != null && MPE.MediaPlayer != null)
                     {
                         var seconds = (long)MPE.MediaPlayer.PlaybackSession.Position.TotalSeconds;
-                        await dbService.UpdateProgress(selectedHistory.Id, seconds);
+                        //await dbService.UpdateProgress(selectedHistory.Id, seconds);
                         //Debug.WriteLine($"Progres ssaved seconds {seconds}  transformed: {TimeSpan.FromSeconds(seconds).ToString(@"\.hh\:mm\:ss")}");
                     }
                 });

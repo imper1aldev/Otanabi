@@ -143,12 +143,12 @@ public sealed partial class AnimePaneControl : UserControl
 
     private async Task AddToFavorites(Anime anime, int favId)
     {
-        var savedAnime = await dbService.UpsertAnime(anime, true);
-        if (savedAnime != null)
-        {
-            _ = await dbService.UpsertAnimeFavorite(savedAnime, favId);
-            FavoriteAnimeChanged?.Invoke(this, null);
-        }
+        //var savedAnime = await dbService.UpsertAnime(anime, true);
+        //if (savedAnime != null)
+        //{
+        //    _ = await dbService.UpsertAnimeFavorite(savedAnime, favId);
+        //    FavoriteAnimeChanged?.Invoke(this, null);
+        //}
     }
 
     private void Card_PointerPressed(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)

@@ -54,18 +54,18 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             return;
 
         IsLoading = true;
-        var history = await dbService.GetAllHistoriesAsync();
-        if (history != null)
-        {
-            foreach (var item in history)
-            {
-                Histories.Add(item);
-            }
-        }
-        else
-        {
-            noData = true;
-        }
+        //var history = await dbService.GetAllHistoriesAsync();
+        //if (history != null)
+        //{
+        //    foreach (var item in history)
+        //    {
+        //        Histories.Add(item);
+        //    }
+        //}
+        //else
+        //{
+        //    noData = true;
+        //}
         IsLoading = false;
     }
 
@@ -81,30 +81,30 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
         var selectedChapter = param.Chapter;
         var selectedAnime = param.Chapter.Anime;
 
-        var updatedAnime = await CheckAnimeUpdates(param.Chapter.Anime);
+        //var updatedAnime = await CheckAnimeUpdates(param.Chapter.Anime);
 
-        if (updatedAnime != null)
-        {
-            selectedAnime = updatedAnime;
-        }
-        else
-        {
-            var chapList = await dbService.GetChaptersByAnime(selectedAnime.Id);
-            selectedAnime.Chapters = chapList;
-        }
+        //if (updatedAnime != null)
+        //{
+        //    selectedAnime = updatedAnime;
+        //}
+        //else
+        //{
+        //    var chapList = await dbService.GetChaptersByAnime(selectedAnime.Id);
+        //    selectedAnime.Chapters = chapList;
+        //}
 
         await OpenPlayer(selectedHistory, selectedChapter, selectedAnime);
     }
 
-    private async Task<Anime> CheckAnimeUpdates(Anime request)
-    {
-        var anime = await dbService.UpsertAnime(request);
-        if (anime != null)
-        {
-            anime.Chapters = anime.Chapters.OrderBy((a) => a.ChapterNumber).ToList();
-        }
-        return anime;
-    }
+    //private async Task<Anime> CheckAnimeUpdates(Anime request)
+    //{
+    //    var anime = await dbService.UpsertAnime(request);
+    //    if (anime != null)
+    //    {
+    //        anime.Chapters = anime.Chapters.OrderBy((a) => a.ChapterNumber).ToList();
+    //    }
+    //    return anime;
+    //}
 
     public async Task OpenPlayer(History history, Chapter selectedChapter, Anime selectedAnime)
     {
@@ -133,6 +133,6 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     {
         var hs = Histories.Where(h => h.Id == id).First();
         Histories.Remove(hs);
-        await dbService.DeleteFromHistory(id);
+        //await dbService.DeleteFromHistory(id);
     }
 }

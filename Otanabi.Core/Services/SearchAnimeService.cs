@@ -1,6 +1,8 @@
-﻿using Otanabi.Core.Models;
-using Otanabi.Core.Helpers;
+﻿using Otanabi.Core.Helpers;
+using Otanabi.Core.Models;
+
 namespace Otanabi.Core.Services;
+
 public class SearchAnimeService
 {
     private readonly ClassReflectionHelper _classReflectionHelper = new();
@@ -29,6 +31,7 @@ public class SearchAnimeService
 
         return animesTmp.ToArray();
     }
+
     public async Task<Anime> GetAnimeDetailsAsync(Anime animeReq)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetAnimeDetailsAsync", animeReq.Provider);
@@ -38,6 +41,7 @@ public class SearchAnimeService
 
         return animesDet;
     }
+
     public async Task<VideoSource[]> GetVideoSources(string requestUrl, Provider provider)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetVideoSources", provider);
@@ -47,6 +51,7 @@ public class SearchAnimeService
 
         return videoSources.ToArray();
     }
+
     public Tag[] GetTags(Provider provider)
     {
         var reflex = _classReflectionHelper.GetMethodFromProvider("GetTags", provider);

@@ -10,13 +10,14 @@ public enum AnimeType
     TV,
     MOVIE,
     SPECIAL,
-    OTHER
+    OTHER,
 }
 
 public class Anime : IAnime
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
+    public int IdAnilist { get; set; }
     public string RemoteID { get; set; }
     public string Cover { get; set; }
     public string Title { get; set; }

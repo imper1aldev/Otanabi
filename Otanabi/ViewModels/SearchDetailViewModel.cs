@@ -73,32 +73,44 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
 
     public async void OnNavigatedTo(object parameter)
     {
-        GC.Collect();
-        IsLoadingFav = true;
-        IsLoading = true;
-        var favoriteLists = await _Db.GetFavoriteLists();
-        foreach (var fav in favoriteLists)
+        if (parameter is Anime animeParam)
         {
-            FavLists.Add(fav);
-        }
-        if (parameter is Anime anime)
-        {
-            if (anime.Url != null)
+            if (SelectedAnime != null && animeParam.Url == SelectedAnime.Url)
             {
-                await GetAnimeFromDB(anime);
-                var bw = new BackgroundWorker();
-                bw.DoWork += (sender, args) =>
-                    _dispatcherQueue.TryEnqueue(async () =>
-                    {
-                        IsLoading = true;
-                        await UpsertAnime(anime);
-                        IsLoading = false;
-                    });
-                bw.RunWorkerAsync();
+                return;
             }
 
+            GC.Collect();
+            IsLoadingFav = true;
+            IsLoading = true;
+            var favoriteLists = await _Db.GetFavoriteLists();
+            foreach (var fav in favoriteLists)
+            {
+                FavLists.Add(fav);
+            }
+            await GetAnimeData(animeParam);
             IsLoadingFav = false;
             IsLoading = false;
+        }
+    }
+
+    private async Task GetAnimeData(Anime request)
+    {
+        var provAnime = await _searchAnimeService.GetAnimeDetailsAsync(request);
+        ChapterList.Clear();
+        if (provAnime != null)
+        {
+            SelectedAnime = provAnime;
+            Chapters = provAnime.Chapters.ToArray();
+            foreach (var chapter in Chapters)
+            {
+                ChapterList.Add(chapter);
+            }
+        }
+        else
+        {
+            ErrorMessage = "Error loading anime data";
+            ErrorActive = true;
         }
     }
 
@@ -107,77 +119,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         IsLoading = value;
     }
 
-    private async Task GetAnimeFromDB(Anime request)
-    {
-        var anime = await _Db.GetAnimeOnDB(request);
-        if (anime != null)
-        {
-            SelectedAnime = anime;
-            await checkFavorite();
-
-            if (SelectedAnime.Chapters == null)
-            {
-                return;
-            }
-
-            foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
-            {
-                ChapterList.Add(chapter);
-            }
-        }
-    }
-
-    private async Task UpsertAnime(Anime request, bool force = false)
-    {
-        ForceLoad = false;
-        try
-        {
-            var anime = await _Db.UpsertAnime(request, force);
-            if (anime != null)
-            {
-                SelectedAnime = anime;
-
-                await checkFavorite();
-                ChapterList.Clear();
-                if (SelectedAnime.Chapters == null)
-                {
-                    return;
-                }
-
-                foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
-                {
-                    ChapterList.Add(chapter);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            ErrorMessage = e.Message.ToString();
-            ErrorActive = true;
-        }
-        finally
-        {
-            ForceLoad = true;
-        }
-    }
-
-    [RelayCommand]
-    private void ForceUpsert()
-    {
-        var bw = new BackgroundWorker();
-        bw.DoWork += (sender, args) =>
-            _dispatcherQueue.TryEnqueue(async () =>
-            {
-                IsLoading = true;
-                await UpsertAnime(SelectedAnime, true);
-                IsLoading = false;
-            });
-        bw.RunWorkerAsync();
-    }
-
-    public void OnNavigatedFrom()
-    {
-    }
+    public void OnNavigatedFrom() { }
 
     public async void OpenPlayer(Chapter chapter)
     {
@@ -237,14 +179,14 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [RelayCommand]
     private async Task FavoriteFun()
     {
-        IsLoadingFav = true;
-        var action = IsFavorite ? "remove" : "add";
-        var res = await _Db.AddToFavorites(SelectedAnime, action);
+        //IsLoadingFav = true;
+        //var action = IsFavorite ? "remove" : "add";
+        //var res = await _Db.AddToFavorites(SelectedAnime, action);
 
-        IsFavorite = res == "added" ? true : false;
-        FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
-        FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
-        IsLoadingFav = false;
+        //IsFavorite = res == "added" ? true : false;
+        //FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
+        //FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
+        //IsLoadingFav = false;
     }
 
     private async Task checkFavorite()
@@ -259,21 +201,21 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [RelayCommand]
     private async Task ChangeFavLists(object param)
     {
-        var idList = new List<int>();
-        if (param is ListBox box)
-        {
-            foreach (var item in box.SelectedItems)
-            {
-                if (item is FavoriteList lt)
-                {
-                    idList.Add(lt.Id);
-                }
-            }
-        }
-        if (idList.Count > 0)
-        {
-            await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
-        }
+        //var idList = new List<int>();
+        //if (param is ListBox box)
+        //{
+        //    foreach (var item in box.SelectedItems)
+        //    {
+        //        if (item is FavoriteList lt)
+        //        {
+        //            idList.Add(lt.Id);
+        //        }
+        //    }
+        //}
+        //if (idList.Count > 0)
+        //{
+        //    await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
+        //}
     }
 
     [RelayCommand]

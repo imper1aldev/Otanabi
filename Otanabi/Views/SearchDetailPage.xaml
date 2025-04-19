@@ -8,6 +8,7 @@
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Otanabi.Core.Models"
+    NavigationCacheMode="Enabled"
     mc:Ignorable="d">
     <Page.Resources>
         <converters:StringFormatConverter x:Key="StringFormatConverter" />
@@ -200,7 +201,7 @@
 
                     </CommandBar.PrimaryCommands>
                 </CommandBar>
-                <StackPanel
+                <!--<StackPanel
                     Grid.Column="1"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
@@ -215,7 +216,7 @@
                         </StackPanel>
 
                     </Button>
-                </StackPanel>
+                </StackPanel>-->
 
 
             </Grid>
