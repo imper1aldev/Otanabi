@@ -23,6 +23,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly INavigationService _navigationService;
     private readonly ILocalSettingsService _localSettingsService;
+    private readonly DatabaseService db = new();
 
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
@@ -157,6 +158,15 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             }
             SelectedProvider = provs[0];
         }
+        /* set the default provider definied in settings */
+        var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
+
+        if (provdef != 0)
+        {
+            var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
+            if (tmp != null)
+                SelectedProvider = tmp;
+        }
 
         await Task.CompletedTask;
     }
@@ -202,6 +212,8 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         if (exactMatch != null)
         {
             _localAnime = await _searchAnimeService.GetAnimeDetailsAsync(exactMatch);
+            var savedAnime = await db.GetOrAddAnimeByMedia(SelectedMedia, selectedProvider, _localAnime);
+            _localAnime.Id = savedAnime.Id;
             IsLoadedMerge = true;
         }
     }
@@ -211,10 +223,10 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         //IsLoadingVideo = true;
         try
         {
-            //App.AppState.TryGetValue("Incognito", out var incognito);  Incognito mode
+            App.AppState.TryGetValue("Incognito", out var incognito);
             dynamic data = new ExpandoObject();
-            //data.History = (bool)incognito ? new History() { Id = 0 } : await _Db.GetOrCreateHistoryByCap(chapter.Id);
-            data.History = new History() { Id = 0 };
+            data.History = (bool)incognito ? null : await db.GetOrCreateHistoryByCap(_localAnime, chapter.ChapterNumber);
+            data.IsIncognito = (bool)incognito;
             data.Chapter = chapter;
             data.AnimeTitle = _localAnime.Title;
             data.ChapterList = _localAnime.Chapters.ToList();
@@ -231,12 +243,4 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             return;
         }
     }
-    /* TODO : Chapter comminucation between detailview to provider to VideoView
-     the chapters need to be based on the following rules
-     * 1): If is finised get all the chapters SelectedMedia.Episodes
-     * 2): if the status is airing only show the chapters less than SelectedMedia.nextAiringEpisode.episode i'll check if is possible to add the nextairing with a timer but make it without a eventclick
-     * 3): if the status is notyetreleased show a counter with the time left to the first episode
-     * 4): if is a movie or a single cap ova/ona show only 1 item with the prefix "Episode-#"
-     * 5): if is a (movie/ona/ova)  with multiple parts (most common in ovas/onas) show the prefix "Episode-#"
-    */
 }

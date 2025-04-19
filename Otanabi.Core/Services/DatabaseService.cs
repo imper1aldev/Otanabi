@@ -13,19 +13,29 @@ public class DatabaseService
 
     public DatabaseService() { }
 
-    public async Task Vacuum()
-    {
-        await DB._db.ExecuteAsync("vacuum");
-    }
-
-    public async Task<Anime> GetOrAddAnimeByMedia(Media media, Provider provider)
+    #region Anime
+    public async Task<Anime> GetOrAddAnimeByMedia(Media media, Provider provider, Anime providerAnime)
     {
         var id = media.Id;
         var anime = await DB._db.Table<Anime>().Where(a => a.IdAnilist == id && a.ProviderId == provider.Id).FirstOrDefaultAsync();
         if (anime == null)
         {
-            anime = new Anime { IdAnilist = media.Id, ProviderId = provider.Id };
+            anime = new Anime
+            {
+                IdAnilist = media.Id,
+                ProviderId = provider.Id,
+                Url = providerAnime.Url,
+                RemoteID = providerAnime.RemoteID,
+                Cover = media.CoverImage.ExtraLarge,
+                Title = media.Title.Romaji,
+            };
             await DB._db.InsertAsync(anime);
+            anime = await DB
+                ._db.Table<Anime>()
+                .Where(a =>
+                    a.IdAnilist == media.Id && a.ProviderId == provider.Id && a.Url == providerAnime.Url && a.RemoteID == providerAnime.RemoteID
+                )
+                .FirstOrDefaultAsync();
         }
         return anime;
     }
@@ -47,7 +57,9 @@ public class DatabaseService
         }
         return chapter;
     }
+    #endregion
 
+    #region Favorites
     public async Task<FavoriteList[]> GetFavoriteLists()
     {
         var FavLists = await DB._db.Table<FavoriteList>().ToListAsync();
@@ -75,34 +87,6 @@ public class DatabaseService
         var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == animeId).FirstOrDefaultAsync();
 
         return el != null;
-    }
-
-    public async Task<History> GetOrCreateHistoryByCap(int chapterId)
-    {
-        var history = await GetHistoryByCap(chapterId);
-        if (history != null)
-        {
-            await DB._db.ExecuteAsync("update History set WatchedDate=? where Id=?", DateTime.Now, history.Id);
-            history = await GetHistoryByCap(chapterId);
-            return history;
-        }
-        var hisCl = new History()
-        {
-            ChapterId = chapterId,
-            WatchedDate = DateTime.Now,
-            SecondsWatched = 0,
-        };
-        await DB._db.InsertAsync(hisCl);
-
-        history = await GetHistoryByCap(chapterId);
-
-        return history;
-    }
-
-    private async Task<History> GetHistoryByCap(int chapterId)
-    {
-        var history = await DB._db.Table<History>().Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
-        return history;
     }
 
     public async Task<List<FavoriteList>> GetFavoriteListByUrl(string url, int providerId)
@@ -140,4 +124,74 @@ public class DatabaseService
         await DB._db.ExecuteAsync("delete from AnimexFavorite where FavoriteListId=? and Id>1", favorite.Id);
         await DB._db.DeleteAsync(favorite);
     }
+    #endregion
+
+    #region History
+
+    public async Task<History> GetOrCreateHistoryByCap(Anime anime, int chapterNumber)
+    {
+        var history = await GetHistoryByCap(anime, chapterNumber);
+        if (history != null)
+        {
+            await DB._db.ExecuteAsync("update History set WatchedDate=? where Id=?", DateTime.Now, history.Id);
+            history = await GetHistoryByCap(anime, chapterNumber);
+            return history;
+        }
+        var hisCl = new History()
+        {
+            ChapterNumber = chapterNumber,
+            WatchedDate = DateTime.Now,
+            AnimeId = anime.Id,
+            SecondsWatched = 0,
+        };
+        await DB._db.InsertAsync(hisCl);
+
+        history = await GetHistoryByCap(anime, chapterNumber);
+
+        return history;
+    }
+
+    private async Task<History> GetHistoryByCap(Anime anime, int chapterNumber)
+    {
+        var history = await DB._db.Table<History>().Where(h => h.ChapterNumber == chapterNumber && h.AnimeId == anime.Id).FirstOrDefaultAsync();
+        return history;
+    }
+
+    public async Task<History[]> GetAllHistories()
+    {
+        var histories = await DB._db.Table<History>().ToListAsync();
+        var providers = await DB._db.Table<Provider>().ToListAsync();
+        foreach (var item in histories)
+        {
+            var anime = await DB._db.Table<Anime>().Where(a => a.Id == item.AnimeId).FirstOrDefaultAsync();
+            anime.Provider = providers.FirstOrDefault(p => p.Id == anime.ProviderId);
+            item.Anime = anime;
+        }
+        return histories.ToArray();
+    }
+
+    public async Task UpdateProgress(int historyId, long progress)
+    {
+        await DB._db.ExecuteAsync("update History set SecondsWatched=? , WatchedDate=?  where Id=?", progress, DateTime.Now, historyId);
+    }
+
+    public async Task DeleteFromHistory(int Id)
+    {
+        var history = await DB._db.Table<History>().Where(h => h.Id == Id).FirstOrDefaultAsync();
+
+        await DB._db.DeleteAsync(history);
+    }
+
+    public async Task DeleteAllHistory()
+    {
+        await DB._db.ExecuteAsync("delete from History");
+    }
+    #endregion
+
+    #region Maintenance
+    public async Task Vacuum()
+    {
+        await DB._db.ExecuteAsync("vacuum");
+    }
+    #endregion
 }

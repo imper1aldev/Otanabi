@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
@@ -23,8 +24,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     public MediaFormat[] Formats { get; } = Enum.GetValues<MediaFormat>().ToArray();
     public MediaStatus[] Statuses { get; } = Enum.GetValues<MediaStatus>().ToArray();
 
-    [ObservableProperty]
-    private List<string> genres = new List<string>();
+    public ObservableCollection<string> Genres { get; } = new ObservableCollection<string>();
+    public ObservableCollection<string> FilteredGenres { get; } = new ObservableCollection<string>();
 
     public ObservableCollection<Media> SourceMedia { get; } = new ObservableCollection<Media>();
 
@@ -115,6 +116,8 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
             Genres.Add(item);
         }
         OnPropertyChanged(nameof(Genres));
+        AssignGenres();
+        OnPropertyChanged(nameof(FilteredGenres));
     }
 
     public void UpdateCollection(IList<object> selectedItems, string type)
@@ -137,6 +140,15 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
     }
 
+    private void AssignGenres()
+    {
+        FilteredGenres.Clear();
+        foreach (var item in Genres)
+        {
+            FilteredGenres.Add(item);
+        }
+    }
+
     [RelayCommand]
     private async void LoadMore()
     {
@@ -146,6 +158,13 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         }
         CurrPage++;
         await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    private void ClearSelectedGenres()
+    {
+        SelectedGenres.Clear();
+        OnPropertyChanged(nameof(SelectedGenres));
     }
 
     [RelayCommand]
@@ -162,6 +181,25 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         //
         SearchQuery = args.QueryText.ToString();
         await LoadDataAsync();
+    }
+
+    public async Task FilterGenders(object sender, TextChangedEventArgs args)
+    {
+        if (sender is TextBox texbox)
+        {
+            var query = texbox.Text;
+            if (string.IsNullOrEmpty(query))
+            {
+                AssignGenres();
+                return;
+            }
+            var filtered = Genres.Where(x => x.ToLower().Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            FilteredGenres.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredGenres.Add(item);
+            }
+        }
     }
 
     private async Task LoadDataAsync()

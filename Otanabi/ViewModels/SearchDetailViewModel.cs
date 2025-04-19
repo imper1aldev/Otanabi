@@ -126,21 +126,14 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         IsLoadingVideo = true;
         try
         {
-            //var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
-            //var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             App.AppState.TryGetValue("Incognito", out var incognito); // Incognito mode
             dynamic data = new ExpandoObject();
-            data.History = (bool)incognito ? new History() { Id = 0 } : await _Db.GetOrCreateHistoryByCap(chapter.Id);
-            //data.Url = videoUrl;
+            data.History = (bool)incognito ? null : await _Db.GetOrCreateHistoryByCap(SelectedAnime, chapter.ChapterNumber);
+            data.IsIncognito = (bool)incognito;
             data.Chapter = chapter;
-            //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
             data.AnimeTitle = SelectedAnime.Title;
             data.ChapterList = SelectedAnime.Chapters.ToList();
             data.Provider = SelectedAnime.Provider;
-            //if (string.IsNullOrEmpty(videoUrl))
-            //{
-            //    throw new Exception(ErrorMessage = "Can't extract the video URL");
-            //}
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         }

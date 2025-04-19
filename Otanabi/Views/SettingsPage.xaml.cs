@@ -1,23 +1,20 @@
-﻿using Otanabi.ViewModels;
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Otanabi.ViewModels;
 
 namespace Otanabi.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    public SettingsViewModel ViewModel
-    {
-        get;
-    }
+    public SettingsViewModel ViewModel { get; }
 
     public SettingsPage()
     {
         ViewModel = App.GetService<SettingsViewModel>();
         ViewModel.OnPatchNotes += OnPatchNotes;
         ViewModel.OnUpdatePressed += OnUpdatePressed;
-        InitializeComponent(); 
+        InitializeComponent();
     }
 
     private async void OnPatchNotes(object sender, (string notes, string version, bool avaible) e)
@@ -30,8 +27,8 @@ public sealed partial class SettingsPage : Page
             {
                 Width = 490,
                 Text = e.notes,
-                TextWrapping = TextWrapping.Wrap
-            }
+                TextWrapping = TextWrapping.Wrap,
+            },
         };
 
         var dialog = PatchNotesDialog;
@@ -55,6 +52,7 @@ public sealed partial class SettingsPage : Page
 
         await dialog.ShowAsync();
     }
+
     private async void OnUpdatePressed(object sender, bool e)
     {
         var dialog = PatchNotesDialog;
@@ -74,15 +72,15 @@ public sealed partial class SettingsPage : Page
                 {
                     Text = "Updating",
                     FontSize = 20,
-                    Margin=new Thickness(0,0,0,20)
+                    Margin = new Thickness(0, 0, 0, 20),
                 },
                 new ProgressRing
                 {
                     IsActive = true,
                     Width = 50,
-                    Height = 50
-                }
-            }
+                    Height = 50,
+                },
+            },
         };
         if (dialog != null)
         {
@@ -95,6 +93,7 @@ public sealed partial class SettingsPage : Page
             await dialog.ShowAsync();
         }
     }
+
     private void DialogClosingEvent(ContentDialog sender, ContentDialogClosingEventArgs args)
     {
         // This mean user does click on Primary or Secondary button
@@ -102,5 +101,10 @@ public sealed partial class SettingsPage : Page
         {
             args.Cancel = true;
         }
+    }
+
+    private void CloseDeleteFlyout(object sender, RoutedEventArgs e)
+    {
+        deletedbfly.Hide();
     }
 }

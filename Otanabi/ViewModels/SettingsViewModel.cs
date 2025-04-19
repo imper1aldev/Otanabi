@@ -1,17 +1,18 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
-using Otanabi.Contracts.Services;
-using Otanabi.Contracts.ViewModels;
-using Otanabi.Core.Helpers;
-using Otanabi.Core.Models;
-using Otanabi.Core.Services;
-using Otanabi.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
+using Otanabi.Contracts.Services;
+using Otanabi.Contracts.ViewModels;
+using Otanabi.Core.Database;
+using Otanabi.Core.Helpers;
+using Otanabi.Core.Models;
+using Otanabi.Core.Services;
+using Otanabi.Helpers;
 using Windows.ApplicationModel;
 
 namespace Otanabi.ViewModels;
@@ -41,6 +42,9 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private int selectedThemeIndex;
 
+    [ObservableProperty]
+    private bool deletingDB = false;
+
     private bool updateAvailable = false;
 
     public ICommand SwitchThemeCommand { get; }
@@ -49,10 +53,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private Provider selectedProvider;
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
-    public SettingsViewModel(
-        IThemeSelectorService themeSelectorService,
-        ILocalSettingsService localSettingsService
-    )
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
     {
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
@@ -96,12 +97,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         {
             var packageVersion = Package.Current.Id.Version;
 
-            version = new(
-                packageVersion.Major,
-                packageVersion.Minor,
-                packageVersion.Build,
-                packageVersion.Revision
-            );
+            version = new(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
         }
         else
         {
@@ -113,9 +109,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-
-
-
         await GetProviders();
         var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
 
@@ -179,14 +172,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             var version = result.Item2;
             if (verEval > 0)
             {
-                VersionMessage =
-                    "The running version is higher than the main version; it is not recommended to update in debug mode.";
+                VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
                 OnPatchNotes(
                     this,
                     (
                         "This action will break the application, be aware \n"
-                        + "The running version is higher than the main version; it is not recommended to update in debug mode."
-                        ,
+                            + "The running version is higher than the main version; it is not recommended to update in debug mode.",
                         version.ToString(),
                         true
                     )
@@ -226,6 +217,14 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
         var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
         OnPatchNotes(this, (patchNotes, version.ToString(), false));
+    }
+
+    [RelayCommand]
+    private async Task DeleteDBData()
+    {
+        DeletingDB = true;
+        await DatabaseHandler.GetInstance().DeleteDataAndRestructure();
+        DeletingDB = false;
     }
 
     public event EventHandler<(string Notes, string version, bool IsAvaible)> OnPatchNotes;

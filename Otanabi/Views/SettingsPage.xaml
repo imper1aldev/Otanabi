@@ -115,6 +115,41 @@
 
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
+
+            <TextBlock Margin="0,50,0,0" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}">
+                <Run Foreground="Red">Danger Zone</Run>
+            </TextBlock>
+            <controls:SettingsCard
+                x:Name="DeleteDB"
+                Margin="0,10,0,0"
+                Header="Delete Database data"
+                HeaderIcon="{ui:FontIcon Glyph=&#xF6FA;}">
+                <StackPanel Orientation="Horizontal">
+                    <ProgressRing IsActive="True" Visibility="{x:Bind ViewModel.DeletingDB, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+
+                    <Button Content="Delete">
+                        <Button.Flyout>
+                            <Flyout x:Name="deletedbfly">
+                                <StackPanel Spacing="20">
+                                    <TextBlock Text="Are you sure?" />
+                                    <StackPanel Orientation="Horizontal" Spacing="50">
+
+                                        <Button Click="CloseDeleteFlyout" Command="{x:Bind ViewModel.DeleteDBDataCommand}">
+                                            <TextBlock>
+                                                <Run Foreground="Red">Yes</Run>
+                                            </TextBlock>
+                                        </Button>
+                                        <Button Click="CloseDeleteFlyout" Content="No" />
+
+                                    </StackPanel>
+                                </StackPanel>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
+                </StackPanel>
+
+            </controls:SettingsCard>
+
         </StackPanel>
         <ContentDialog x:Name="PatchNotesDialog" />
         <Image

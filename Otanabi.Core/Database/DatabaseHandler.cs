@@ -13,13 +13,9 @@ public sealed class DatabaseHandler
     public SQLiteAsyncConnection _db;
 
     private const string _defaultApplicationDataFolder = "Otanabi/ApplicationData";
-    private readonly string _localApplicationData = Environment.GetFolderPath(
-        Environment.SpecialFolder.LocalApplicationData
-    );
+    private readonly string _localApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-    private string currDir = Path.GetDirectoryName(
-        System.Reflection.Assembly.GetExecutingAssembly().Location
-    );
+    private string currDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
     private string DBName => new ModeDetector().IsDebug ? $"animeDB-DEBUG" : "animeDB";
 
@@ -39,10 +35,7 @@ public sealed class DatabaseHandler
 
     public DatabaseHandler()
     {
-        var _applicationDataFolder = Path.Combine(
-            _localApplicationData,
-            _defaultApplicationDataFolder
-        );
+        var _applicationDataFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder);
 
         if (!Directory.Exists(_applicationDataFolder))
         {
@@ -51,7 +44,6 @@ public sealed class DatabaseHandler
 
         var dbPath = Path.Combine(_applicationDataFolder, DBName);
 
-        // new ModeDetector().IsDebug?$"{DBName}-DEBUG":
         if (File.Exists(Path.Combine(currDir, DBName)))
         {
             if (!File.Exists(dbPath))
@@ -63,9 +55,7 @@ public sealed class DatabaseHandler
         _db = new SQLiteAsyncConnection(dbPath);
     }
 
-    private void checkPreviusAndMove()
-    {
-    }
+    private void checkPreviusAndMove() { }
 
     public async Task InitDb()
     {
@@ -92,7 +82,7 @@ public sealed class DatabaseHandler
             {
                 Id = 1,
                 Name = "Favorite List",
-                Placement = 0
+                Placement = 0,
             };
             await _db.InsertAsync(indatlistFav);
         }
@@ -122,6 +112,28 @@ public sealed class DatabaseHandler
                 prop.Url = prDll.Url;
                 await _db.UpdateAsync(prop);
             }
+        }
+    }
+
+    public async Task<bool> DeleteDataAndRestructure()
+    {
+        try
+        {
+            await _db.CloseAsync();
+            var _applicationDataFolder = Path.Combine(_localApplicationData, _defaultApplicationDataFolder);
+            var dbPath = Path.Combine(_applicationDataFolder, DBName);
+            if (File.Exists(dbPath))
+            {
+                File.Delete(dbPath);
+            }
+            _db = new SQLiteAsyncConnection(dbPath);
+
+            await InitDb();
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
         }
     }
 }

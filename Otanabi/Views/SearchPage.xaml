@@ -61,12 +61,17 @@
                         Content="{x:Bind ViewModel.GetSelectedGenres, Mode=OneWay}">
                         <Button.Flyout>
                             <Flyout AllowFocusOnInteraction="True">
-                                <ListView
-                                    x:Name="SelectorGenres"
-                                    AllowFocusOnInteraction="True"
-                                    ItemsSource="{x:Bind ViewModel.Genres, Mode=OneWay}"
-                                    SelectionChanged="SelectorGenres_SelectionChanged"
-                                    SelectionMode="Multiple" />
+                                <StackPanel Orientation="Vertical">
+                                    <!--<TextBox TextChanged="{x:Bind ViewModel.FilterGenders}" />-->
+                                    <Button Command="{x:Bind ViewModel.ClearSelectedGenresCommand}" Content="Clear Selected" />
+                                    <ListView
+                                        x:Name="SelectorGenres"
+                                        AllowFocusOnInteraction="True"
+                                        ItemsSource="{x:Bind ViewModel.FilteredGenres, Mode=OneWay}"
+                                        SelectionChanged="SelectorGenres_SelectionChanged"
+                                        SelectionMode="Multiple" />
+
+                                </StackPanel>
                             </Flyout>
                         </Button.Flyout>
                     </Button>

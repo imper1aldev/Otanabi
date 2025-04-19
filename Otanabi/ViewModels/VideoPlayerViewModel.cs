@@ -30,6 +30,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private Chapter selectedChapter;
     private History selectedHistory;
     private Provider selectedProvider;
+    private Anime selectedAnime;
 
     private static System.Timers.Timer? MainTimerForSave;
     private static System.Timers.Timer? RewindTimer;
@@ -188,13 +189,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             && param.Chapter is Chapter ch
             && param.Provider is Provider prov
             && param.ChapterList is List<Chapter> chapters
+            && param.Anime is Anime anime
+            && param.IsIncognito is bool incognito
         )
         {
-            if (hs.Id != 0)
+            if (!incognito && hs != null)
             {
                 selectedHistory = hs;
             }
-
+            selectedAnime = anime;
             selectedProvider = prov;
             selectedChapter = ch;
             foreach (Chapter chapter in chapters)
@@ -261,7 +264,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
         else
         {
-            selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(selectedAnime, chapter.Id);
         }
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;
