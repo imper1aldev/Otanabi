@@ -214,7 +214,7 @@ public class CuevanaeuExtractor : IExtractor
             }
         }
 
-        return sources.ToArray();
+        return sources.OrderByDescending(s => s.Server).ToArray();
     }
 
     private async Task<VideoSource> GetVideoInfo(string requestUrl, string cyberlocker)

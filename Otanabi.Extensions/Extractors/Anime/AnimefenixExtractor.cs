@@ -165,7 +165,7 @@ public class AnimefenixExtractor : IExtractor
             }
         }
 
-        return sources.ToArray();
+        return sources.OrderByDescending(s => s.Server).ToArray();
     }
 
     public Tag[] GetTags()

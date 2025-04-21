@@ -3,7 +3,7 @@ using HtmlAgilityPack;
 
 public static class HtmlNodeExtensions
 {
-    public static string? GetImageUrl(this HtmlNode node, string basePath, string invalidNameImg = null)
+    public static string? GetImageUrl(this HtmlNode node, string basePath, string invalidNameImg = "data:image/")
     {
         if (node.IsValidUrl("data-src", invalidNameImg))
             return node.GetAbsoluteUrl("data-src", basePath);

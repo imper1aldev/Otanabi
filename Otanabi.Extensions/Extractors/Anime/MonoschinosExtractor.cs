@@ -244,7 +244,7 @@ public class MonoschinosExtractor : IExtractor
                 Url = url,
             });
         }
-        return sources;
+        return sources.OrderByDescending(s => s.Server).ToList();
     }
 
     public static string GenerateTagString(Tag[] tags)
