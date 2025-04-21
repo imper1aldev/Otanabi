@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Web;
 using AngleSharp;
+using AngleSharp.Dom;
 using Newtonsoft.Json;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
@@ -155,17 +156,21 @@ public class CuevanaeuExtractor : IExtractor
                 {
                     ChapterNumber = ep.Number ?? 0,
                     Name = $"T{ep.Slug?.Season} - Episodio {ep.Slug?.Episode}",
-                    Url = $"{baseUrl}/episodio/{ep.Slug?.Name}-temporada-{ep.Slug?.Season}-episodio-{ep.Slug?.Episode}"
+                    Url = $"{baseUrl}/episodio/{ep.Slug?.Name}-temporada-{ep.Slug?.Season}-episodio-{ep.Slug?.Episode}",
+                    ReleaseDate = DateTime.TryParse(ep.ReleaseDate, out var d) ? d.ToString("dd/MM/yyyy") : ""
                 });
             }
         }
         else
         {
+            ///document.querySelector('.home__slider_content > div.genres.rating > span:nth-child(1) > a').textContent
             chapters.Add(new()
             {
                 ChapterNumber = 1,
                 Name = doc.QuerySelector("header .Title")?.TextContent?.Trim(),
-                Url = requestUrl
+                Url = requestUrl,
+                ReleaseDate = doc.QuerySelector(".meta span:nth-child(1)")?.TextContent,
+                Extraval = doc.QuerySelector(".meta span:nth-child(2)")?.TextContent
             });
         }
 

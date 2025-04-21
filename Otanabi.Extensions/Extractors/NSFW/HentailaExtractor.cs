@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using AngleSharp;
 using Newtonsoft.Json;
 using Otanabi.Core.Helpers;
@@ -157,11 +158,15 @@ public class HentailaExtractor : IExtractor
                                 .SubstringAfter($"/ver/{animeId}-")
                                 .Replace($"/ver/{animeId}-", "");
 
+            var date = chapter.QuerySelector(".h-header time")?.TextContent?.Trim();
+            date = DateTime.TryParseExact(date, "MMMM dd, yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d.ToString("dd/MM/yyyy") : "";
+
             chapters.Add(new()
             {
                 ChapterNumber = numEp.ToIntOrNull() ?? 0,
                 Name = $"Episodio {numEp}",
-                Url = $"{baseUrl}/ver/{animeId}-{numEp}"
+                Url = $"{baseUrl}/ver/{animeId}-{numEp}",
+                ReleaseDate = date
             });
         }
         return chapters.OrderBy(x => x.ChapterNumber).ToList();

@@ -194,7 +194,7 @@ public class AnimeflvExtractor : IExtractor
                 {
                     Url = string.Concat("/ver/", chapIdentifier[1], "-", chaptherOrder),
                     ChapterNumber = chaptherOrder,
-                    Name = string.Concat(chapIdentifier[2], " ", chaptherOrder)
+                    Name = string.Concat(chapIdentifier[2], " ", "# ", chaptherOrder)
                 };
 
                 chapters.Add(chapter);

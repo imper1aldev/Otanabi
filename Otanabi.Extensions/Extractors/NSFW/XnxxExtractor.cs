@@ -84,6 +84,12 @@ public class XnxxExtractor : IExtractor
         var sourcesJson = doc.DocumentNode.SelectNodes("//script")
             ?.FirstOrDefault(s => s.InnerText.Contains("html5player.setVideoUrl"))?.InnerText ?? "";
 
+        var date = doc.DocumentNode.SelectNodes("//script")
+            ?.FirstOrDefault(s => s.InnerText.Contains("https://schema.org"))
+            ?.InnerText?.SubstringAfter("uploadDate\": \"")
+            .SubstringBefore("\",");
+
+
         var genres = doc.DocumentNode.CssSelect("#video-content-metadata > div.metadata-row.video-tags > a")
                         .Take(10).Select(x => WebUtility.HtmlDecode(x.InnerText.TrimAll())).ToList();
         anime.Provider = (Provider)GenProvider();
@@ -103,7 +109,8 @@ public class XnxxExtractor : IExtractor
             {
                 ChapterNumber = 1,
                 Url = requestUrl,
-                Name = "Video"
+                Name = "Video",
+                ReleaseDate = DateTime.TryParse(date, out var d) ? d.ToString("dd/MM/yyyy") : ""
             }
         ];
         return anime;

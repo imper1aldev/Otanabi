@@ -107,6 +107,10 @@ public class XvideosExtractor : IExtractor
         anime.GenreStr = string.Join(",", genres);
         anime.RemoteID = requestUrl.Replace("/", "");
         anime.Cover = sourcesJson.SubstringAfter("setThumbUrl169('").SubstringBefore("')");
+        var date = doc.DocumentNode.SelectNodes("//script")
+            ?.FirstOrDefault(s => s.InnerText.Contains("https://schema.org"))
+            ?.InnerText?.SubstringAfter("uploadDate\": \"")
+            .SubstringBefore("\",");
 
         anime.Chapters =
         [
@@ -114,7 +118,8 @@ public class XvideosExtractor : IExtractor
             {
                 ChapterNumber = 1,
                 Url = requestUrl,
-                Name = "Video"
+                Name = "Video",
+                ReleaseDate = DateTime.TryParse(date, out var d) ? d.ToString("dd/MM/yyyy") : ""
             }
         ];
         return anime;

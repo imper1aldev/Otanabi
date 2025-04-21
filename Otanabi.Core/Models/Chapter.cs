@@ -29,6 +29,10 @@ public class Chapter
     {
         get; set;
     }
+    public string ReleaseDate
+    {
+        get; set;
+    }
 
     [Ignore]
     public History History
@@ -41,4 +45,7 @@ public class Chapter
     {
         get; set;
     }
+
+    [Ignore]
+    public string StandarName => $"# {ChapterNumber} - {Name}";
 }

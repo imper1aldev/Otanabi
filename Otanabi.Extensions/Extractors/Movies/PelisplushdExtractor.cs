@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -258,11 +259,20 @@ public class PelisplushdExtractor : IExtractor
         var chapters = new List<Chapter>();
         if (requestUrl.Contains("/pelicula/"))
         {
+            var title = doc.DocumentNode.CssSelect("h1.m-b-5")?.FirstOrDefault()?.InnerText?.Trim();
+            var dateNode = doc.DocumentNode.CssSelect(".sectionDetail")
+                .FirstOrDefault(x => x.InnerText.TrimAll().Contains("Fecha de estreno", StringComparison.OrdinalIgnoreCase));
+            var yearText = dateNode?.GetDirectInnerText()?.Trim();
+            var year = DateTime.TryParseExact(yearText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d)
+                ? d.ToString("dd/MM/yyyy")
+                : Regex.Match(title ?? "", @"\(([^)]*)\)").Groups[1].Value;
+
             chapters.Add(new Chapter()
             {
                 Url = requestUrl,
                 ChapterNumber = 1,
-                Name = "Película",
+                Name = title,
+                ReleaseDate = year
             });
         }
         else

@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using LibVLCSharp.Shared;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
@@ -170,20 +171,6 @@ public class PelisplustoExtractor : IExtractor
         return sources.OrderByDescending(s => s.Server).ToArray();
     }
 
-    public static string GenerateTagString(Tag[] tags)
-    {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
-    }
-
     public Tag[] GetTags()
     {
         return
@@ -231,12 +218,14 @@ public class PelisplustoExtractor : IExtractor
         var chapters = new List<Chapter>();
         if (requestUrl.Contains("/pelicula/"))
         {
+            var title = doc.DocumentNode.CssSelect(".home__slider_content div h1.slugh1")?.FirstOrDefault()?.InnerText;
+            var year = Regex.Match(title ?? "", @"\(([^)]*)\)").Groups[1].Value;
             chapters.Add(new Chapter()
             {
                 Url = requestUrl,
                 ChapterNumber = 1,
-                Name = "Película",
-                Extraval = doc.DocumentNode.CssSelect(".home__slider_content div h1.slugh1")?.FirstOrDefault()?.InnerText
+                Name = title,
+                ReleaseDate = year
             });
         }
         else

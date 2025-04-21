@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:customConverters="using:Otanabi.Converters"
     xmlns:core="using:Microsoft.Xaml.Interactions.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
@@ -14,6 +15,7 @@
         <converters:StringFormatConverter x:Key="StringFormatConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+        <customConverters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
         <converters:EmptyObjectToObjectConverter
             x:Key="EmptyObjectToObjectConverter"
             EmptyValue="Collapsed"
@@ -259,17 +261,53 @@
 
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:Chapter">
-                        <StackPanel Padding="0,15,0,15">
-                            <TextBlock VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}">
-                                <TextBlock.FontSize>15</TextBlock.FontSize>
-                            </TextBlock>
-                            <StackPanel Orientation="Horizontal" Visibility="{x:Bind History, Mode=OneWay, Converter={StaticResource EmptyObjectToObjectConverter}}">
-                                <TextBlock Margin="0,0,10,0" Text="Last seen :" />
-                                <TextBlock Text="{Binding Path=History.WatchedDate}" />
-                                <TextBlock Margin="10,0,10,0" Text="Time watched :" />
-                                <TextBlock Text="{Binding Path=History.TimeString}" />
+                        <Grid Padding="0,15,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock 
+                                Grid.Column="0"
+                                Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='# {0}'}"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                TextAlignment="Center"
+                                FontWeight="Bold"
+                                FontSize="15" />
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Text="{x:Bind Name, Mode=OneWay}">
+                                    <TextBlock.FontSize>15</TextBlock.FontSize>
+                                </TextBlock>
+                                <StackPanel
+                                    Orientation="Horizontal"
+                                    Visibility="{x:Bind History, Mode=OneWay, Converter={StaticResource EmptyObjectToObjectConverter}}">
+                                    <TextBlock FontSize="12" Opacity="0.7" Margin="0,0,10,0" Text="Last seen :" />
+                                    <TextBlock FontSize="12" Opacity="0.7" Text="{Binding Path=History.WatchedDate}" />
+                                    <TextBlock FontSize="12" Opacity="0.7" Margin="10,0,10,0" Text="Time watched :" />
+                                    <TextBlock FontSize="12" Opacity="0.7" Text="{Binding Path=History.TimeString}" />
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                            <StackPanel 
+                                Grid.Column="3"
+                                Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                                <TextBlock 
+                                    FontSize="12"
+                                    Opacity="0.7"
+                                    Text="{x:Bind ReleaseDate, Mode=OneWay}"
+                                    Visibility="{x:Bind ReleaseDate, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                <AppBarSeparator Margin="10,0,10,0" Visibility="{x:Bind Extraval, Converter={StaticResource StringToVisibilityConverter}}"/>
+                                <TextBlock 
+                                    FontSize="12"
+                                    Opacity="0.7"
+                                    Text="{x:Bind Extraval, Mode=OneWay}"
+                                    Visibility="{x:Bind Extraval, Converter={StaticResource StringToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>

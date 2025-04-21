@@ -21,8 +21,8 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
 
-    public ObservableCollection<Chapter> ChapterList { get; } = new ObservableCollection<Chapter>();
-    public ObservableCollection<FavoriteList> FavLists { get; } = new ObservableCollection<FavoriteList>();
+    public ObservableCollection<Chapter> ChapterList { get; } = [];
+    public ObservableCollection<FavoriteList> FavLists { get; } = [];
 
     [ObservableProperty]
     private bool isLoadingVideo = false;
