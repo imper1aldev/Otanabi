@@ -15,6 +15,7 @@ using Otanabi.UserControls;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System;
+using Windows.System.Display;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Otanabi.ViewModels;
@@ -26,6 +27,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly IVlcProxyService _vlcProxyService;
     private readonly IWindowPresenterService _windowPresenterService;
     private readonly WindowEx _windowEx;
+    private readonly DisplayRequest _displayRequest;
 
     private Chapter selectedChapter;
     private History selectedHistory;
@@ -104,6 +106,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService = windowPresenterService;
         _windowPresenterService.WindowPresenterChanged += OnWindowPresenterChanged;
         _vlcProxyService = vlcProxyService;
+        _displayRequest ??= new DisplayRequest();
 
         _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
@@ -374,6 +377,25 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     IsPaused = true;
                                     LoadingVideo = false;
                                 });
+                            };
+                            MPE.MediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
+                            {
+                                try
+                                {
+                                    var state = sender.PlaybackState;
+                                    if (state == MediaPlaybackState.Playing)
+                                    {
+                                        _displayRequest?.RequestActive();
+                                    }
+                                    else if (state == MediaPlaybackState.Paused || state == MediaPlaybackState.None)
+                                    {
+                                        _displayRequest?.RequestRelease();
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"[PlaybackStateChanged] DisplayRequest error: {ex.Message}");
+                                }
                             };
                             MPE.MediaPlayer.Play();
                             if (MPE.MediaPlayer.CanSeek && selectedHistory.SecondsWatched > 0)
@@ -716,6 +738,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
             //cant dispose the media player because it will crash the app
             GC.Collect();
+            _displayRequest?.RequestRelease();
         });
     }
 }
