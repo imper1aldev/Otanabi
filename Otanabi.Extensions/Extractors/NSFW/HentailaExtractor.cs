@@ -1,9 +1,10 @@
 ﻿using System.Net;
-using System.Web;
 using AngleSharp;
+using Newtonsoft.Json;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
+using Otanabi.Extensions.Models.Hentaila;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -49,30 +50,69 @@ public class HentailaExtractor : IExtractor
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            url = $"{baseUrl}/animes?buscar={HttpUtility.UrlEncode(searchTerm)}&pag={page}";
+            if (page > 1)
+            {
+                return animeList.ToArray();
+            }
+            url = $"{baseUrl}/api/search";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = $"{baseUrl}/animes?genero={GenerateTagString(tags)}&pag={page}";
+            var genre = tags.FirstOrDefault()?.Value;
+            url = $"{baseUrl}/genero/{genre}?p={page}";
         }
         else
         {
             url = $"{baseUrl}/directorio?filter=recent&p={page}";
         }
 
-        var doc = await _client.OpenAsync(url);
         var prov = (Provider)GenProvider();
-        foreach (var element in doc.QuerySelectorAll("div.columns main section.section div.grid.hentais article.hentai"))
+        if (url.Contains("api/search"))
         {
-            animeList.Add(new()
+            var _httpClient = new HttpClient();
+            var formData = new Dictionary<string, string>
             {
-                Title = element.QuerySelector("header.h-header h2")?.TextContent?.Trim(),
-                Cover = element.QuerySelector("div.h-thumb figure img").GetImageUrl(),
-                Url = element.QuerySelector("a").GetAbsoluteUrl("href"),
-                Provider = prov,
-                ProviderId = prov.Id,
-                Type = AnimeType.OTHER
-            });
+                { "value", searchTerm },
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
+            {
+                Content = content
+            };
+
+            var responseSearch = await _httpClient.SendAsync(request);
+            var html = await responseSearch.Content.ReadAsStringAsync();
+            var elements = JsonConvert.DeserializeObject<List<HentailaDto>>(html);
+            foreach (var anime in elements)
+            {
+                animeList.Add(new()
+                {
+                    Title = anime.title,
+                    Cover = $"{baseUrl}/uploads/portadas/{anime.id}.jpg",
+                    Url = $"{baseUrl}/hentai-{anime.slug}",
+                    Provider = prov,
+                    ProviderId = prov.Id,
+                    Type = AnimeType.OTHER
+                });
+            }
+        }
+        else
+        {
+            var doc = await _client.OpenAsync(url);
+            foreach (var element in doc.QuerySelectorAll("div.columns main section.section div.grid.hentais article.hentai"))
+            {
+                animeList.Add(new()
+                {
+                    Title = element.QuerySelector("header.h-header h2")?.TextContent?.Trim(),
+                    Cover = element.QuerySelector("div.h-thumb figure img").GetImageUrl(),
+                    Url = element.QuerySelector("a").GetAbsoluteUrl("href"),
+                    Provider = prov,
+                    ProviderId = prov.Id,
+                    Type = AnimeType.OTHER
+                });
+            }
         }
         return animeList.ToArray();
     }
@@ -93,7 +133,7 @@ public class HentailaExtractor : IExtractor
             Url = requestUrl,
             Title = doc.QuerySelector("article.hentai-single header.h-header h1")?.TextContent?.Trim(),
             Description = doc.QuerySelector("article.hentai-single div.h-content p")?.TextContent?.TrimAll(),
-            Status = doc.QuerySelectorAll("article.hentai-single span.status-on").Any() ? "En Emisión" : "Finalizado",
+            Status = doc.QuerySelectorAll("article.hentai-single span.status-on").Length != 0 ? "En Emisión" : "Finalizado",
             GenreStr = string.Join(",", doc.QuerySelectorAll("article.hentai-single footer.h-footer nav.genres a.btn.sm").Select(x => WebUtility.HtmlDecode(x.TextContent?.Trim())).ToList()),
             RemoteID = requestUrl.Replace("/", ""),
             Cover = doc.QuerySelector("div.h-thumb figure img").GetImageUrl(),
@@ -150,97 +190,49 @@ public class HentailaExtractor : IExtractor
         return sources.Where(x => !string.IsNullOrEmpty(x.Server)).ToArray();
     }
 
-    public static string GenerateTagString(Tag[] tags)
-    {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
-    }
-
     public Tag[] GetTags()
     {
         return
         [
-            new() { Name = "Acción", Value = "accion" },
-            new() { Name = "Aenime", Value = "aenime" },
-            new() { Name = "Anime Latino", Value = "anime-latino" },
-            new() { Name = "Artes Marciales", Value = "artes-marciales" },
-            new() { Name = "Aventura", Value = "aventura" },
-            new() { Name = "Aventuras", Value = "aventuras" },
-            new() { Name = "Blu-ray", Value = "blu-ray" },
-            new() { Name = "Carreras", Value = "carreras" },
-            new() { Name = "Castellano", Value = "castellano" },
-            new() { Name = "Ciencia Ficción", Value = "ciencia-ficcion" },
-            new() { Name = "Comedia", Value = "comedia" },
-            new() { Name = "Cyberpunk", Value = "cyberpunk" },
-            new() { Name = "Demencia", Value = "demencia" },
-            new() { Name = "Dementia", Value = "dementia" },
-            new() { Name = "Demonios", Value = "demonios" },
-            new() { Name = "Deportes", Value = "deportes" },
-            new() { Name = "Drama", Value = "drama" },
+            new() { Name = "3D", Value = "3d" },
+            new() { Name = "Ahegao", Value = "ahegao" },
+            new() { Name = "Anal", Value = "anal" },
+            new() { Name = "Casadas", Value = "casadas" },
+            new() { Name = "Chikan", Value = "chikan" },
             new() { Name = "Ecchi", Value = "ecchi" },
+            new() { Name = "Enfermeras", Value = "enfermeras" },
+            new() { Name = "Futanari", Value = "futanari" },
             new() { Name = "Escolares", Value = "escolares" },
-            new() { Name = "Espacial", Value = "espacial" },
-            new() { Name = "Fantasía", Value = "fantasia" },
             new() { Name = "Gore", Value = "gore" },
+            new() { Name = "Hardcore", Value = "hardcore" },
             new() { Name = "Harem", Value = "harem" },
-            new() { Name = "Historia paralela", Value = "historia-paralela" },
-            new() { Name = "Historico", Value = "historico" },
-            new() { Name = "Horror", Value = "horror" },
-            new() { Name = "Infantil", Value = "infantil" },
-            new() { Name = "Josei", Value = "josei" },
-            new() { Name = "Juegos", Value = "juegos" },
-            new() { Name = "Latino", Value = "latino" },
-            new() { Name = "Lucha", Value = "lucha" },
-            new() { Name = "Magia", Value = "magia" },
-            new() { Name = "Mecha", Value = "mecha" },
-            new() { Name = "Militar", Value = "militar" },
-            new() { Name = "Misterio", Value = "misterio" },
-            new() { Name = "Monogatari", Value = "monogatari" },
-            new() { Name = "Música", Value = "musica" },
-            new() { Name = "Parodia", Value = "parodia" },
-            new() { Name = "Parodias", Value = "parodias" },
-            new() { Name = "Policía", Value = "policia" },
-            new() { Name = "Psicológico", Value = "psicologico" },
-            new() { Name = "Recuentos de la vida", Value = "recuentos-de-la-vida" },
-            new() { Name = "Recuerdos de la vida", Value = "recuerdos-de-la-vida" },
+            new() { Name = "Incesto", Value = "incesto" },
+            new() { Name = "Juegos Sexuales", Value = "juegos-sexuales" },
+            new() { Name = "Milfs", Value = "milfs" },
+            new() { Name = "Maids", Value = "maids" },
+            new() { Name = "Netorare", Value = "netorare" },
+            new() { Name = "Ninfomania", Value = "ninfomania" },
+            new() { Name = "Ninjas", Value = "ninjas" },
+            new() { Name = "Orgias", Value = "orgias" },
             new() { Name = "Romance", Value = "romance" },
-            new() { Name = "Samurai", Value = "samurai" },
-            new() { Name = "Seinen", Value = "seinen" },
-            new() { Name = "Shojo", Value = "shojo" },
-            new() { Name = "Shonen", Value = "shonen" },
-            new() { Name = "Shoujo", Value = "shoujo" },
-            new() { Name = "Shounen", Value = "shounen" },
-            new() { Name = "Sobrenatural", Value = "sobrenatural" },
-            new() { Name = "Superpoderes", Value = "superpoderes" },
-            new() { Name = "Suspenso", Value = "suspenso" },
-            new() { Name = "Terror", Value = "terror" },
-            new() { Name = "Vampiros", Value = "vampiros" },
+            new() { Name = "Shota", Value = "shota" },
+            new() { Name = "Softcore", Value = "softcore" },
+            new() { Name = "Succubus", Value = "succubus" },
+            new() { Name = "Teacher", Value = "teacher" },
+            new() { Name = "Tentaculos", Value = "tentaculos" },
+            new() { Name = "Tetonas", Value = "tetonas" },
+            new() { Name = "Vanilla", Value = "vanilla" },
+            new() { Name = "Violacion", Value = "violacion" },
+            new() { Name = "Virgenes", Value = "virgenes" },
             new() { Name = "Yaoi", Value = "yaoi" },
             new() { Name = "Yuri", Value = "yuri" },
+            new() { Name = "Bondage", Value = "bondage" },
+            new() { Name = "Elfas", Value = "elfas" },
+            new() { Name = "Petit", Value = "petit" },
+            new() { Name = "Threesome", Value = "threesome" },
+            new() { Name = "Paizuri", Value = "paizuri" },
+            new() { Name = "Gal", Value = "gal" },
+            new() { Name = "Oyakodon", Value = "oyakodon" }
         ];
     }
-
-    #region Private methods
-
-    private static AnimeType GetAnimeTypeByStr(string strType)
-    {
-        return strType switch
-        {
-            "OVA" => AnimeType.OVA,
-            "Anime" or "anime" or "doramas" or "serie" => AnimeType.TV,
-            "Película" or "pelicula" => AnimeType.MOVIE,
-            "Especial" => AnimeType.SPECIAL,
-            _ => AnimeType.TV,
-        };
-    }
-
-    #endregion
 }

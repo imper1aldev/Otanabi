@@ -1,10 +1,11 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using System.Web;
 using AngleSharp;
+using Newtonsoft.Json;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
+using Otanabi.Extensions.Models.Cuevanaeu;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -49,29 +50,38 @@ public class CuevanaeuExtractor : IExtractor
 
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            url = $"{baseUrl}/animes?buscar={HttpUtility.UrlEncode(searchTerm)}&pag={page}";
+            if (page > 1)
+            {
+                return animeList.ToArray();
+            }
+            url = $"{baseUrl}/search?q={HttpUtility.UrlEncode(searchTerm)}";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = $"{baseUrl}/animes?genero={GenerateTagString(tags)}&pag={page}";
+            var genre = tags.FirstOrDefault()?.Value;
+            url = $"{baseUrl}/{genre}/page/{page}";
         }
         else
         {
-            url = $"{baseUrl}/animes?estado=en+emision&pag={page}";
+            url = $"{baseUrl}/peliculas/estrenos/page/{page}";
         }
 
         var doc = await _client.OpenAsync(url);
         var prov = (Provider)GenProvider();
-        foreach (var element in doc.QuerySelectorAll(".ficha_efecto a"))
+        var script = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("{\"props\":{\"pageProps\":{"))?.TextContent;
+        var responseJson = JsonConvert.DeserializeObject<PopularAnimeList>(script);
+        foreach (var animeItem in responseJson.Props.PageProps.Movies)
         {
+            var preSlug = animeItem.Url?.Slug ?? "";
+            var type = preSlug.StartsWith("series") ? "ver-serie" : "ver-pelicula";
             animeList.Add(new()
             {
-                Title = element.QuerySelector(".title_cap")?.TextContent?.Trim(),
-                Cover = element.QuerySelector("img").GetImageUrl(),
-                Url = element.GetAbsoluteUrl("href"),
+                Title = animeItem.Titles?.Name ?? "",
+                Cover = animeItem.Images?.Poster?.Replace("/original/", "/w200/") ?? "",
+                Url = $"{baseUrl}/{type}/{animeItem.Slug?.Name}",
                 Provider = prov,
                 ProviderId = prov.Id,
-                Type = GetAnimeTypeByStr(element.QuerySelector("span.text-muted")?.TextContent?.Trim()),
+                Type = preSlug.StartsWith("series") ? AnimeType.TV : AnimeType.MOVIE,
             });
         }
         return animeList.ToArray();
@@ -86,165 +96,141 @@ public class CuevanaeuExtractor : IExtractor
         }
 
         var prov = (Provider)GenProvider();
-        Anime anime = new()
+        var script = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("{\"props\":{\"pageProps\":{"))?.TextContent;
+        var responseJson = JsonConvert.DeserializeObject<AnimeEpisodesList>(script);
+        Anime anime;
+        if (requestUrl.Contains("/ver-serie/"))
         {
-            Provider = prov,
-            ProviderId = prov.Id,
-            Url = requestUrl,
-            Title = doc.QuerySelector(".flex-column h1.text-capitalize")?.TextContent?.Trim(),
-            Description = doc.QuerySelector(".h-100 .mb-3 p")?.TextContent?.TrimAll(),
-            Status = doc.QuerySelector(".d-flex .ms-2 div:not([class])")?.TextContent?.Trim(),
-            GenreStr = string.Join(",", doc.QuerySelectorAll(".lh-lg span").Select(x => WebUtility.HtmlDecode(x.TextContent?.Trim())).ToList()),
-            RemoteID = requestUrl.Replace("/", ""),
-            Cover = doc.QuerySelector(".gap-3 img").GetImageUrl(),
-            Type = GetAnimeTypeByStr(doc.QuerySelector(".bg-transparent dl dd")?.TextContent?.Trim()),
+            var data = responseJson.Props?.PageProps?.ThisSerie;
+            anime = new()
+            {
+                Provider = prov,
+                ProviderId = prov.Id,
+                Url = requestUrl,
+                Title = data?.Titles?.Name ?? "",
+                Description = data?.Overview ?? "",
+                Status = "Desconocido",
+                GenreStr = string.Join(",", data?.Genres?.Select(g => g.Name)),
+                RemoteID = requestUrl.Replace("/", ""),
+                Cover = data?.Images?.Poster?.Replace("/original/", "/w500/"),
+                Type = AnimeType.TV,
 
-            Chapters = await GetChapters(requestUrl)
-        };
+                Chapters = await GetChapters(requestUrl)
+            };
+        }
+        else
+        {
+            var data = responseJson.Props?.PageProps?.ThisMovie;
+            anime = new()
+            {
+                Provider = prov,
+                ProviderId = prov.Id,
+                Url = requestUrl,
+                Title = data?.Titles?.Name ?? "",
+                Description = data?.Overview ?? "",
+                Status = "Finalizado",
+                GenreStr = string.Join(",", data?.Genres?.Select(g => g.Name)),
+                RemoteID = requestUrl.Replace("/", ""),
+                Cover = data?.Images?.Poster?.Replace("/original/", "/w500/"),
+                Type = AnimeType.MOVIE,
+
+                Chapters = await GetChapters(requestUrl)
+            };
+        }
+
         return anime;
     }
 
     private async Task<List<Chapter>> GetChapters(string requestUrl)
     {
-        var _httpClient = new HttpClient();
-        var html = await _httpClient.GetStringAsync(requestUrl);
-        var doc = await _client.OpenAsync(req => req.Content(html).Address(requestUrl));
-
-        var referer = doc.Url;
-        var dt = doc.QuerySelector("#dt");
-
-        var total = int.Parse(dt.GetAttribute("data-e") ?? "0");
-        var perPage = 50.0;
-        var pages = (int)Math.Ceiling(total / perPage);
-
-        var i = dt.GetAttribute("data-i");
-        var u = dt.GetAttribute("data-u");
         var chapters = new List<Chapter>();
-        for (var page = 1; page <= pages; page++)
+        var doc = await _client.OpenAsync(requestUrl);
+        if (requestUrl.Contains("/ver-serie/"))
         {
-            var formData = new Dictionary<string, string>
+            var script = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("{\"props\":{\"pageProps\":{"))?.TextContent;
+            var responseJson = JsonConvert.DeserializeObject<AnimeEpisodesList>(script);
+            foreach (var ep in responseJson.Props?.PageProps?.ThisSerie?.Seasons?.SelectMany(c => c.Episodes))
             {
-                { "acc", "episodes" },
-                { "i", i },
-                { "u", u },
-                { "p", page.ToString() }
-            };
-
-            var content = new FormUrlEncodedContent(formData);
-
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/ajax_pagination")
+                chapters.Add(new()
+                {
+                    ChapterNumber = ep.Number ?? 0,
+                    Name = $"T{ep.Slug?.Season} - Episodio {ep.Slug?.Episode}",
+                    Url = $"{baseUrl}/episodio/{ep.Slug?.Name}-temporada-{ep.Slug?.Season}-episodio-{ep.Slug?.Episode}"
+                });
+            }
+        }
+        else
+        {
+            chapters.Add(new()
             {
-                Content = content
-            };
-
-            request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
-            request.Headers.Add("accept-language", "es-419,es;q=0.8");
-            request.Headers.Referrer = new Uri(referer);
-            request.Headers.Add("origin", baseUrl);
-            request.Headers.Add("x-requested-with", "XMLHttpRequest");
-
-            var response = await _httpClient.SendAsync(request);
-
-            var pageChapters = await GetChamperInfo(response);
-
-            chapters.AddRange(pageChapters);
+                ChapterNumber = 1,
+                Name = doc.QuerySelector("header .Title")?.TextContent?.Trim(),
+                Url = requestUrl
+            });
         }
 
         return chapters.OrderBy(x => x.ChapterNumber).ToList();
     }
 
-    public async Task<List<Chapter>> GetChamperInfo(HttpResponseMessage document)
-    {
-        var html = await document.Content.ReadAsStringAsync();
-        var doc = await _client.OpenAsync(req => req.Content(html));
-        var champers = new List<Chapter>();
-        var nodes = doc.QuerySelectorAll(".ko");
-        var idx = 0;
-        foreach (var node in nodes)
-        {
-            int chapterNumber;
-            try
-            {
-                var titleText = node.QuerySelector("h2")?.TextContent ?? "";
-                var numberPart = titleText.Split("Capítulo")[1].Trim();
-                chapterNumber = int.Parse(numberPart, CultureInfo.InvariantCulture);
-            }
-            catch
-            {
-                chapterNumber = idx + 1;
-            }
-            var name = node.QuerySelector(".fs-6")?.TextContent ?? "";
-            var url = node.GetAbsoluteUrl("href") ?? "";
-            var episode = new Chapter()
-            {
-                ChapterNumber = chapterNumber,
-                Name = name.Trim(),
-                Url = url
-            };
-            champers.Add(episode);
-            idx++;
-        }
-
-        return champers;
-    }
-
     public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
-        var _httpClient = new HttpClient();
         var sources = new List<VideoSource>();
+        var doc = await _client.OpenAsync(requestUrl);
+        var script = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("{\"props\":{\"pageProps\":{"))?.TextContent;
+        var responseJson = JsonConvert.DeserializeObject<AnimeEpisodesList>(script);
+        var data = new Videos();
 
-        var html = await _httpClient.GetStringAsync(requestUrl);
-        var doc = await _client.OpenAsync(req => req.Content(html).Address(requestUrl));
-        var i = doc.QuerySelector(".opt").GetAttribute("data-encrypt");
-        var referer = doc.Url;
-
-        var formData = new Dictionary<string, string>
-            {
-                { "acc", "opt" },
-                { "i", i }
-            };
-
-        var content = new FormUrlEncodedContent(formData);
-
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/ajax_pagination")
+        if (requestUrl.Contains("/episodio/"))
         {
-            Content = content
+            data = responseJson.Props?.PageProps?.Episode?.Videos;
+        }
+        else
+        {
+            data = responseJson.Props?.PageProps?.ThisMovie?.Videos;
+        }
+
+        var serverLists = new List<IEnumerable<Server>>
+        {
+            data.Latino,
+            data.Spanish,
+            data.English,
+            data.Japanese
         };
 
-        request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
-        request.Headers.Add("accept-language", "es-419,es;q=0.8");
-        request.Headers.Referrer = new Uri(referer);
-        request.Headers.Add("origin", baseUrl);
-        request.Headers.Add("x-requested-with", "XMLHttpRequest");
-
-        var response = await _httpClient.SendAsync(request);
-
-        var videoSources = await GetVideoSourceInfo(response);
-
-        sources.AddRange(videoSources);
+        var activeServers = serverLists.FirstOrDefault(servers => servers != null && servers.Any());
+        if (activeServers != null)
+        {
+            foreach (var server in activeServers)
+            {
+                try
+                {
+                    var video = await GetVideoInfo(server.Result, server.Cyberlocker);
+                    sources.Add(video);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+            }
+        }
 
         return sources.ToArray();
     }
 
-    private async Task<List<VideoSource>> GetVideoSourceInfo(HttpResponseMessage document)
+    private async Task<VideoSource> GetVideoInfo(string requestUrl, string cyberlocker)
     {
-        var html = await document.Content.ReadAsStringAsync();
-        var doc = await _client.OpenAsync(req => req.Content(html));
-        var sources = new List<VideoSource>();
-        foreach (var server in doc.QuerySelectorAll("[data-player]"))
-        {
-            var url = server.GetAttribute("data-player").DecodeBase64();
-            var name = server.TextContent.Trim();
-            var serverName = _serverConventions.GetServerName(name);
+        var serverDoc = await _client.OpenAsync(requestUrl);
+        var urls = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))?.TextContent;
+        var url = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))
+                            ?.TextContent?.SubstringAfter("var url = '")?.SubstringBefore("'") ?? "";
+        var serverName = _serverConventions.GetServerName(cyberlocker);
 
-            sources.Add(new()
-            {
-                Server = serverName,
-                Title = serverName,
-                Url = url,
-            });
-        }
-        return sources;
+        return new VideoSource()
+        {
+            Server = serverName,
+            Title = serverName,
+            Url = url,
+        };
     }
 
     public static string GenerateTagString(Tag[] tags)
@@ -324,20 +310,4 @@ public class CuevanaeuExtractor : IExtractor
             new() { Name = "Yuri", Value = "yuri" },
         ];
     }
-
-    #region Private methods
-
-    private static AnimeType GetAnimeTypeByStr(string strType)
-    {
-        return strType switch
-        {
-            "OVA" => AnimeType.OVA,
-            "Anime" or "anime" or "doramas" or "serie" => AnimeType.TV,
-            "Película" or "pelicula" => AnimeType.MOVIE,
-            "Especial" => AnimeType.SPECIAL,
-            _ => AnimeType.TV,
-        };
-    }
-
-    #endregion
 }

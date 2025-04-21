@@ -53,7 +53,7 @@ public class MonoschinosExtractor : IExtractor
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = $"{baseUrl}/animes?genero={GenerateTagString(tags)}&pag={page}";
+            url = $"{baseUrl}/animes?genero={GenerateTagString(tags)}&pag={page}&orden=desc";
         }
         else
         {
@@ -249,16 +249,7 @@ public class MonoschinosExtractor : IExtractor
 
     public static string GenerateTagString(Tag[] tags)
     {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
+        return string.Join(",", tags.Select(t => t.Value));
     }
 
     public Tag[] GetTags()

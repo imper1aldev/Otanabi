@@ -51,11 +51,15 @@ public class ServerConventions
             },
             new Convention {
                 Name = "Voe",
-                PossibleNames = ["voe", "launchreliantcleaverriver", "jennifercertaindevelopment", "robertordercharacter", "donaldlineelse"]
+                PossibleNames = ["voe", "voesx", "launchreliantcleaverriver", "jennifercertaindevelopment", "robertordercharacter", "donaldlineelse"]
             },
             new Convention {
                 Name = "VidGuard",
                 PossibleNames = ["listeamed", "VidGuard", "vidg", "vembed", "guard", "bembed", "vgfplay"]
+            },
+            new Convention {
+                Name = "YourUpload",
+                PossibleNames = ["yourpload", "yupi"]
             }
         ];
 

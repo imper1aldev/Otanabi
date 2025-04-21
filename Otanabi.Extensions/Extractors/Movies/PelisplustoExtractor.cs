@@ -39,19 +39,19 @@ public class PelisplustoExtractor : IExtractor
     {
         var animeList = new List<Anime>();
 
-        var url = originUrl;
-
+        string url;
         if (!string.IsNullOrEmpty(searchTerm))
         {
             if (page > 1)
             {
                 return animeList.ToArray();
             }
-            url += $"/api/search/{Uri.EscapeDataString(searchTerm)}";
+            url = $"{originUrl}/api/search/{Uri.EscapeDataString(searchTerm)}";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = string.Concat(originUrl, $"/{GenerateTagString(tags)}", $"?page={page}");
+            var genre = tags.FirstOrDefault()?.Value;
+            url = string.Concat(originUrl, $"/{genre}", $"?page={page}");
         }
         else
         {
