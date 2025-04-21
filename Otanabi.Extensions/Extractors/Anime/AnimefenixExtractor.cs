@@ -1,12 +1,10 @@
 ﻿using System.Net;
-using System.Text.RegularExpressions;
 using System.Web;
 using HtmlAgilityPack;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
 using ScrapySharp.Extensions;
-using static Otanabi.Extensions.Utils.HtmlNodeExtensions;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -52,11 +50,12 @@ public class AnimefenixExtractor : IExtractor
         string url;
         if (!string.IsNullOrEmpty(searchTerm))
         {
-            url = $"{originUrl}/search?s={HttpUtility.UrlEncode(searchTerm)}&page={page}";
+            url = $"{originUrl}/directorio/anime?p={page}&q={HttpUtility.UrlEncode(searchTerm)}";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = $"{originUrl}/{GenerateTagString(tags)}?page={page}";
+            var genre = tags.FirstOrDefault()?.Value;
+            url = $"{originUrl}/directorio/anime?p={page}&genero={genre}";
         }
         else
         {
@@ -143,7 +142,7 @@ public class AnimefenixExtractor : IExtractor
 
         // Extraer iframes y obtener el parámetro "id" del src
         var urls = data
-            .Split(new[] { "<iframe" }, StringSplitOptions.RemoveEmptyEntries)
+            .Split(["<iframe"], StringSplitOptions.RemoveEmptyEntries)
             .Skip(1) // el primero no tiene iframe
             .Select(part => part.Split(["src='"], StringSplitOptions.None).ElementAtOrDefault(1))
             .Where(src => src != null)
@@ -166,72 +165,72 @@ public class AnimefenixExtractor : IExtractor
             }
         }
 
-
         return sources.ToArray();
-    }
-
-    public static string GenerateTagString(Tag[] tags)
-    {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
     }
 
     public Tag[] GetTags()
     {
         return
         [
-            new() { Name = "Peliculas", Value = "peliculas"},
-            new() { Name = "Series", Value = "series"},
-            new() { Name = "Doramas", Value = "generos/dorama"},
-            new() { Name = "Animes", Value = "animes"},
-            new() { Name = "Acción", Value = "generos/accion"},
-            new() { Name = "Animación", Value = "generos/animacion"},
-            new() { Name = "Aventura", Value = "generos/aventura"},
-            new() { Name = "Ciencia Ficción", Value = "generos/ciencia-ficcion"},
-            new() { Name = "Comedia", Value = "generos/comedia"},
-            new() { Name = "Crimen", Value = "generos/crimen"},
-            new() { Name = "Documental", Value = "generos/documental"},
-            new() { Name = "Drama", Value = "generos/drama"},
-            new() { Name = "Fantasía", Value = "generos/fantasia"},
-            new() { Name = "Foreign", Value = "generos/foreign"},
-            new() { Name = "Guerra", Value = "generos/guerra"},
-            new() { Name = "Historia", Value = "generos/historia"},
-            new() { Name = "Misterio", Value = "generos/misterio"},
-            new() { Name = "Pelicula de Televisión", Value = "generos/pelicula-de-la-television"},
-            new() { Name = "Romance", Value = "generos/romance"},
-            new() { Name = "Suspense", Value = "generos/suspense"},
-            new() { Name = "Terror", Value = "generos/terror"},
-            new() { Name = "Western", Value = "generos/western"},
+            new() { Name = "Acción", Value = "1" },
+            new() { Name = "Escolares", Value = "2" },
+            new() { Name = "Romance", Value = "3" },
+            new() { Name = "Shoujo", Value = "4" },
+            new() { Name = "Comedia", Value = "5" },
+            new() { Name = "Drama", Value = "6" },
+            new() { Name = "Seinen", Value = "7" },
+            new() { Name = "Deportes", Value = "8" },
+            new() { Name = "Shounen", Value = "9" },
+            new() { Name = "Recuentos de la vida", Value = "10" },
+            new() { Name = "Ecchi", Value = "11" },
+            new() { Name = "Sobrenatural", Value = "12" },
+            new() { Name = "Fantasía", Value = "13" },
+            new() { Name = "Magia", Value = "14" },
+            new() { Name = "Superpoderes", Value = "15" },
+            new() { Name = "Demencia", Value = "16" },
+            new() { Name = "Misterio", Value = "17" },
+            new() { Name = "Psicológico", Value = "18" },
+            new() { Name = "Suspenso", Value = "19" },
+            new() { Name = "Ciencia Ficción", Value = "20" },
+            new() { Name = "Mecha", Value = "21" },
+            new() { Name = "Militar", Value = "22" },
+            new() { Name = "Aventuras", Value = "23" },
+            new() { Name = "Historico", Value = "24" },
+            new() { Name = "Infantil", Value = "25" },
+            new() { Name = "Artes Marciales", Value = "26" },
+            new() { Name = "Terror", Value = "27" },
+            new() { Name = "Harem", Value = "28" },
+            new() { Name = "Josei", Value = "29" },
+            new() { Name = "Parodia", Value = "30" },
+            new() { Name = "Policía", Value = "31" },
+            new() { Name = "Juegos", Value = "32" },
+            new() { Name = "Carreras", Value = "33" },
+            new() { Name = "Samurai", Value = "34" },
+            new() { Name = "Espacial", Value = "35" },
+            new() { Name = "Música", Value = "36" },
+            new() { Name = "Yuri", Value = "37" },
+            new() { Name = "Demonios", Value = "38" },
+            new() { Name = "Vampiros", Value = "39" },
+            new() { Name = "Yaoi", Value = "40" },
+            new() { Name = "Humor Negro", Value = "41" },
+            new() { Name = "Crimen", Value = "42" },
+            new() { Name = "Hentai", Value = "43" },
+            new() { Name = "Youtuber", Value = "44" },
+            new() { Name = "MaiNess Random", Value = "45" },
+            new() { Name = "Donghua", Value = "46" },
+            new() { Name = "Horror", Value = "47" },
+            new() { Name = "Sin Censura", Value = "48" },
+            new() { Name = "Gore", Value = "49" },
+            new() { Name = "Live Action", Value = "50" },
+            new() { Name = "Isekai", Value = "51" },
+            new() { Name = "Gourmet", Value = "52" },
+            new() { Name = "spokon", Value = "53" },
+            new() { Name = "Zombies", Value = "54" },
+            new() { Name = "Idols", Value = "55" },
         ];
     }
 
     #region Private methods
-
-    private static List<string> FetchUrls(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return [];
-        }
-        var linkRegex = new Regex(@"(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])");
-        return linkRegex.Matches(text).Cast<Match>().Select(m => m.Value.Trim('"')).ToList();
-    }
-
-    private static string GetLang(string input)
-    {
-        if (new[] { "0", "lat" }.Any(x => input.Contains(x))) return "[LAT]";
-        if (new[] { "1", "cast" }.Any(x => input.Contains(x))) return "[CAST]";
-        if (new[] { "2", "eng", "sub" }.Any(x => input.Contains(x))) return "[SUB]";
-        return "";
-    }
 
     private static AnimeType GetAnimeTypeByStr(string strType)
     {

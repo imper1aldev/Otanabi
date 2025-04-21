@@ -2,7 +2,6 @@
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using System.Web;
 using HtmlAgilityPack;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
@@ -19,16 +18,6 @@ public class PelisplustoExtractor : IExtractor
     internal readonly string originUrl = "https://ww3.pelisplus.to";
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIE";
-
-    public string GetSourceName()
-    {
-        return sourceName;
-    }
-
-    public string GetUrl()
-    {
-        return originUrl;
-    }
 
     public IProvider GenProvider() =>
         new Provider
@@ -50,19 +39,19 @@ public class PelisplustoExtractor : IExtractor
     {
         var animeList = new List<Anime>();
 
-        var url = originUrl;
-
+        string url;
         if (!string.IsNullOrEmpty(searchTerm))
         {
             if (page > 1)
             {
                 return animeList.ToArray();
             }
-            url += $"/api/search/{HttpUtility.UrlEncode(searchTerm)}";
+            url = $"{originUrl}/api/search/{Uri.EscapeDataString(searchTerm)}";
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = string.Concat(originUrl, $"/{GenerateTagString(tags)}", $"?page={page}");
+            var genre = tags.FirstOrDefault()?.Value;
+            url = string.Concat(originUrl, $"/{genre}", $"?page={page}");
         }
         else
         {

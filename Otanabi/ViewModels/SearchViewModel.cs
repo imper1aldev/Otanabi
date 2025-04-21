@@ -33,9 +33,9 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private Provider selectedProvider = new();
 
-    public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
+    public ObservableCollection<Provider> Providers { get; } = [];
 
-    public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
+    public ObservableCollection<Tag> Tags { get; } = [];
 
     private Tag[] OriginalTags = [];
 
@@ -102,23 +102,19 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         Providers.Clear();
         var isNsfwEnabled = await _localSettingsService.ReadSettingAsync<bool>("EnableNsfwContent");
-        var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs.Where(p => isNsfwEnabled || !p.IsNsfw).OrderBy(x => x.Id))
+        var filteredProviders = _searchAnimeService
+            .GetProviders()
+            .Where(p => isNsfwEnabled || !p.IsNsfw)
+            .OrderBy(p => p.Id)
+            .ToList();
+
+        foreach (var provider in filteredProviders)
         {
-            Providers.Add(item);
+            Providers.Add(provider);
         }
-        SelectedProvider = provs[0];
 
         var selectedProviderId = await _localSettingsService.ReadSettingAsync<int>("SelectedProviderId");
-        if (selectedProviderId != 0)
-        {
-            var tmp = Providers.FirstOrDefault(p => p.Id == selectedProviderId);
-            if (tmp != null)
-            {
-                SelectedProvider = tmp;
-            }
-        }
-        await Task.CompletedTask;
+        SelectedProvider = filteredProviders.FirstOrDefault(p => p.Id == selectedProviderId) ?? filteredProviders.FirstOrDefault();
     }
 
     public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -261,5 +257,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
                 Tags.Add(tag);
             }
         }
+    }
+
+    [RelayCommand]
+    private void TagChecked()
+    {
+
     }
 }

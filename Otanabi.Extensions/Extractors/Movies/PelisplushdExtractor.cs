@@ -20,16 +20,6 @@ public class PelisplushdExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIE";
 
-    public string GetSourceName()
-    {
-        return sourceName;
-    }
-
-    public string GetUrl()
-    {
-        return originUrl;
-    }
-
     public IProvider GenProvider() =>
         new Provider
         {
@@ -57,7 +47,8 @@ public class PelisplushdExtractor : IExtractor
         }
         else if (tags != null && tags.Length > 0)
         {
-            url = $"{originUrl}/{GenerateTagString(tags)}?page={page}";
+            var genre = tags.FirstOrDefault()?.Value;
+            url = $"{originUrl}/{genre}?page={page}";
         }
         else
         {
@@ -229,21 +220,6 @@ public class PelisplushdExtractor : IExtractor
         }
 
         return sources.ToArray();
-    }
-
-
-    public static string GenerateTagString(Tag[] tags)
-    {
-        var result = "";
-        for (var i = 0; i < tags.Length; i++)
-        {
-            result += $"{tags[i].Value}";
-            if (i < tags.Length - 1)
-            {
-                result += "&";
-            }
-        }
-        return result;
     }
 
     public Tag[] GetTags()

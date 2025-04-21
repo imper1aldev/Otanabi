@@ -13,6 +13,7 @@
 		<ProjectReference Include="..\Otanabi.Core\Otanabi.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<PackageReference Include="AngleSharp" Version="1.3.0" />
 		<PackageReference Include="Jint" Version="4.2.2" />
 		<PackageReference Include="JsUnpacker" Version="1.0.0" />
 		<PackageReference Include="Juro" Version="1.3.10" />
