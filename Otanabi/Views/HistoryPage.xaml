@@ -46,9 +46,104 @@
                 VerticalAlignment="Center" />
         </Grid>
 
+        <ScrollView>
+            <ItemsRepeater
+                x:Name="lstHistory"
+                DataContext="{x:Bind ViewModel}"
+                ItemsSource="{x:Bind ViewModel.Histories}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsStretch="Fill"
+                        MinColumnSpacing="10"
+                        MinItemWidth="500"
+                        MinRowSpacing="10" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:History">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="80" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <interactivity:Interaction.Behaviors>
+                                    <interactions:EventTriggerBehavior EventName="PointerPressed">
+                                        <interactions:InvokeCommandAction Command="{Binding ElementName=lstHistory, Path=DataContext.PrepareVideoCommand}" CommandParameter="{x:Bind}" />
+                                    </interactions:EventTriggerBehavior>
+                                </interactivity:Interaction.Behaviors>
 
+                                <Image
+                                    Name="ImageExControl"
+                                    Grid.Column="0"
+                                    Width="Auto"
+                                    HorizontalAlignment="Left"
+                                    CacheMode="BitmapCache"
+                                    Source="{x:Bind Anime.Cover}" />
+                                <StackPanel Grid.Column="1" Padding="15,15,0,15">
+                                    <TextBlock FontSize="17" Text="{x:Bind Anime.Title}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontSize="15"
+                                        Text="{x:Bind ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
+                                    <TextBlock FontSize="15" Text="{x:Bind Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
+                                    <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                        <TextBlock Margin="0,0,10,0">
+                                            <Run Text="Last seen :" />
+                                            <Run Text="{x:Bind WatchedDate}" />
+                                        </TextBlock>
+                                        <TextBlock Margin="0,0,10,0">
+                                            <Run Text="Time watched :" />
+                                            <Run Text="{x:Bind TimeString}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <ProgressBar Width="auto" Value="{x:Bind ProgressPercentage}" />
 
-        <ListView
+                                </StackPanel>
+                            </Grid>
+                            <Button
+                                x:Name="DeleteBtn"
+                                Grid.Column="1"
+                                Margin="0,0,20,0"
+                                HorizontalAlignment="Right"
+                                DataContext="{Binding ElementName=lstHistory, Path=DataContext}">
+                                <FontIcon Glyph="&#xE74D;" />
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <StackPanel DataContext="{Binding ElementName=lstHistory, Path=DataContext}">
+                                            <TextBlock
+                                                Margin="0,0,0,12"
+                                                Style="{ThemeResource BaseTextBlockStyle}"
+                                                Text="Do you want to continue?" />
+                                            <StackPanel Orientation="Horizontal" Spacing="25">
+
+                                                <Button
+                                                    Background="Red"
+                                                    Click="DeleteFromHistory"
+                                                    Content="Delete"
+                                                    Tag="{x:Bind Id}" />
+
+                                                <Button
+                                                    Click="CancelDeleteHistory"
+                                                    Content="Cancel"
+                                                    Tag="{x:Bind Id}" />
+
+                                            </StackPanel>
+
+                                        </StackPanel>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollView>
+
+        <!--<ListView
             x:Name="lstHistory"
             DataContext="{x:Bind ViewModel}"
             ItemsSource="{x:Bind ViewModel.Histories}">
@@ -71,22 +166,26 @@
                             Width="Auto"
                             HorizontalAlignment="Left"
                             CacheMode="BitmapCache"
-                            Source="{x:Bind Chapter.Anime.Cover}" />
+                            Source="{x:Bind Anime.Cover}" />
                         <StackPanel Grid.Column="1" Padding="15,15,0,15">
-                            <TextBlock FontSize="17" Text="{x:Bind Chapter.Anime.Title}" />
+                            <TextBlock FontSize="17" Text="{x:Bind Anime.Title}" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 FontSize="15"
-                                Text="{x:Bind Chapter.ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
-                            <TextBlock FontSize="15" Text="{x:Bind Chapter.Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
+                                Text="{x:Bind ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
+                            <TextBlock FontSize="15" Text="{x:Bind Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
                             <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
-                                <TextBlock Margin="0,0,10,0" Text="Last seen :" />
-                                <TextBlock Text="{x:Bind WatchedDate}" />
-                                <TextBlock Margin="10,0,10,0" Text="Time watched :" />
-                                <TextBlock Text="{x:Bind TimeString}" />
-                                <TextBlock Margin="10,0,10,0" Text="Seconds watched :" />
-                                <TextBlock Text="{x:Bind SecondsWatched}" />
+                                <TextBlock Margin="0,0,10,0">
+                                    <Run Text="Last seen :" />
+                                    <Run Text="{x:Bind WatchedDate}" />
+                                </TextBlock>
+                                <TextBlock Margin="0,0,10,0">
+                                    <Run Text="Time watched :" />
+                                    <Run Text="{x:Bind TimeString}" />
+                                </TextBlock>
                             </StackPanel>
+                            <ProgressBar Width="auto" Value="{x:Bind ProgressPercentage}" />
+
                         </StackPanel>
 
                         <Button
@@ -117,23 +216,10 @@
             </ListView.ItemTemplate>
             <ListView.Footer>
                 <Grid>
-                    <!--<interactivity:Interaction.Behaviors>
-                        <behaviors:ViewportBehavior x:Name="ViewportBehavior"
-                                IsAlwaysOn="True"/>
-                    </interactivity:Interaction.Behaviors>
-                    <TextBox IsEnabled="False"
-                            Opacity="0"
-                            Text="{x:Bind ViewportBehavior.IsFullyInViewport}">
-                        <interactivity:Interaction.Behaviors>
-                            <interactions:EventTriggerBehavior EventName="TextChanged">
-                                <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadHistoryCommand}"/>
-                            </interactions:EventTriggerBehavior>
-                        </interactivity:Interaction.Behaviors>
-                    </TextBox>-->
                     <ProgressRing Background="LightGray" IsActive="{x:Bind ViewModel.IsLoading}" />
                 </Grid>
             </ListView.Footer>
-        </ListView>
+        </ListView>-->
         <TeachingTip
             x:Name="ErrorTip"
             Title="Error Detected"

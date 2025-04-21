@@ -25,6 +25,9 @@
     <None Update="Anilist\Queries\ByIdFullDetail.graphql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Anilist\Queries\ByName.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Anilist\Queries\GetTags.graphql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

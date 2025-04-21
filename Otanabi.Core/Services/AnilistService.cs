@@ -328,6 +328,60 @@ public class AnilistService
         return anime;
     }
 
+    public async Task<Media> SearchByName(string titleName, bool isAdult)
+    {
+        var variables = new Dictionary<string, object>
+        {
+            { "search", titleName },
+            { "type", "ANIME" },
+            { "page", 1 },
+            { "perpage", 20 },
+            { "isAdult", isAdult },
+        };
+
+        var query = _client.GetQuery(QueryType.ByName);
+
+        var response = await _client.SendQueryAsync(query, variables);
+
+        var medias = new List<Media>();
+
+        var data = response["data"]["Page"];
+        var pdata = data["pageInfo"];
+
+        foreach (var media in data["media"])
+        {
+            try
+            {
+                var mediaItem = new Media()
+                {
+                    Id = (int)media["id"],
+                    Title = new MediaTitle
+                    {
+                        English = (string)media["title"]["english"],
+                        Romaji = (string)media["title"]["romaji"],
+                        Native = (string)media["title"]["native"],
+                    },
+                    CoverImage = new MediaCoverImage
+                    {
+                        Color = (string)media["coverImage"]["color"],
+                        ExtraLarge = (string)media["coverImage"]["extraLarge"],
+                    },
+                };
+
+                medias.Add(mediaItem);
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e);
+                throw;
+            }
+        }
+
+        var selectedMedia = medias.FirstOrDefault(x => x.Title.Romaji == titleName || x.Title.Native == titleName || x.Title.English == titleName);
+
+        return selectedMedia;
+    }
+
     private static string RemoveHtmlTags(string html)
     {
         return string.IsNullOrEmpty(html) ? html : Regex.Replace(html, @"<.*?>", string.Empty);

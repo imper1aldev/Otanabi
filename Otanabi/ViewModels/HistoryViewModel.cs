@@ -14,6 +14,7 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
 {
     private readonly DatabaseService dbService = new();
     private readonly INavigationService _navigationService;
+    private readonly SearchAnimeService animeService = new();
 
     [ObservableProperty]
     public Boolean errorActive = false;
@@ -54,57 +55,41 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             return;
 
         IsLoading = true;
-        //var history = await dbService.GetAllHistoriesAsync();
-        //if (history != null)
-        //{
-        //    foreach (var item in history)
-        //    {
-        //        Histories.Add(item);
-        //    }
-        //}
-        //else
-        //{
-        //    noData = true;
-        //}
+        var history = (await dbService.GetAllHistories()).OrderByDescending(h => h.WatchedDate).ToList();
+        if (history != null)
+        {
+            foreach (var item in history)
+            {
+                Histories.Add(item);
+            }
+        }
+        else
+        {
+            noData = true;
+        }
         IsLoading = false;
     }
 
     [RelayCommand]
-    public async Task PrepareVideo(History param)
+    public async Task PrepareVideo(object param)
     {
-        if (IsLoadingVideo)
-            return;
+        if (param is History history)
+        {
+            if (IsLoadingVideo)
+                return;
 
-        IsLoadingVideo = true;
+            IsLoadingVideo = true;
 
-        var selectedHistory = param;
-        var selectedChapter = param.Chapter;
-        var selectedAnime = param.Chapter.Anime;
+            var selectedHistory = history;
+            var selectedAnime = selectedHistory.Anime;
 
-        //var updatedAnime = await CheckAnimeUpdates(param.Chapter.Anime);
+            var queriedAnime = await animeService.GetAnimeDetailsAsync(selectedAnime);
+            selectedAnime.Chapters = queriedAnime.Chapters.ToArray();
+            var selectedChapter = selectedAnime.Chapters.Where(c => c.ChapterNumber == selectedHistory.ChapterNumber).FirstOrDefault();
 
-        //if (updatedAnime != null)
-        //{
-        //    selectedAnime = updatedAnime;
-        //}
-        //else
-        //{
-        //    var chapList = await dbService.GetChaptersByAnime(selectedAnime.Id);
-        //    selectedAnime.Chapters = chapList;
-        //}
-
-        await OpenPlayer(selectedHistory, selectedChapter, selectedAnime);
+            await OpenPlayer(selectedHistory, selectedChapter, selectedAnime);
+        }
     }
-
-    //private async Task<Anime> CheckAnimeUpdates(Anime request)
-    //{
-    //    var anime = await dbService.UpsertAnime(request);
-    //    if (anime != null)
-    //    {
-    //        anime.Chapters = anime.Chapters.OrderBy((a) => a.ChapterNumber).ToList();
-    //    }
-    //    return anime;
-    //}
 
     public async Task OpenPlayer(History history, Chapter selectedChapter, Anime selectedAnime)
     {
@@ -114,8 +99,10 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
             data.History = history;
             data.Chapter = selectedChapter;
             data.AnimeTitle = selectedAnime.Title;
+            data.Anime = selectedAnime;
             data.ChapterList = selectedAnime.Chapters.ToList();
             data.Provider = selectedAnime.Provider;
+            data.IsIncognito = false;
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         }
@@ -129,10 +116,13 @@ public partial class HistoryViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    public async Task DeleteHistoryById(int id)
+    public async Task DeleteHistoryById(object senderId)
     {
-        var hs = Histories.Where(h => h.Id == id).First();
-        Histories.Remove(hs);
-        //await dbService.DeleteFromHistory(id);
+        if (senderId is int id)
+        {
+            var hs = Histories.Where(h => h.Id == id).First();
+            Histories.Remove(hs);
+            await dbService.DeleteFromHistory(id);
+        }
     }
 }

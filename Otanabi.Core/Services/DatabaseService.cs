@@ -10,6 +10,7 @@ public class DatabaseService
 {
     public readonly DatabaseHandler DB = DatabaseHandler.GetInstance();
     private readonly SearchAnimeService _searchAnimeService = new();
+    private AnilistService _anilistService = new();
 
     public DatabaseService() { }
 
@@ -37,6 +38,57 @@ public class DatabaseService
                 )
                 .FirstOrDefaultAsync();
         }
+        return anime;
+    }
+
+    public async Task<Anime> GetOrCreateAnime(Provider provider, Anime providerAnime)
+    {
+        var anime = await DB._db.Table<Anime>().Where(a => a.ProviderId == provider.Id && a.RemoteID == providerAnime.RemoteID).FirstOrDefaultAsync();
+        if (anime == null)
+        {
+            var anilistData = await _anilistService.SearchByName(providerAnime.Title, provider.IsAdult);
+            if (anilistData != null)
+            {
+                string coverImage = anilistData.CoverImage.ExtraLarge ?? anilistData.CoverImage.Large ?? anilistData.CoverImage.Medium;
+                anime = new Anime
+                {
+                    IdAnilist = anilistData.Id,
+                    ProviderId = provider.Id,
+                    Url = providerAnime.Url,
+                    RemoteID = providerAnime.RemoteID,
+                    Cover = coverImage,
+                    Title = anilistData.Title.Romaji,
+                };
+                await DB._db.InsertAsync(anime);
+                anime = await DB
+                    ._db.Table<Anime>()
+                    .Where(a =>
+                        a.IdAnilist == anilistData.Id
+                        && a.ProviderId == provider.Id
+                        && a.Url == providerAnime.Url
+                        && a.RemoteID == providerAnime.RemoteID
+                    )
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                anime = new Anime
+                {
+                    IdAnilist = 0,
+                    ProviderId = provider.Id,
+                    Url = providerAnime.Url,
+                    RemoteID = providerAnime.RemoteID,
+                    Cover = providerAnime.Cover,
+                    Title = providerAnime.Title,
+                };
+                await DB._db.InsertAsync(anime);
+                anime = await DB
+                    ._db.Table<Anime>()
+                    .Where(a => a.IdAnilist == 0 && a.ProviderId == provider.Id && a.Url == providerAnime.Url && a.RemoteID == providerAnime.RemoteID)
+                    .FirstOrDefaultAsync();
+            }
+        }
+
         return anime;
     }
 
@@ -170,9 +222,15 @@ public class DatabaseService
         return histories.ToArray();
     }
 
-    public async Task UpdateProgress(int historyId, long progress)
+    public async Task UpdateProgress(int historyId, long progress, long totalMedia)
     {
-        await DB._db.ExecuteAsync("update History set SecondsWatched=? , WatchedDate=?  where Id=?", progress, DateTime.Now, historyId);
+        await DB._db.ExecuteAsync(
+            "update History set SecondsWatched=? ,TotalMedia=? , WatchedDate=?  where Id=?",
+            progress,
+            totalMedia,
+            DateTime.Now,
+            historyId
+        );
     }
 
     public async Task DeleteFromHistory(int Id)

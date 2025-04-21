@@ -156,8 +156,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                     if (MPE != null && MPE.MediaPlayer != null)
                     {
                         var seconds = (long)MPE.MediaPlayer.PlaybackSession.Position.TotalSeconds;
-                        //await dbService.UpdateProgress(selectedHistory.Id, seconds);
-                        //Debug.WriteLine($"Progres ssaved seconds {seconds}  transformed: {TimeSpan.FromSeconds(seconds).ToString(@"\.hh\:mm\:ss")}");
+                        var total = (long)MPE.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds;
+                        await dbService.UpdateProgress(selectedHistory.Id, seconds, total);
                     }
                 });
             }
@@ -264,7 +264,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
         else
         {
-            selectedHistory = await dbService.GetOrCreateHistoryByCap(selectedAnime, chapter.Id);
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(selectedAnime, chapter.ChapterNumber);
         }
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;

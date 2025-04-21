@@ -229,6 +229,7 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
             data.IsIncognito = (bool)incognito;
             data.Chapter = chapter;
             data.AnimeTitle = _localAnime.Title;
+            data.Anime = _localAnime;
             data.ChapterList = _localAnime.Chapters.ToList();
             data.Provider = _localAnime.Provider;
             _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data));

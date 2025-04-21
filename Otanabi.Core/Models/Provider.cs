@@ -18,6 +18,8 @@ public class Provider : IProvider
 
     public bool IsTrackeable { get; set; } = false;
 
+    public bool IsAdult { get; set; } = false;
+
     [Ignore]
     public Anime[]? Animes { get; set; }
 }

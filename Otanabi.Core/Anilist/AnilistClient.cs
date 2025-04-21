@@ -208,6 +208,7 @@ public sealed class AnilistClient
                 QueryType.ById => "ById",
                 QueryType.ByIdFullDetail => "ByIdFullDetail",
                 QueryType.GetTags => "GetTags",
+                QueryType.ByName => "ByName",
                 _ => "SearchQuery",
             };
 
@@ -215,7 +216,7 @@ public sealed class AnilistClient
             var queryPath = Path.Combine(Path.GetDirectoryName(currPath), "Anilist", "Queries", $"{queryName}.graphql");
             return File.ReadAllText(queryPath);
         }
-        catch (Exception)
+        catch (Exception e)
         {
             return "";
         }

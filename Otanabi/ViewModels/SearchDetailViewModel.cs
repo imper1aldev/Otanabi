@@ -102,6 +102,9 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         {
             SelectedAnime = provAnime;
             Chapters = provAnime.Chapters.ToArray();
+            var tmpAnime = await _Db.GetOrCreateAnime(SelectedAnime.Provider, SelectedAnime);
+            SelectedAnime.Id = tmpAnime.Id;
+            SelectedAnime.IdAnilist = tmpAnime.IdAnilist;
             foreach (var chapter in Chapters)
             {
                 ChapterList.Add(chapter);
@@ -132,6 +135,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
             data.IsIncognito = (bool)incognito;
             data.Chapter = chapter;
             data.AnimeTitle = SelectedAnime.Title;
+            data.Anime = SelectedAnime;
             data.ChapterList = SelectedAnime.Chapters.ToList();
             data.Provider = SelectedAnime.Provider;
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);

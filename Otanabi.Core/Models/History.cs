@@ -8,6 +8,7 @@ public class History
     public int Id { get; set; }
     public DateTime WatchedDate { get; set; }
     public long SecondsWatched { get; set; }
+    public long TotalMedia { get; set; } = 0;
     public int ChapterNumber { get; set; }
     public int AnimeId { get; set; }
 
@@ -16,4 +17,10 @@ public class History
 
     [Ignore]
     public string TimeString => TimeSpan.FromSeconds(SecondsWatched).ToString(@"hh\:mm\:ss");
+
+    [Ignore]
+    public string TotalMediaString => TimeSpan.FromSeconds(TotalMedia).ToString(@"hh\:mm\:ss");
+
+    [Ignore]
+    public double ProgressPercentage => TotalMedia > 0 ? (double)SecondsWatched / TotalMedia * 100 : 0;
 }

@@ -30,7 +30,7 @@ public class StreamwishExtractor : IVideoExtractor
             var hsl2 = unpacked.SubstringAfter("\"hls2\":\"").Split(new[] { "\"" }, StringSplitOptions.None)[0];
             var hls4 = unpacked.SubstringAfter("\"hls4\":\"").Split(new[] { "\"" }, StringSplitOptions.None)[0];
 
-            streamUrl = string.IsNullOrEmpty(hls4) ? hsl2 : hls4;
+            streamUrl = hsl2;
 
             //streamUrl = unpacked.SubstringAfter("sources:[{file:\"").Split(new[] { "\"}" }, StringSplitOptions.None)[0];
         }

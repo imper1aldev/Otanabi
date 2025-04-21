@@ -8,6 +8,7 @@ public enum QueryType
     ById,
     ByIdFullDetail,
     GetTags,
+    ByName,
 }
 
 public enum ActivitySort
