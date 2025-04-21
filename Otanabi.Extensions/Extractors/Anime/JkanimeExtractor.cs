@@ -185,7 +185,7 @@ public class JkanimeExtractor : IExtractor
             Debug.WriteLine(e.Message);
         }
         await Task.CompletedTask;
-        return videoSource.ToArray();
+        return videoSource.OrderByDescending(s => s.Server).ToArray();
     }
 
     private AnimeType getAnimeTypeByStr(string strType)

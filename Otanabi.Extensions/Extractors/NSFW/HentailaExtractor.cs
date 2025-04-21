@@ -187,7 +187,7 @@ public class HentailaExtractor : IExtractor
                 Url = urlServer,
             });
         }
-        return sources.Where(x => !string.IsNullOrEmpty(x.Server)).ToArray();
+        return sources.Where(x => !string.IsNullOrEmpty(x.Server)).OrderByDescending(s => s.Server).ToArray();
     }
 
     public Tag[] GetTags()

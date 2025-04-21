@@ -3,6 +3,7 @@ using JsUnpacker;
 using Newtonsoft.Json;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
+using ScrapySharp.Extensions;
 
 namespace Otanabi.Extensions.VideoExtractors;
 
@@ -26,6 +27,16 @@ public class FilemoonExtractor : IVideoExtractor
 
             var doc = new HtmlDocument();
             doc.LoadHtml(html);
+
+            var needsRedirect = doc.DocumentNode.CssSelect("#iframe-holder iframe");
+            var redirectUrl = string.Empty;
+            if (needsRedirect.Any())
+            {
+                redirectUrl = needsRedirect.FirstOrDefault().GetAttributeValue("src")
+                                .SubstringAfter("window.location.href = '").SubstringBefore("';");
+                html = await _client.GetStringAsync(redirectUrl);
+                doc.LoadHtml(html);
+            }
 
             var scriptNode = doc.DocumentNode
                 .SelectSingleNode("//script[contains(text(),'eval') and contains(text(),'m3u8')]");

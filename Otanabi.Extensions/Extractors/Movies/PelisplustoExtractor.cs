@@ -167,7 +167,7 @@ public class PelisplustoExtractor : IExtractor
                 Url = videoUrl,
             });
         }
-        return sources.ToArray();
+        return sources.OrderByDescending(s => s.Server).ToArray();
     }
 
     public static string GenerateTagString(Tag[] tags)

@@ -252,7 +252,7 @@ public class AnimeflvExtractor : IExtractor
                 }
             }
         }
-        return sources.ToArray();
+        return sources.OrderByDescending(s => s.Server).ToArray();
     }
 
     public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
