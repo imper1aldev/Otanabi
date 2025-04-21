@@ -27,5 +27,6 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Extractors\Doramas\" />
+	  <Folder Include="Models\Cuevanaeu\" />
 	</ItemGroup>
 </Project>

@@ -79,7 +79,10 @@ public class VoeExtractor : IVideoExtractor
             {
                 _headers.Add("Referer", redirectUrl);
                 _headers.Referrer = new Uri(redirectUrl);
-                return new(playlistUrl, _headers);
+                return new(playlistUrl, _headers)
+                {
+                    UseVlcProxy = true
+                };
             }
         }
         catch (Exception ex)

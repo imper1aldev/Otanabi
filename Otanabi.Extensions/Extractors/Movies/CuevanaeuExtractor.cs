@@ -8,18 +8,18 @@ using Otanabi.Extensions.Contracts.Extractors;
 
 namespace Otanabi.Extensions.Extractors;
 
-public class MonoschinosExtractor : IExtractor
+public class CuevanaeuExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
-    internal readonly int extractorId = 10;
-    internal readonly string sourceName = "MonosChinos";
-    internal readonly string baseUrl = "https://monoschinos2.net";
+    internal readonly int extractorId = 11;
+    internal readonly string sourceName = "CuevanaEu";
+    internal readonly string baseUrl = "https://www.cuevana3.eu";
     internal readonly bool Persistent = true;
-    internal readonly string Type = "ANIME";
+    internal readonly string Type = "MOVIE";
 
     private readonly IBrowsingContext _client;
 
-    public MonoschinosExtractor()
+    public CuevanaeuExtractor()
     {
         var config = Configuration.Default.WithDefaultLoader();
         _client = BrowsingContext.New(config);

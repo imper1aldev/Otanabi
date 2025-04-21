@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net;
+﻿using System.Net;
 using System.Web;
 using AngleSharp;
 using Otanabi.Core.Helpers;
@@ -8,18 +7,18 @@ using Otanabi.Extensions.Contracts.Extractors;
 
 namespace Otanabi.Extensions.Extractors;
 
-public class MonoschinosExtractor : IExtractor
+public class HentailaExtractor : IExtractor
 {
     internal ServerConventions _serverConventions = new();
-    internal readonly int extractorId = 10;
-    internal readonly string sourceName = "MonosChinos";
-    internal readonly string baseUrl = "https://monoschinos2.net";
+    internal readonly int extractorId = 12;
+    internal readonly string sourceName = "HentaiLA";
+    internal readonly string baseUrl = "https://www5.hentaila.com";
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
 
     private readonly IBrowsingContext _client;
 
-    public MonoschinosExtractor()
+    public HentailaExtractor()
     {
         var config = Configuration.Default.WithDefaultLoader();
         _client = BrowsingContext.New(config);
@@ -32,7 +31,8 @@ public class MonoschinosExtractor : IExtractor
             Name = sourceName,
             Url = baseUrl,
             Type = Type,
-            Persistent = Persistent
+            Persistent = Persistent,
+            IsNsfw = true,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -57,21 +57,21 @@ public class MonoschinosExtractor : IExtractor
         }
         else
         {
-            url = $"{baseUrl}/animes?estado=en+emision&pag={page}";
+            url = $"{baseUrl}/directorio?filter=recent&p={page}";
         }
 
         var doc = await _client.OpenAsync(url);
         var prov = (Provider)GenProvider();
-        foreach (var element in doc.QuerySelectorAll(".ficha_efecto a"))
+        foreach (var element in doc.QuerySelectorAll("div.columns main section.section div.grid.hentais article.hentai"))
         {
             animeList.Add(new()
             {
-                Title = element.QuerySelector(".title_cap")?.TextContent?.Trim(),
-                Cover = element.QuerySelector("img").GetImageUrl(),
-                Url = element.GetAbsoluteUrl("href"),
+                Title = element.QuerySelector("header.h-header h2")?.TextContent?.Trim(),
+                Cover = element.QuerySelector("div.h-thumb figure img").GetImageUrl(),
+                Url = element.QuerySelector("a").GetAbsoluteUrl("href"),
                 Provider = prov,
                 ProviderId = prov.Id,
-                Type = GetAnimeTypeByStr(element.QuerySelector("span.text-muted")?.TextContent?.Trim()),
+                Type = AnimeType.OTHER
             });
         }
         return animeList.ToArray();
@@ -91,13 +91,13 @@ public class MonoschinosExtractor : IExtractor
             Provider = prov,
             ProviderId = prov.Id,
             Url = requestUrl,
-            Title = doc.QuerySelector(".flex-column h1.text-capitalize")?.TextContent?.Trim(),
-            Description = doc.QuerySelector(".h-100 .mb-3 p")?.TextContent?.TrimAll(),
-            Status = doc.QuerySelector(".d-flex .ms-2 div:not([class])")?.TextContent?.Trim(),
-            GenreStr = string.Join(",", doc.QuerySelectorAll(".lh-lg span").Select(x => WebUtility.HtmlDecode(x.TextContent?.Trim())).ToList()),
+            Title = doc.QuerySelector("article.hentai-single header.h-header h1")?.TextContent?.Trim(),
+            Description = doc.QuerySelector("article.hentai-single div.h-content p")?.TextContent?.TrimAll(),
+            Status = doc.QuerySelectorAll("article.hentai-single span.status-on").Any() ? "En Emisión" : "Finalizado",
+            GenreStr = string.Join(",", doc.QuerySelectorAll("article.hentai-single footer.h-footer nav.genres a.btn.sm").Select(x => WebUtility.HtmlDecode(x.TextContent?.Trim())).ToList()),
             RemoteID = requestUrl.Replace("/", ""),
-            Cover = doc.QuerySelector(".gap-3 img").GetImageUrl(),
-            Type = GetAnimeTypeByStr(doc.QuerySelector(".bg-transparent dl dd")?.TextContent?.Trim()),
+            Cover = doc.QuerySelector("div.h-thumb figure img").GetImageUrl(),
+            Type = AnimeType.OTHER,
 
             Chapters = await GetChapters(requestUrl)
         };
@@ -107,144 +107,47 @@ public class MonoschinosExtractor : IExtractor
     private async Task<List<Chapter>> GetChapters(string requestUrl)
     {
         var _httpClient = new HttpClient();
-        var html = await _httpClient.GetStringAsync(requestUrl);
-        var doc = await _client.OpenAsync(req => req.Content(html).Address(requestUrl));
-
-        var referer = doc.Url;
-        var dt = doc.QuerySelector("#dt");
-
-        var total = int.Parse(dt.GetAttribute("data-e") ?? "0");
-        var perPage = 50.0;
-        var pages = (int)Math.Ceiling(total / perPage);
-
-        var i = dt.GetAttribute("data-i");
-        var u = dt.GetAttribute("data-u");
+        var doc = await _client.OpenAsync(requestUrl);
+        var animeId = doc.Url.SubstringAfter("hentai-").ToLower().TrimAll();
         var chapters = new List<Chapter>();
-        for (var page = 1; page <= pages; page++)
+        foreach (var chapter in doc.QuerySelectorAll("div.episodes-list article"))
         {
-            var formData = new Dictionary<string, string>
+            var numEp = chapter.QuerySelector("a")
+                                .GetAbsoluteUrl("href")
+                                .SubstringAfter($"/ver/{animeId}-")
+                                .Replace($"/ver/{animeId}-", "");
+
+            chapters.Add(new()
             {
-                { "acc", "episodes" },
-                { "i", i },
-                { "u", u },
-                { "p", page.ToString() }
-            };
-
-            var content = new FormUrlEncodedContent(formData);
-
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/ajax_pagination")
-            {
-                Content = content
-            };
-
-            request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
-            request.Headers.Add("accept-language", "es-419,es;q=0.8");
-            request.Headers.Referrer = new Uri(referer);
-            request.Headers.Add("origin", baseUrl);
-            request.Headers.Add("x-requested-with", "XMLHttpRequest");
-
-            var response = await _httpClient.SendAsync(request);
-
-            var pageChapters = await GetChamperInfo(response);
-
-            chapters.AddRange(pageChapters);
+                ChapterNumber = numEp.ToIntOrNull() ?? 0,
+                Name = $"Episodio {numEp}",
+                Url = $"{baseUrl}/ver/{animeId}-{numEp}"
+            });
         }
-
         return chapters.OrderBy(x => x.ChapterNumber).ToList();
-    }
-
-    public async Task<List<Chapter>> GetChamperInfo(HttpResponseMessage document)
-    {
-        var html = await document.Content.ReadAsStringAsync();
-        var doc = await _client.OpenAsync(req => req.Content(html));
-        var champers = new List<Chapter>();
-        var nodes = doc.QuerySelectorAll(".ko");
-        var idx = 0;
-        foreach (var node in nodes)
-        {
-            int chapterNumber;
-            try
-            {
-                var titleText = node.QuerySelector("h2")?.TextContent ?? "";
-                var numberPart = titleText.Split("Capítulo")[1].Trim();
-                chapterNumber = int.Parse(numberPart, CultureInfo.InvariantCulture);
-            }
-            catch
-            {
-                chapterNumber = idx + 1;
-            }
-            var name = node.QuerySelector(".fs-6")?.TextContent ?? "";
-            var url = node.GetAbsoluteUrl("href") ?? "";
-            var episode = new Chapter()
-            {
-                ChapterNumber = chapterNumber,
-                Name = name.Trim(),
-                Url = url
-            };
-            champers.Add(episode);
-            idx++;
-        }
-
-        return champers;
     }
 
     public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
-        var _httpClient = new HttpClient();
         var sources = new List<VideoSource>();
-
-        var html = await _httpClient.GetStringAsync(requestUrl);
-        var doc = await _client.OpenAsync(req => req.Content(html).Address(requestUrl));
-        var i = doc.QuerySelector(".opt").GetAttribute("data-encrypt");
-        var referer = doc.Url;
-
-        var formData = new Dictionary<string, string>
-            {
-                { "acc", "opt" },
-                { "i", i }
-            };
-
-        var content = new FormUrlEncodedContent(formData);
-
-        var request = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/ajax_pagination")
+        var doc = await _client.OpenAsync(requestUrl);
+        var scriptElement = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var videos = ["))?.TextContent;
+        var videoServers = scriptElement.Split("videos = ")[1].Split(";")[0].Replace("[[", "").Replace("]]", "");
+        var videoServerList = videoServers.Split("],[");
+        foreach (var it in videoServerList)
         {
-            Content = content
-        };
-
-        request.Headers.Accept.ParseAdd("application/json, text/javascript, */*; q=0.01");
-        request.Headers.Add("accept-language", "es-419,es;q=0.8");
-        request.Headers.Referrer = new Uri(referer);
-        request.Headers.Add("origin", baseUrl);
-        request.Headers.Add("x-requested-with", "XMLHttpRequest");
-
-        var response = await _httpClient.SendAsync(request);
-
-        var videoSources = await GetVideoSourceInfo(response);
-
-        sources.AddRange(videoSources);
-
-        return sources.ToArray();
-    }
-
-    private async Task<List<VideoSource>> GetVideoSourceInfo(HttpResponseMessage document)
-    {
-        var html = await document.Content.ReadAsStringAsync();
-        var doc = await _client.OpenAsync(req => req.Content(html));
-        var sources = new List<VideoSource>();
-        foreach (var server in doc.QuerySelectorAll("[data-player]"))
-        {
-            var url = server.GetAttribute("data-player").DecodeBase64();
-            var name = server.TextContent.Trim();
+            var server = it.Split(',').Select(a => a.Replace("\"", "")).ToList();
+            var urlServer = server[1].Replace("\\/", "/");
+            var name = server[0];
             var serverName = _serverConventions.GetServerName(name);
-
             sources.Add(new()
             {
                 Server = serverName,
                 Title = serverName,
-                Url = url,
+                Url = urlServer,
             });
         }
-        return sources;
+        return sources.Where(x => !string.IsNullOrEmpty(x.Server)).ToArray();
     }
 
     public static string GenerateTagString(Tag[] tags)
