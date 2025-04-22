@@ -3,12 +3,12 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
-using HtmlAgilityPack;
+using AngleSharp;
+using AngleSharp.Dom;
 using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
-using ScrapySharp.Extensions;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -20,6 +20,14 @@ public class PelisplushdExtractor : IExtractor
     internal readonly string originUrl = "https://pelisplushd.bz";
     internal readonly bool Persistent = true;
     internal readonly string Type = "MOVIE";
+
+    private readonly IBrowsingContext _client;
+
+    public PelisplushdExtractor()
+    {
+        var config = Configuration.Default.WithDefaultLoader();
+        _client = BrowsingContext.New(config);
+    }
 
     public IProvider GenProvider() =>
         new Provider
@@ -56,89 +64,89 @@ public class PelisplushdExtractor : IExtractor
             url = $"{originUrl}/series?page={page}";
         }
 
-        var oWeb = new HtmlWeb();
-        var doc = await oWeb.LoadFromWebAsync(url);
+        var doc = await _client.OpenAsync(url);
+        var prov = (Provider)GenProvider();
 
-        foreach (var nodo in doc.DocumentNode.CssSelect("div.Posters a.Posters-link"))
+        foreach (var nodo in doc.QuerySelectorAll("div.Posters a.Posters-link"))
         {
-            Anime anime = new();
-            anime.Title = nodo.CssSelect("div.listing-content p").FirstOrDefault()?.InnerText?.TrimAll();
-            anime.Cover = nodo.CssSelect("img").FirstOrDefault()?.GetAttributeValue("src");
-            anime.Url = nodo.GetAttributeValue("href").Replace("/w154/", "/w200/");
-            anime.Provider = (Provider)GenProvider();
-            anime.ProviderId = anime.Provider.Id;
-            var type = nodo.CssSelect(".centrado").FirstOrDefault()?.InnerText?.Trim();
-            type ??= url.Split('/')[3];
-            anime.Type = GetAnimeTypeByStr(type.SubstringBefore("?"));
-            animeList.Add(anime);
+            var type = nodo.QuerySelector(".centrado")?.TextContent?.Trim() ?? url.Split('/')[3];
+            var cover = nodo.QuerySelector("img")?.GetAttribute("src")?.Replace("/w154/", "/w200/");
+            animeList.Add(new()
+            {
+                Title = nodo.QuerySelector("div.listing-content p")?.TextContent?.TrimAll(),
+                Cover = cover,
+                Url = $"{nodo.GetAbsoluteUrl("href")}?cover={cover}",
+                Provider = prov,
+                ProviderId = prov.Id,
+                Type = GetAnimeTypeByStr(type.SubstringBefore("?"))
+            });
         }
         return animeList.ToArray();
     }
 
     public async Task<IAnime> GetAnimeDetailsAsync(string requestUrl)
     {
-        var url = string.Concat(requestUrl);
-        var oWeb = new HtmlWeb();
-        var doc = await oWeb.LoadFromWebAsync(url);
-
-        if (oWeb.StatusCode != HttpStatusCode.OK)
+        var doc = await _client.OpenAsync(requestUrl);
+        if (doc.StatusCode != HttpStatusCode.OK)
         {
             throw new Exception("Anime could not be found");
         }
 
-        Anime anime = new();
-        var node = doc.DocumentNode.SelectSingleNode("/html/body");
-        anime.Url = requestUrl;
-        anime.Title = node.CssSelect("h1.m-b-5")?.FirstOrDefault()?.InnerText?.TrimAll();
-        anime.Description = node.CssSelect("div.col-sm-4 div.text-large")?.FirstOrDefault()?.InnerText?.TrimAll();
-        var img = FetchUrls(node.CssSelect(".img-fluid")?.FirstOrDefault().OuterHtml).FirstOrDefault();
-        anime.Cover = img?.Replace("/w154/", "/w500/");
-        anime.Provider = (Provider)GenProvider();
-        anime.ProviderId = anime.Provider.Id;
-        anime.Status = "Finalizado";
-        var genres = node.CssSelect(".d-flex .p-v-20 a span").Select(x => WebUtility.HtmlDecode(x.InnerText?.Trim())).ToList();
-        anime.GenreStr = string.Join(",", genres);
-        anime.RemoteID = requestUrl.Replace("/", "");
-        anime.Type = GetAnimeTypeByStr(requestUrl.Split("/")[3]);
-        anime.Chapters = GetChapters(requestUrl, doc);
+        var prov = (Provider)GenProvider();
+        var cover = requestUrl.GetParameter("cover")?.Replace("/w200/", "/w500/");
+        requestUrl = requestUrl.RemoveParameter("cover");
+        var anime = new Anime()
+        {
+            Url = requestUrl,
+            Title = doc.QuerySelector("h1.m-b-5")?.TextContent?.TrimAll(),
+            Description = doc.QuerySelector("div.col-sm-4 div.text-large")?.TextContent?.TrimAll(),
+            Cover = cover,
+            Status = "Finalizado",
+            Provider = prov,
+            ProviderId = prov.Id,
+            GenreStr = string.Join(",", doc.QuerySelectorAll(".d-flex .p-v-20 a span").Select(x => WebUtility.HtmlDecode(x.TextContent?.Trim())).ToList()),
+            RemoteID = requestUrl.Replace("/", ""),
+            Type = GetAnimeTypeByStr(requestUrl.Split("/")[3]),
+            Chapters = GetChapters(requestUrl, doc)
+        };
         return anime;
     }
 
     public async Task<IVideoSource[]> GetVideoSources(string requestUrl)
     {
-        var oWeb = new HtmlWeb();
-        var doc = await oWeb.LoadFromWebAsync(requestUrl);
-
-        if (oWeb.StatusCode != HttpStatusCode.OK)
+        var doc = await _client.OpenAsync(requestUrl);
+        if (doc.StatusCode != HttpStatusCode.OK)
+        {
             throw new Exception("Page could not be loaded");
+        }
 
         var sources = new List<VideoSource>();
-        var scriptNode = doc.DocumentNode.SelectSingleNode("//script[contains(text(),'video[1] =')]");
+        var scriptNode = doc.Scripts.FirstOrDefault(s => s.TextContent.Contains("video[1] ="));
         if (scriptNode == null)
         {
             return sources.ToArray();
         }
 
-        var scriptContent = scriptNode.InnerText;
+        var scriptContent = scriptNode.TextContent;
         var regVideoOpts = new Regex("'(https?://[^']*)'", RegexOptions.Compiled);
         var matches = regVideoOpts.Matches(scriptContent);
 
         foreach (Match match in matches)
         {
             var optUrl = match.Groups[1].Value;
-            var response = await oWeb.LoadFromWebAsync(optUrl);
-            if (oWeb.StatusCode != HttpStatusCode.OK)
+            var response = await _client.OpenAsync(optUrl);
+            if (response.StatusCode != HttpStatusCode.OK)
             {
                 continue;
             }
 
-            var iframeNode = response.DocumentNode.SelectSingleNode("//iframe");
+            var iframeNode = response.QuerySelector("iframe");
             List<(string Lang, string OnClick, string Server)> encryptedList;
-            var dataScript = response.DocumentNode.SelectSingleNode("//script[contains(text(),'const dataLink')]")?.InnerText;
+            var dataScript = response.Scripts.FirstOrDefault(s => s.TextContent.Contains("const dataLink"))?.TextContent;
 
             if (iframeNode != null && string.IsNullOrEmpty(dataScript))
             {
-                encryptedList = [("", iframeNode.GetAttributeValue("src", ""), GetDomainName(iframeNode.GetAttributeValue("src", "")))];
+                encryptedList = [("", iframeNode.GetAttribute("src"), GetDomainName(iframeNode.GetAttribute("src")))];
             }
             else if (!string.IsNullOrEmpty(dataScript))
             {
@@ -164,12 +172,11 @@ public class PelisplushdExtractor : IExtractor
             }
             else
             {
-                encryptedList = response.DocumentNode
-                    .SelectNodes("//div[contains(@id,'PlayerDisplay')]//div[contains(@class,'OptionsLangDisp')]//div[contains(@class,'ODDIV')]//div[contains(@class,'OD')]//li")
+                encryptedList = response.QuerySelectorAll("#PlayerDisplay div[class*=\"OptionsLangDisp\"] div[class*=\"ODDIV\"] div[class*=\"OD\"] li")
                     ?.Select(li => (
-                        Lang: GetLang(li.GetAttributeValue("data-lang", "")),
-                        OnClick: li.GetAttributeValue("onclick", ""),
-                        Server: GetDomainName(li.GetAttributeValue("onclick", ""))
+                        Lang: GetLang(li.GetAttribute("data-lang")),
+                        OnClick: li.GetAttribute("onclick"),
+                        Server: GetDomainName(li.GetAttribute("onclick"))
                     )).ToList() ?? [];
             }
 
@@ -197,8 +204,8 @@ public class PelisplushdExtractor : IExtractor
                     }
                     else if (extractedUrl.Contains("?data="))
                     {
-                        var nestedDoc = await oWeb.LoadFromWebAsync(extractedUrl);
-                        finalUrl = nestedDoc.DocumentNode.SelectSingleNode("//iframe")?.GetAttributeValue("src", "") ?? "";
+                        var nestedDoc = await _client.OpenAsync(extractedUrl);
+                        finalUrl = nestedDoc.QuerySelector("iframe")?.GetAttribute("src") ?? "";
                     }
                     else
                     {
@@ -254,15 +261,15 @@ public class PelisplushdExtractor : IExtractor
 
     #region Private methods
 
-    private static List<Chapter> GetChapters(string requestUrl, HtmlDocument doc)
+    private static List<Chapter> GetChapters(string requestUrl, IDocument doc)
     {
         var chapters = new List<Chapter>();
         if (requestUrl.Contains("/pelicula/"))
         {
-            var title = doc.DocumentNode.CssSelect("h1.m-b-5")?.FirstOrDefault()?.InnerText?.Trim();
-            var dateNode = doc.DocumentNode.CssSelect(".sectionDetail")
-                .FirstOrDefault(x => x.InnerText.TrimAll().Contains("Fecha de estreno", StringComparison.OrdinalIgnoreCase));
-            var yearText = dateNode?.GetDirectInnerText()?.Trim();
+            var title = doc.QuerySelector("h1.m-b-5")?.TextContent?.Trim();
+            var dateNode = doc.QuerySelectorAll(".sectionDetail")
+                .FirstOrDefault(x => x.TextContent.TrimAll().Contains("Fecha de estreno", StringComparison.OrdinalIgnoreCase));
+            var yearText = dateNode?.Owner.TextContent?.Trim();
             var year = DateTime.TryParseExact(yearText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var d)
                 ? d.ToString("dd/MM/yyyy")
                 : Regex.Match(title ?? "", @"\(([^)]*)\)").Groups[1].Value;
@@ -278,29 +285,18 @@ public class PelisplushdExtractor : IExtractor
         else
         {
             var index = 1;
-            foreach (var item in doc.DocumentNode.CssSelect("div.tab-content div a"))
+            foreach (var item in doc.QuerySelectorAll("div.tab-content div a"))
             {
-                var chapter = new Chapter()
+                chapters.Add(new Chapter()
                 {
                     ChapterNumber = index,
-                    Name = item.InnerText?.TrimAll(),
-                    Url = item.GetAttributeValue("href"),
-                };
-                chapters.Add(chapter);
+                    Name = item.TextContent?.TrimAll(),
+                    Url = item.GetAttribute("href"),
+                });
                 index++;
             }
         }
         return chapters;
-    }
-
-    private static List<string> FetchUrls(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return [];
-        }
-        var linkRegex = new Regex(@"(http|ftp|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])");
-        return linkRegex.Matches(text).Cast<Match>().Select(m => m.Value.Trim('"')).ToList();
     }
 
     private static string GetLang(string input)

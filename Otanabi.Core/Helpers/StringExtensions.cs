@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using System.Web;
 
 public static class StringExtensions
 {
@@ -37,6 +38,7 @@ public static class StringExtensions
         Array.Reverse(charArray);
         return new string(charArray);
     }
+
     public static string SubstringAfter(this string str, string delimiter)
     {
         if (string.IsNullOrEmpty(str) || delimiter == null)
@@ -100,5 +102,50 @@ public static class StringExtensions
         var cleaned = input.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
         cleaned = Regex.Replace(cleaned, @"\s{2,}", " ");
         return cleaned.Trim();
+    }
+
+    public static string GetParameter(this string url, string key)
+    {
+        if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(key))
+        {
+            return null;
+        }
+        try
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            return query[key];
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static string RemoveParameter(this string url, string key)
+    {
+        if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(key))
+        {
+            return url;
+        }
+
+        try
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            query.Remove(key);
+
+            var baseUrl = url.Split('?')[0];
+            var newQuery = string.Join("&", query.AllKeys
+                .Where(k => !string.IsNullOrEmpty(k))
+                .Select(k => $"{HttpUtility.UrlEncode(k)}={HttpUtility.UrlEncode(query[k])}"));
+
+            return string.IsNullOrEmpty(newQuery) ? baseUrl : $"{baseUrl}?{newQuery}";
+        }
+        catch
+        {
+            return url;
+        }
     }
 }
