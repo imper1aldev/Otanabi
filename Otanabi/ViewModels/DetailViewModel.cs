@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Dynamic;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -106,9 +107,13 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     {
         GC.Collect();
         await GetProviders();
-        if (parameter is Media media && (SelectedMedia == null || SelectedMedia.Id != media.Id))
+
+        if (parameter is Media media)
         {
-            await LoadMediaAsync(media.Id);
+            if (SelectedMedia == null || SelectedMedia.Id != media.Id)
+            {
+                await LoadMediaAsync(media.Id);
+            }
         }
     }
 
@@ -122,10 +127,12 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
 
         if (data.Status != MediaStatus.NotYetReleased)
         {
-            foreach (var episode in data.StreamingEpisodes)
-            {
-                EpisodeList.Add(episode);
-            }
+            //var episodesMayches = data.StreamingEpisodes.Take((int)data.Episodes).ToList();
+
+            //foreach (var episode in episodesMayches.OrderByDescending(x => x.Number).ToList())
+            //{
+            //    EpisodeList.Add(episode);
+            //}
         }
         else
         {
@@ -212,7 +219,26 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
         if (exactMatch != null)
         {
             _localAnime = await _searchAnimeService.GetAnimeDetailsAsync(exactMatch);
+            EpisodeList.Clear();
+            foreach (var item in _localAnime.Chapters.OrderByDescending(x => x.ChapterNumber))
+            {
+                var matchedEpisode = selectedMedia.StreamingEpisodes.FirstOrDefault(x => x.Number == item.ChapterNumber);
+
+                var title = matchedEpisode != null ? matchedEpisode.Title : "";
+                var thumbnail = matchedEpisode != null ? matchedEpisode.Thumbnail : "";
+                var episode = new MediaStreamingEpisode
+                {
+                    Title = title,
+                    Number = item.ChapterNumber,
+                    Thumbnail = thumbnail,
+                    IsValid = true,
+                    Url = item.Url,
+                };
+                EpisodeList.Add(episode);
+            }
+
             var savedAnime = await db.GetOrAddAnimeByMedia(SelectedMedia, selectedProvider, _localAnime);
+            EpisodesLoaded();
             _localAnime.Id = savedAnime.Id;
             IsLoadedMerge = true;
         }

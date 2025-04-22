@@ -84,6 +84,10 @@ public partial class SeasonalViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task LoadedView(SelectorBar selectorBar)
     {
+        if (AnimeList.Count > 0)
+        {
+            return;
+        }
         selectorBars = selectorBar.Items.ToArray();
         AnimeList.Clear();
         LoadCurrentSeason();

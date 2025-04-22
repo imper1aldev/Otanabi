@@ -60,50 +60,53 @@
                 </ItemsRepeater.Layout>
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="models:History">
-                        <Grid>
+                        <Grid Background="#272728" CornerRadius="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="80" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                            <Border>
                                 <interactivity:Interaction.Behaviors>
                                     <interactions:EventTriggerBehavior EventName="PointerPressed">
                                         <interactions:InvokeCommandAction Command="{Binding ElementName=lstHistory, Path=DataContext.PrepareVideoCommand}" CommandParameter="{x:Bind}" />
                                     </interactions:EventTriggerBehavior>
                                 </interactivity:Interaction.Behaviors>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="80" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
 
-                                <Image
-                                    Name="ImageExControl"
-                                    Grid.Column="0"
-                                    Width="Auto"
-                                    HorizontalAlignment="Left"
-                                    CacheMode="BitmapCache"
-                                    Source="{x:Bind Anime.Cover}" />
-                                <StackPanel Grid.Column="1" Padding="15,15,0,15">
-                                    <TextBlock FontSize="17" Text="{x:Bind Anime.Title}" />
-                                    <TextBlock
-                                        VerticalAlignment="Center"
-                                        FontSize="15"
-                                        Text="{x:Bind ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
-                                    <TextBlock FontSize="15" Text="{x:Bind Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
-                                    <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
-                                        <TextBlock Margin="0,0,10,0">
-                                            <Run Text="Last seen :" />
-                                            <Run Text="{x:Bind WatchedDate}" />
-                                        </TextBlock>
-                                        <TextBlock Margin="0,0,10,0">
-                                            <Run Text="Time watched :" />
-                                            <Run Text="{x:Bind TimeString}" />
-                                        </TextBlock>
+
+                                    <Image
+                                        Name="ImageExControl"
+                                        Grid.Column="0"
+                                        Width="Auto"
+                                        HorizontalAlignment="Left"
+                                        CacheMode="BitmapCache"
+                                        Source="{x:Bind Anime.Cover}" />
+                                    <StackPanel Grid.Column="1" Padding="15,15,0,15">
+                                        <TextBlock FontSize="17" Text="{x:Bind Anime.Title}" />
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            FontSize="15"
+                                            Text="{x:Bind ChapterNumber, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}" />
+                                        <TextBlock FontSize="15" Text="{x:Bind Anime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider : {0}'}" />
+                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                            <TextBlock Margin="0,0,10,0">
+                                                <Run Text="Last seen :" />
+                                                <Run Text="{x:Bind WatchedDate}" />
+                                            </TextBlock>
+                                            <TextBlock Margin="0,0,10,0">
+                                                <Run Text="Time watched :" />
+                                                <Run Text="{x:Bind TimeString}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <ProgressBar Width="auto" Value="{x:Bind ProgressPercentage}" />
                                     </StackPanel>
-                                    <ProgressBar Width="auto" Value="{x:Bind ProgressPercentage}" />
+                                </Grid>
+                            </Border>
 
-                                </StackPanel>
-                            </Grid>
                             <Button
                                 x:Name="DeleteBtn"
                                 Grid.Column="1"

@@ -311,7 +311,7 @@ public class AnilistService
                 {
                     Site = "",
                     Thumbnail = (string)item["thumbnail"],
-                    Title = (string)item["title"],
+                    Title = $"Episode {GetEpisodeNumber((string)item["title"])}",
                     Number = GetEpisodeNumber((string)item["title"]) ?? 1,
                 };
                 StramingEpisodes.Add(episode);
@@ -377,7 +377,11 @@ public class AnilistService
             }
         }
 
-        var selectedMedia = medias.FirstOrDefault(x => x.Title.Romaji == titleName || x.Title.Native == titleName || x.Title.English == titleName);
+        var selectedMedia = medias.FirstOrDefault(x =>
+            string.Equals(x.Title.Romaji, titleName, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(x.Title.Native, titleName, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(x.Title.English, titleName, StringComparison.OrdinalIgnoreCase)
+        );
 
         return selectedMedia;
     }

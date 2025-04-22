@@ -87,7 +87,11 @@
                                                 Width="240"
                                                 ItemsSource="{x:Bind Genres}">
                                                 <ItemsRepeater.Layout>
-                                                    <ui:WrapLayout HorizontalSpacing="10" VerticalSpacing="10" />
+                                                    <ui:StaggeredLayout
+                                                        ColumnSpacing="5"
+                                                        DesiredColumnWidth="50"
+                                                        ItemsStretch="None"
+                                                        RowSpacing="5" />
                                                 </ItemsRepeater.Layout>
                                                 <ItemsRepeater.ItemTemplate>
                                                     <DataTemplate x:DataType="x:String">

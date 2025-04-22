@@ -20,7 +20,10 @@ public sealed class SearchEngineService
         var data = await animeService.SearchAnimeAsync(searchTerm.Romaji, 1, provider);
         var searchTerms = new[] { searchTerm.Romaji, searchTerm.English, searchTerm.Native };
 
-        var result = data.Where(x => searchTerms.Contains(x.Title)).ToList().FirstOrDefault();
+        var result = data.Where(anime => searchTerms.Any(y => string.Equals(y, anime.Title, StringComparison.OrdinalIgnoreCase)))
+            .ToList()
+            .FirstOrDefault();
+
         var fullResult = data.ToList();
         return (result, fullResult);
     }

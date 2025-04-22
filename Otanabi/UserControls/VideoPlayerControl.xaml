@@ -16,38 +16,5 @@
         <converters1:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters1:StringFormatConverter x:Key="StringFormatConverter" />
     </UserControl.Resources>
-    <Grid x:Name="VideoContainer">
-        <!--<MediaPlayerElement
-            x:Name="AMediaPlayer"
-            Width="Auto"
-            Height="Auto"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            x:Load="{x:Bind IsLoadPlayer, Mode=OneWay}"
-            AreTransportControlsEnabled="True"
-            PointerPressed="AMediaPlayer_PointerPressed"
-            PosterSource="ms-appx:///Assets/OtanabiHres.png">
-            <MediaPlayerElement.TransportControls>
-                <usercontrols:AnimeMediaTransportControls
-                    FastPlayFallbackBehaviour="Skip"
-                    FullScreenCommand="{Binding FullScreenCommand}"
-                    IsCompact="True"
-                    IsFullScreen="{Binding IsNotFullScreen, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                    IsNextEnabled="{Binding IsEnabledNext, Mode=OneWay}"
-                    IsNextTrackButtonVisible="True"
-                    IsPanelOpen="{Binding IsChapPanelOpen, Mode=OneWay}"
-                    IsPlaybackRateButtonVisible="True"
-                    IsPlaybackRateEnabled="True"
-                    IsPrevEnabled="{Binding IsEnabledPrev, Mode=OneWay}"
-                    IsPreviousTrackButtonVisible="True"
-                    IsSeekBarVisible="True"
-                    IsZoomButtonVisible="False"
-                    IsZoomEnabled="True"
-                    NextCommand="{Binding NextChapterCommand}"
-                    OpenPanelCommand="{Binding ToggleChapPanelCommand}"
-                    PreviusCommand="{Binding PrevChapterCommand}"
-                    SkipIntroCommand="{Binding SkipIntroCommand}" />
-            </MediaPlayerElement.TransportControls>
-        </MediaPlayerElement>-->
-    </Grid>
+    <Grid x:Name="VideoContainer" />
 </UserControl>
