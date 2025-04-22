@@ -56,6 +56,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private readonly string AppCurTitle = "";
     private bool IsPaused = false;
     private bool IsDisposed = false;
+    private bool IsRequestActive = false;
     public ObservableCollection<Chapter> ChapterList { get; } = [];
 
     [ObservableProperty]
@@ -385,11 +386,19 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     var state = sender.PlaybackState;
                                     if (state == MediaPlaybackState.Playing)
                                     {
-                                        _displayRequest?.RequestActive();
+                                        if (!IsRequestActive)
+                                        {
+                                            _displayRequest?.RequestActive();
+                                            IsRequestActive = true;
+                                        }
                                     }
                                     else if (state == MediaPlaybackState.Paused || state == MediaPlaybackState.None)
                                     {
-                                        _displayRequest?.RequestRelease();
+                                        if (IsRequestActive)
+                                        {
+                                            _displayRequest?.RequestRelease();
+                                            IsRequestActive = false;
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
@@ -738,7 +747,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             }
             //cant dispose the media player because it will crash the app
             GC.Collect();
-            _displayRequest?.RequestRelease();
+            if (IsRequestActive)
+            {
+                _displayRequest?.RequestRelease();
+                IsRequestActive = false;
+            }
         });
     }
 }
