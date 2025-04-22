@@ -301,13 +301,15 @@
                                 Grid.Column="3"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Right">
-                                <TextBlock 
+                                <TextBlock
+                                    VerticalAlignment="Center"
                                     FontSize="12"
                                     Opacity="0.7"
                                     Text="{x:Bind Extraval, Mode=OneWay}"
                                     Visibility="{x:Bind Extraval, Converter={StaticResource StringToVisibilityConverter}}"/>
                                 <AppBarSeparator Margin="10,0,10,0" Visibility="{x:Bind ReleaseDate, Converter={StaticResource StringToVisibilityConverter}}"/>
-                                <TextBlock 
+                                <TextBlock
+                                    VerticalAlignment="Center"
                                     FontSize="12"
                                     Opacity="0.7"
                                     Text="{x:Bind ReleaseDate, Mode=OneWay}"
