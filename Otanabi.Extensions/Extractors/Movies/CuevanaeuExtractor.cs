@@ -169,8 +169,8 @@ public class CuevanaeuExtractor : IExtractor
                 ChapterNumber = 1,
                 Name = doc.QuerySelector("header .Title")?.TextContent?.Trim(),
                 Url = requestUrl,
-                ReleaseDate = doc.QuerySelector(".meta span:nth-child(1)")?.TextContent,
-                Extraval = doc.QuerySelector(".meta span:nth-child(2)")?.TextContent
+                Extraval = doc.QuerySelector(".meta span:nth-child(1)")?.TextContent,
+                ReleaseDate = doc.QuerySelector(".meta span:nth-child(2)")?.TextContent
             });
         }
 
