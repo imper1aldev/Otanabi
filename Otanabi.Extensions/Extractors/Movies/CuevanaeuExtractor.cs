@@ -155,17 +155,21 @@ public class CuevanaeuExtractor : IExtractor
                 {
                     ChapterNumber = ep.Number ?? 0,
                     Name = $"T{ep.Slug?.Season} - Episodio {ep.Slug?.Episode}",
-                    Url = $"{baseUrl}/episodio/{ep.Slug?.Name}-temporada-{ep.Slug?.Season}-episodio-{ep.Slug?.Episode}"
+                    Url = $"{baseUrl}/episodio/{ep.Slug?.Name}-temporada-{ep.Slug?.Season}-episodio-{ep.Slug?.Episode}",
+                    ReleaseDate = DateTime.TryParse(ep.ReleaseDate, out var d) ? d.ToString("dd/MM/yyyy") : ""
                 });
             }
         }
         else
         {
+            ///document.querySelector('.home__slider_content > div.genres.rating > span:nth-child(1) > a').textContent
             chapters.Add(new()
             {
                 ChapterNumber = 1,
                 Name = doc.QuerySelector("header .Title")?.TextContent?.Trim(),
-                Url = requestUrl
+                Url = requestUrl,
+                Extraval = doc.QuerySelector(".meta span:nth-child(1)")?.TextContent,
+                ReleaseDate = doc.QuerySelector(".meta span:nth-child(2)")?.TextContent
             });
         }
 
@@ -251,63 +255,21 @@ public class CuevanaeuExtractor : IExtractor
     {
         return
         [
-            new() { Name = "Acción", Value = "accion" },
-            new() { Name = "Aenime", Value = "aenime" },
-            new() { Name = "Anime Latino", Value = "anime-latino" },
-            new() { Name = "Artes Marciales", Value = "artes-marciales" },
-            new() { Name = "Aventura", Value = "aventura" },
-            new() { Name = "Aventuras", Value = "aventuras" },
-            new() { Name = "Blu-ray", Value = "blu-ray" },
-            new() { Name = "Carreras", Value = "carreras" },
-            new() { Name = "Castellano", Value = "castellano" },
-            new() { Name = "Ciencia Ficción", Value = "ciencia-ficcion" },
-            new() { Name = "Comedia", Value = "comedia" },
-            new() { Name = "Cyberpunk", Value = "cyberpunk" },
-            new() { Name = "Demencia", Value = "demencia" },
-            new() { Name = "Dementia", Value = "dementia" },
-            new() { Name = "Demonios", Value = "demonios" },
-            new() { Name = "Deportes", Value = "deportes" },
-            new() { Name = "Drama", Value = "drama" },
-            new() { Name = "Ecchi", Value = "ecchi" },
-            new() { Name = "Escolares", Value = "escolares" },
-            new() { Name = "Espacial", Value = "espacial" },
-            new() { Name = "Fantasía", Value = "fantasia" },
-            new() { Name = "Gore", Value = "gore" },
-            new() { Name = "Harem", Value = "harem" },
-            new() { Name = "Historia paralela", Value = "historia-paralela" },
-            new() { Name = "Historico", Value = "historico" },
-            new() { Name = "Horror", Value = "horror" },
-            new() { Name = "Infantil", Value = "infantil" },
-            new() { Name = "Josei", Value = "josei" },
-            new() { Name = "Juegos", Value = "juegos" },
-            new() { Name = "Latino", Value = "latino" },
-            new() { Name = "Lucha", Value = "lucha" },
-            new() { Name = "Magia", Value = "magia" },
-            new() { Name = "Mecha", Value = "mecha" },
-            new() { Name = "Militar", Value = "militar" },
-            new() { Name = "Misterio", Value = "misterio" },
-            new() { Name = "Monogatari", Value = "monogatari" },
-            new() { Name = "Música", Value = "musica" },
-            new() { Name = "Parodia", Value = "parodia" },
-            new() { Name = "Parodias", Value = "parodias" },
-            new() { Name = "Policía", Value = "policia" },
-            new() { Name = "Psicológico", Value = "psicologico" },
-            new() { Name = "Recuentos de la vida", Value = "recuentos-de-la-vida" },
-            new() { Name = "Recuerdos de la vida", Value = "recuerdos-de-la-vida" },
-            new() { Name = "Romance", Value = "romance" },
-            new() { Name = "Samurai", Value = "samurai" },
-            new() { Name = "Seinen", Value = "seinen" },
-            new() { Name = "Shojo", Value = "shojo" },
-            new() { Name = "Shonen", Value = "shonen" },
-            new() { Name = "Shoujo", Value = "shoujo" },
-            new() { Name = "Shounen", Value = "shounen" },
-            new() { Name = "Sobrenatural", Value = "sobrenatural" },
-            new() { Name = "Superpoderes", Value = "superpoderes" },
-            new() { Name = "Suspenso", Value = "suspenso" },
-            new() { Name = "Terror", Value = "terror" },
-            new() { Name = "Vampiros", Value = "vampiros" },
-            new() { Name = "Yaoi", Value = "yaoi" },
-            new() { Name = "Yuri", Value = "yuri" },
+            new() { Name = "Series", Value = "series/estrenos" },
+            new() { Name = "Acción", Value = "genero/accion" },
+            new() { Name = "Aventura", Value = "genero/aventura" },
+            new() { Name = "Animación", Value = "genero/animacion" },
+            new() { Name = "Ciencia Ficción", Value = "genero/ciencia-ficcion" },
+            new() { Name = "Comedia", Value = "genero/comedia" },
+            new() { Name = "Crimen", Value = "genero/crimen" },
+            new() { Name = "Documentales", Value = "genero/documental" },
+            new() { Name = "Drama", Value = "genero/drama" },
+            new() { Name = "Familia", Value = "genero/familia" },
+            new() { Name = "Fantasía", Value = "genero/fantasia" },
+            new() { Name = "Misterio", Value = "genero/misterio" },
+            new() { Name = "Romance", Value = "genero/romance" },
+            new() { Name = "Suspenso", Value = "genero/suspense" },
+            new() { Name = "Terror", Value = "genero/terror" }
         ];
     }
 }

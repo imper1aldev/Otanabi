@@ -1,4 +1,6 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
@@ -12,6 +14,7 @@ public sealed partial class SearchDetailPage : Page
     private List<FavoriteList> favoriteLists;
     private List<FavoriteList> selectedFList = new();
     DatabaseService dbService = new();
+
     public SearchDetailViewModel ViewModel
     {
         get;
@@ -23,7 +26,6 @@ public sealed partial class SearchDetailPage : Page
         InitializeComponent();
     }
 
-
     protected async override void OnNavigatedTo(NavigationEventArgs e)
     {
 
@@ -34,6 +36,7 @@ public sealed partial class SearchDetailPage : Page
         }
         base.OnNavigatedTo(e);
     }
+
     private async Task LoadAnimeFavList()
     {
 
@@ -52,9 +55,6 @@ public sealed partial class SearchDetailPage : Page
         }
     }
 
-
-
-
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
@@ -63,6 +63,7 @@ public sealed partial class SearchDetailPage : Page
 
         }
     }
+
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem != null)
@@ -82,5 +83,15 @@ public sealed partial class SearchDetailPage : Page
         {
             await LoadAnimeFavList();
         }
+    }
+
+    private void ImageExControl_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        ImagePopup.IsOpen = true;
+    }
+
+    private void ClosePopup_Click(object sender, RoutedEventArgs e)
+    {
+        ImagePopup.IsOpen = false;
     }
 }
