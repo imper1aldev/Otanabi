@@ -148,4 +148,31 @@ public static class StringExtensions
             return url;
         }
     }
+
+    public static string AddOrUpdateParameter(this string url, string key, string value)
+    {
+        if (string.IsNullOrWhiteSpace(url) || string.IsNullOrWhiteSpace(key))
+        {
+            return url;
+        }
+
+        try
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            query[key] = value;
+
+            var baseUrl = url.Split('?')[0];
+            var newQuery = string.Join("&", query.AllKeys
+                .Where(k => !string.IsNullOrEmpty(k))
+                .Select(k => $"{HttpUtility.UrlEncode(k)}={HttpUtility.UrlEncode(query[k])}"));
+
+            return string.IsNullOrEmpty(newQuery) ? baseUrl : $"{baseUrl}?{newQuery}";
+        }
+        catch
+        {
+            return url;
+        }
+    }
+
 }

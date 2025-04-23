@@ -75,7 +75,7 @@ public class PelisplushdExtractor : IExtractor
             {
                 Title = nodo.QuerySelector("div.listing-content p")?.TextContent?.TrimAll(),
                 Cover = cover,
-                Url = $"{nodo.GetAbsoluteUrl("href")}?cover={cover}",
+                Url = nodo.GetAbsoluteUrl("href").AddOrUpdateParameter("cover", cover),
                 Provider = prov,
                 ProviderId = prov.Id,
                 Type = GetAnimeTypeByStr(type.SubstringBefore("?"))
@@ -94,6 +94,8 @@ public class PelisplushdExtractor : IExtractor
 
         var prov = (Provider)GenProvider();
         var cover = requestUrl.GetParameter("cover")?.Replace("/w200/", "/w500/");
+        cover ??= doc.QuerySelector("div.card-body div.row div.col-sm-3 img.img-fluid")?.GetAttribute("src")?.Replace("/w154/", "/w500/");
+
         requestUrl = requestUrl.RemoveParameter("cover");
         var anime = new Anime()
         {
