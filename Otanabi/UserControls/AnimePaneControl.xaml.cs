@@ -14,6 +14,7 @@ public sealed partial class AnimePaneControl : UserControl
 {
     private readonly DatabaseService dbService = new();
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly SearchAnimeService _searchAnimeService = new();
 
     public AnimePaneControl()
     {
@@ -143,11 +144,15 @@ public sealed partial class AnimePaneControl : UserControl
 
     private async Task AddToFavorites(Anime anime, int favId)
     {
-        var savedAnime = await dbService.UpsertAnime(anime, true);
-        if (savedAnime != null)
+        var provAnime = await _searchAnimeService.GetAnimeDetailsAsync(anime);
+        if (provAnime != null)
         {
-            _ = await dbService.UpsertAnimeFavorite(savedAnime, favId);
-            FavoriteAnimeChanged?.Invoke(this, null);
+            var tmpAnime = await dbService.GetOrCreateAnime(provAnime.Provider, provAnime);
+            if (tmpAnime != null)
+            {
+                _ = await dbService.UpsertAnimeFavorite(tmpAnime, favId);
+                FavoriteAnimeChanged?.Invoke(this, null);
+            }
         }
     }
 

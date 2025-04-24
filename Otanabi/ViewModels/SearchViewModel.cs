@@ -1,248 +1,291 @@
-﻿using System.Collections.Immutable;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Controls;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
-using Otanabi.Core.Models;
+using Otanabi.Core.Anilist.Enums;
+using Otanabi.Core.Anilist.Models;
 using Otanabi.Core.Services;
-using Otanabi.Models.Enums;
+using Otanabi.Services;
 
 namespace Otanabi.ViewModels;
 
 public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
+    private readonly AnilistService _anilistService = new();
+    private readonly DatabaseService databaseService = new();
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
-    private readonly SearchAnimeService _searchAnimeService = new();
-    private readonly ILocalSettingsService _localSettingsService;
 
-    private string currQuery = string.Empty;
+    #region Variables
+    public MediaSeason[] Seasons { get; } = Enum.GetValues<MediaSeason>().ToArray();
+    public MediaFormat[] Formats { get; } = Enum.GetValues<MediaFormat>().ToArray();
+    public MediaStatus[] Statuses { get; } = Enum.GetValues<MediaStatus>().ToArray();
+
+    public ObservableCollection<string> Genres { get; } = new();
+    public ObservableCollection<string> FilteredGenres { get; } = new();
+    public ObservableCollection<Media> SourceMedia { get; } = new();
+
+    public ObservableCollection<string> AutoSugestions { get; } = new();
+
+    public int[] Years
+    {
+        get
+        {
+            var currYear = DateTime.Now.Year;
+            return Enumerable.Range(1998, ((currYear + 2) - 1998)).Reverse().ToArray();
+        }
+    }
+
+    [ObservableProperty]
+    private Nullable<MediaSeason> selectedSeason;
+
+    [ObservableProperty]
+    private Nullable<MediaStatus> selectedStatus;
+
+    public ObservableCollection<MediaFormat> SelectedFormats = new();
+
+    public string GetSelectedFormats
+    {
+        get
+        {
+            if (SelectedFormats == null || SelectedFormats.Count == 0)
+            {
+                return "Select Formats";
+            }
+            return SelectedFormats.Count >= 2 ? $"{SelectedFormats[0]} , +{SelectedFormats.Count - 1} " : string.Join(", ", SelectedFormats);
+        }
+    }
+
+    public ObservableCollection<string> SelectedGenres = new();
+
+    public string GetSelectedGenres
+    {
+        get
+        {
+            if (SelectedGenres == null || SelectedGenres.Count == 0)
+            {
+                return "Select Genres";
+            }
+            return SelectedGenres.Count >= 2 ? $"{SelectedGenres[0]} , +{SelectedGenres.Count - 1} " : string.Join(", ", SelectedGenres);
+        }
+    }
+
+    [ObservableProperty]
+    private Nullable<int> selectedYear;
+
+    [ObservableProperty]
+    private bool isLoaded = false;
+
+    [ObservableProperty]
+    private bool hasMore = true;
+
+    [ObservableProperty]
     private int currPage = 1;
-    private readonly int maxItemsFirstLoad = 35;
-
-    public ObservableCollection<Anime> Source { get; } = new ObservableCollection<Anime>();
 
     [ObservableProperty]
-    private bool isLoading = false;
+    private string searchQuery;
 
-    [ObservableProperty]
-    private bool noResults = false;
+    #endregion
 
-    [ObservableProperty]
-    private Provider selectedProvider = new();
-
-    public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
-
-    public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
-
-    private Tag[] OriginalTags = Array.Empty<Tag>();
-
-    public SearchViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
+    public SearchViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
-        _localSettingsService = localSettingsService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-    }
-
-    public async void OnNavigatedTo(object parameter)
-    {
-        await GetProviders();
-        if (parameter != null && parameter is Dictionary<string, object> terms)
-        {
-            if (terms.ContainsKey("Method"))
-            {
-                switch ((SearchMethods)terms["Method"])
-                {
-                    case SearchMethods.SearchByTag:
-                        var prov = (Provider)terms["Provider"];
-
-                        SelectedProvider = Providers.First(x => x.Id == prov.Id);
-                        var tag = (Tag)terms["Tag"];
-                        ResetData();
-                        LoadTags();
-                        if (Tags.Count > 0)
-                        {
-                            Tags.First(t => t.Name == tag.Name).IsChecked = true;
-                            OnPropertyChanged(nameof(Tags));
-                            await Search("");
-                        }
-                        else
-                        {
-                            //if there are no tags(Provider does not support tagsearch), just load the main page
-                            await LoadMainAnimePage();
-                        }
-
-                        break;
-                }
-            }
-        }
-        else
-        {
-            if (Source.Count == 0)
-            {
-                var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
-
-                if (provdef != 0)
-                {
-                    var tmp = Providers.FirstOrDefault(p => p.Id == provdef);
-                    if (tmp != null)
-                        SelectedProvider = tmp;
-                }
-                await Task.CompletedTask;
-                await LoadMainAnimePage();
-                LoadTags();
-            }
-        }
-    }
-
-    private async Task GetProviders()
-    {
-        Providers.Clear();
-        var provs = _searchAnimeService.GetProviders();
-        foreach (var item in provs)
-        {
-            Providers.Add(item);
-        }
-        SelectedProvider = provs[0];
-        await Task.CompletedTask;
-    }
-
-    public async void OnAutoComplete(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-    {
-        Source.Clear();
-        var queryText = args.QueryText.ToString();
-        currQuery = queryText;
-        currPage = 1;
-        if (currQuery == "")
-            await LoadMainAnimePage();
-        else
-            await Search(queryText);
-    }
-
-    public async Task LoadMainAnimePage()
-    {
-        IsLoading = true;
-        NoResults = false;
-        var selectedTags = Tags.Where(t => t.IsChecked == true).ToArray();
-        var data = await _searchAnimeService.MainPageAsync(SelectedProvider, currPage, selectedTags);
-        if (data.Count() == 0)
-        {
-            NoResults = true;
-            IsLoading = false;
-            return;
-        }
-        foreach (var item in data)
-        {
-            Source.Add(item);
-        }
-        IsLoading = false;
-
-        if (Source.Count < maxItemsFirstLoad)
-        {
-            await LoadMore();
-        }
-        OnPropertyChanged(nameof(Source));
-    }
-
-    public async Task Search(string query)
-    {
-        NoResults = false;
-        IsLoading = true;
-        var selectedTags = Tags.Where(t => t.IsChecked == true).ToArray();
-        var data = await _searchAnimeService.SearchAnimeAsync(query, currPage, SelectedProvider, selectedTags);
-        if (data.Count() == 0)
-        {
-            NoResults = true;
-            IsLoading = false;
-            return;
-        }
-        foreach (var item in data)
-        {
-            Source.Add(item);
-        }
-        IsLoading = false;
-        if (Source.Count < maxItemsFirstLoad)
-        {
-            await LoadMore();
-        }
-
-        OnPropertyChanged(nameof(Source));
-    }
-
-    private void LoadTags()
-    {
-        Tags.Clear();
-        var filters = _searchAnimeService.GetTags(SelectedProvider);
-        if (filters.Length > 0)
-        {
-            foreach (var item in filters)
-            {
-                Tags.Add(item);
-            }
-            OriginalTags = (Tag[])filters.Clone();
-        }
+        SelectedGenres.CollectionChanged += (s, e) => OnPropertyChanged(nameof(GetSelectedGenres));
+        SelectedFormats.CollectionChanged += (s, e) => OnPropertyChanged(nameof(GetSelectedFormats));
     }
 
     public void OnNavigatedFrom() { }
 
-    private void ResetData()
+    public async void OnNavigatedTo(object parameter)
     {
-        Source.Clear();
-        Tags.Clear();
-        currQuery = string.Empty;
-        currPage = 1;
+        await GetTags();
+        await LoadRecentSugestions();
     }
 
-    [RelayCommand]
-    private void OnItemClick(Anime? clickedItem)
+    private async Task GetTags()
     {
-        if (clickedItem != null)
-        {
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, clickedItem));
-        }
-    }
-
-    [RelayCommand]
-    private async Task LoadMore()
-    {
-        if (IsLoading || NoResults)
+        if (Genres.Count > 0)
         {
             return;
         }
-        currPage++;
-        if (currQuery == "")
+        var data = await _anilistService.GetTagsASync();
+        foreach (var item in data)
         {
-            await LoadMainAnimePage();
+            Genres.Add(item);
+        }
+        OnPropertyChanged(nameof(Genres));
+        AssignGenres();
+        OnPropertyChanged(nameof(FilteredGenres));
+    }
+
+    public void UpdateCollection(IList<object> selectedItems, string type)
+    {
+        if (type == "Genres")
+        {
+            SelectedGenres.Clear();
+            foreach (var item in selectedItems)
+            {
+                SelectedGenres.Add(item.ToString());
+            }
         }
         else
         {
-            await Search(currQuery);
-        }
-    }
-
-    [RelayCommand]
-    private async Task OnProviderChanged()
-    {
-        ResetData();
-        LoadTags();
-        await LoadMainAnimePage();
-    }
-
-    [RelayCommand]
-    private void ResetFilterBox()
-    {
-        if (OriginalTags.Length > 0)
-        {
-            Tags.Clear();
-            foreach (var tag in OriginalTags)
+            SelectedFormats.Clear();
+            foreach (var item in selectedItems)
             {
-                tag.IsChecked = false;
-                Tags.Add(tag);
+                SelectedFormats.Add((MediaFormat)item);
             }
         }
+    }
+
+    private void AssignGenres()
+    {
+        FilteredGenres.Clear();
+        foreach (var item in Genres)
+        {
+            FilteredGenres.Add(item);
+        }
+    }
+
+    [RelayCommand]
+    private async void LoadMore()
+    {
+        if (!HasMore)
+        {
+            return;
+        }
+        CurrPage++;
+        await LoadDataAsync();
+    }
+
+    [RelayCommand]
+    private void ClearSelectedGenres()
+    {
+        SelectedGenres.Clear();
+        OnPropertyChanged(nameof(SelectedGenres));
+    }
+
+    [RelayCommand]
+    private void OnItemClick(Media? clickedItem)
+    {
+        if (clickedItem != null)
+        {
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                await Task.Delay(500);
+                _navigationService.NavigateTo(typeof(DetailViewModel).FullName!, clickedItem);
+            });
+        }
+    }
+
+    public async void OnSearch(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        await Search(args.QueryText.ToString());
+    }
+
+    private async Task Search(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+
+        SearchQuery = query;
+        await databaseService.AddToAutocomplete(query);
+        await LoadDataAsync();
+    }
+
+    public async Task FilterGenders(object sender, TextChangedEventArgs args)
+    {
+        if (sender is TextBox texbox)
+        {
+            var query = texbox.Text;
+            if (string.IsNullOrEmpty(query))
+            {
+                AssignGenres();
+                return;
+            }
+            var filtered = Genres.Where(x => x.ToLower().Contains(query, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            FilteredGenres.Clear();
+            foreach (var item in filtered)
+            {
+                FilteredGenres.Add(item);
+            }
+        }
+    }
+
+    private async Task LoadDataAsync()
+    {
+        var data = await _anilistService.SearchMedia(
+            page: CurrPage,
+            season: SelectedSeason,
+            status: SelectedStatus,
+            searchTerm: SearchQuery,
+            year: SelectedYear,
+            formats: SelectedFormats.Count > 0 ? SelectedFormats.ToArray() : null,
+            genres: SelectedGenres.Count > 0 ? SelectedGenres.ToArray() : null
+        );
+        var pageInfo = data.Item2;
+        HasMore = (bool)pageInfo.HasNextPage;
+
+        if (CurrPage == 1)
+        {
+            SourceMedia.Clear();
+        }
+
+        foreach (var item in data.Item1)
+        {
+            SourceMedia.Add(item);
+        }
+    }
+
+    private async Task LoadRecentSugestions()
+    {
+        AutoSugestions.Clear();
+        var data = await databaseService.LastListAutoComplete();
+
+        foreach (var item in data)
+        {
+            AutoSugestions.Add(item);
+        }
+    }
+
+    public async Task OnAutoCompleteChanges(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        var query = sender.Text;
+        if (query.Length > 3 && !string.IsNullOrWhiteSpace(query))
+        {
+            var data = await databaseService.GetListAutoComplete(query);
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                AutoSugestions.Clear();
+                foreach (var item in data)
+                {
+                    AutoSugestions.Add(item);
+                }
+            });
+        }
+    }
+
+    public async Task OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    {
+        _dispatcherQueue.TryEnqueue(async () =>
+        {
+            var selectedItem = args.SelectedItem.ToString();
+            await Search(selectedItem);
+        });
+    }
+
+    [RelayCommand]
+    public void OpenSuggestions()
+    {
+        Debug.WriteLine("clicked");
     }
 }

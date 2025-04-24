@@ -13,6 +13,8 @@ public class AnimepaheExtractor : IExtractor
     internal readonly string originUrl = "https://animepahe.com";
     internal readonly bool Persistent = false;
     internal readonly string Type = "ANIME";
+    internal readonly bool IsTrackeable = true;
+    internal readonly bool AllowNativeSearch = true;
 
     public string GetSourceName() => sourceName;
 
@@ -26,6 +28,8 @@ public class AnimepaheExtractor : IExtractor
             Url = originUrl,
             Type = Type,
             Persistent = Persistent,
+            IsTrackeable = IsTrackeable,
+            AllowNativeSearch = AllowNativeSearch,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)

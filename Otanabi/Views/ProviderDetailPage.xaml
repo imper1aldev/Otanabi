@@ -1,0 +1,311 @@
+﻿<Page
+    x:Class="Otanabi.Views.ProviderDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Otanabi.Core.Models"
+    NavigationCacheMode="Enabled"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
+
+
+        <converters:EmptyObjectToObjectConverter
+            x:Key="EmptyObjectToObjectConverter"
+            EmptyValue="Collapsed"
+            NotEmptyValue="Visible" />
+    </Page.Resources>
+    <Grid>
+        <ProgressBar
+            VerticalAlignment="Top"
+            IsIndeterminate="True"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
+        <Grid
+            x:Name="ContentArea"
+            Margin="20,20,20,10"
+            Visibility="{x:Bind ViewModel.IsLoading, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0">
+
+                <Grid x:Name="portrait" Padding="15,15,15,15">
+                    <Grid.Background>
+                        <ImageBrush
+                            ImageSource="{x:Bind ViewModel.SelectedAnime.Cover, Mode=OneWay}"
+                            Opacity="0.1"
+                            Stretch="UniformToFill" />
+                    </Grid.Background>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+
+                    <Image
+                        Name="ImageExControl"
+                        Grid.Row="0"
+                        Width="Auto"
+                        Height="250"
+                        HorizontalAlignment="Left"
+                        CacheMode="BitmapCache"
+                        Source="{x:Bind ViewModel.SelectedAnime.Cover, Mode=OneWay}" />
+
+                    <StackPanel
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="20,0,0,0">
+                        <TextBlock
+                            x:Name="title"
+                            Margin="{StaticResource XXSmallTopMargin}"
+                            AllowFocusOnInteraction="True"
+                            IsTextSelectionEnabled="True"
+                            Style="{ThemeResource TitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.SelectedAnime.Title, Mode=OneWay}" />
+                        <StackPanel
+                            Margin="0,15,0,0"
+                            Orientation="Horizontal"
+                            Spacing="30">
+                            <TextBlock
+                                x:Name="type"
+                                AllowFocusOnInteraction="True"
+                                IsTextSelectionEnabled="True"
+                                Style="{ThemeResource SubtitleTextBlockStyle}"
+                                Text="{x:Bind ViewModel.SelectedAnime.TypeStr, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Type: {0}'}" />
+
+                            <TextBlock
+                                x:Name="status"
+                                AllowFocusOnInteraction="True"
+                                IsTextSelectionEnabled="True"
+                                Style="{ThemeResource SubtitleTextBlockStyle}"
+                                Text="{x:Bind ViewModel.SelectedAnime.Status, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Status:  {0}'}" />
+                            <TextBlock
+                                x:Name="ProviderName"
+                                AllowFocusOnInteraction="True"
+                                IsTextSelectionEnabled="True"
+                                Style="{ThemeResource SubtitleTextBlockStyle}"
+                                Text="{x:Bind ViewModel.SelectedAnime.Provider.Name, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Provider:  {0}'}" />
+
+                            <TextBlock
+                                AllowFocusOnInteraction="True"
+                                IsTextSelectionEnabled="True"
+                                Style="{ThemeResource SubtitleTextBlockStyle}">
+                                <Run Text="AnilistID: " />
+                                <Run Text="{x:Bind ViewModel.SelectedAnime.IdAnilist, Mode=OneWay}" />
+                            </TextBlock>
+
+                        </StackPanel>
+
+
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            AllowFocusOnInteraction="True"
+                            IsTextSelectionEnabled="True"
+                            Style="{ThemeResource BodyTextBlockStyle}"
+                            Text="{x:Bind ViewModel.SelectedAnime.Description, Mode=OneWay}" />
+
+                        <ItemsView
+                            x:Name="TagsView"
+                            Margin="0,10,0,0"
+                            DataContext="{x:Bind ViewModel}"
+                            ItemsSource="{x:Bind ViewModel.SelectedAnime.Genre, Mode=OneWay}">
+                            <ItemsView.Layout>
+                                <LinedFlowLayout
+                                    ItemsStretch="Fill"
+                                    LineSpacing="5"
+                                    MinItemSpacing="5" />
+                            </ItemsView.Layout>
+                            <ItemsView.ItemTemplate>
+                                <DataTemplate>
+                                    <ItemContainer>
+                                        <Grid>
+                                            <StackPanel MaxHeight="60" Orientation="Horizontal">
+                                                <Button
+                                                    Command="{Binding ElementName=TagsView, Path=DataContext.GenreClickCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    Content="{Binding}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </ItemContainer>
+                                </DataTemplate>
+                            </ItemsView.ItemTemplate>
+                        </ItemsView>
+
+                    </StackPanel>
+
+
+                </Grid>
+
+                <TextBox
+                    x:Name="animetxtid"
+                    Tag="{x:Bind ViewModel.SelectedAnime.Id, Mode=OneWay}"
+                    Visibility="Collapsed" />
+            </StackPanel>
+            <StackPanel
+                x:Name="ActionButtonsStack"
+                Grid.Row="1"
+                Margin="0,15,0,0"
+                Visibility="{x:Bind ViewModel.IsLoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+                <Grid x:Name="actionButtons">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <CommandBar
+                        Grid.Column="0"
+                        Width="Auto"
+                        Height="Auto"
+                        HorizontalAlignment="Left"
+                        DefaultLabelPosition="Right">
+                        <CommandBar.PrimaryCommands>
+                            <AppBarButton
+                                Command="{x:Bind ViewModel.FavoriteFunCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsLoadingFav, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                Label="{x:Bind ViewModel.FavText, Mode=OneWay}">
+                                <AppBarButton.Icon>
+                                    <FontIcon Glyph="{x:Bind ViewModel.FavStatus, Mode=OneWay}" />
+                                </AppBarButton.Icon>
+
+                            </AppBarButton>
+                            <AppBarSeparator Margin="10,0,10,0" />
+                            <AppBarElementContainer VerticalContentAlignment="Center">
+                                <Button
+                                    Content="Change Favorite List"
+                                    IsEnabled="{x:Bind ViewModel.IsFavorite, Mode=OneWay}"
+                                    IsEnabledChanged="FavoriteCombo_IsEnabledChanged">
+                                    <Button.Flyout>
+                                        <Flyout>
+                                            <StackPanel>
+                                                <ListBox
+                                                    x:Name="favListbox"
+                                                    AllowFocusOnInteraction="True"
+                                                    DisplayMemberPath="Name"
+                                                    ItemsSource="{x:Bind ViewModel.FavLists, Mode=OneWay}"
+                                                    SelectedItem="selectedFList"
+                                                    SelectedValuePath="Id"
+                                                    SelectionMode="Multiple">
+                                                    <interactivity:Interaction.Behaviors>
+                                                        <core:EventTriggerBehavior EventName="SelectionChanged">
+                                                            <core:InvokeCommandAction Command="{x:Bind ViewModel.ChangeFavListsCommand}" CommandParameter="{Binding ElementName=favListbox}" />
+                                                        </core:EventTriggerBehavior>
+                                                    </interactivity:Interaction.Behaviors>
+
+                                                </ListBox>
+                                            </StackPanel>
+                                        </Flyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </AppBarElementContainer>
+                            <AppBarSeparator Margin="10,0,10,0" />
+                            <AppBarButton Command="{x:Bind ViewModel.OrderChapterListCommand}" Label="Order">
+                                <AppBarButton.Icon>
+                                    <FontIcon Glyph="{x:Bind ViewModel.OrderIcon, Mode=OneWay}" />
+                                </AppBarButton.Icon>
+                            </AppBarButton>
+
+                        </CommandBar.PrimaryCommands>
+                    </CommandBar>
+                    <!--<StackPanel
+                    Grid.Column="1"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,10,0"
+                        HorizontalAlignment="Right"
+                        Command="{x:Bind ViewModel.ForceUpsertCommand}"
+                        IsEnabled="{x:Bind ViewModel.ForceLoad, Mode=OneWay}">
+                        <StackPanel Orientation="Horizontal">
+                            <FontIcon Margin="0,0,10,0" Glyph="&#xE9F3;" />
+                            <TextBlock Text="Force update" />
+                        </StackPanel>
+
+                    </Button>
+                </StackPanel>-->
+
+
+                </Grid>
+            </StackPanel>
+            <StackPanel
+                x:Name="LoadingVideo"
+                Grid.Row="2"
+                Width="Auto"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Visibility="{x:Bind ViewModel.IsLoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock
+                    Margin="0,0,15,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Video is loading, please wait ..." />
+                <ProgressRing
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="LightGray"
+                    IsActive="True" />
+            </StackPanel>
+
+            <Grid
+                x:Name="ChaptersData"
+                Grid.Row="2"
+                Margin="0,10,0,0"
+                Visibility="{x:Bind ViewModel.IsLoadingVideo, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <ListView
+                    Grid.Column="0"
+                    MinWidth="550"
+                    Margin="0,0,0,0"
+                    IsItemClickEnabled="True"
+                    ItemClick="ListView_ItemClick"
+                    ItemsSource="{x:Bind ViewModel.ChapterList, Mode=OneWay}">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Chapter">
+                            <StackPanel Padding="0,15,0,15">
+                                <TextBlock VerticalAlignment="Center" Text="{x:Bind ChapterNumber, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='Episode # {0}'}">
+                                    <TextBlock.FontSize>15</TextBlock.FontSize>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Visibility="{x:Bind History, Mode=OneWay, Converter={StaticResource EmptyObjectToObjectConverter}}">
+                                    <TextBlock Margin="0,0,10,0" Text="Last seen :" />
+                                    <TextBlock Text="{Binding Path=History.WatchedDate}" />
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+
+            <TeachingTip
+                x:Name="ToggleThemeTeachingTip2"
+                Title="Error Detected"
+                CloseButtonContent="Got it!"
+                IsLightDismissEnabled="True"
+                IsOpen="{x:Bind ViewModel.ErrorActive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                PlacementMargin="20"
+                PreferredPlacement="Auto"
+                Subtitle="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}" />
+        </Grid>
+    </Grid>
+
+
+</Page>

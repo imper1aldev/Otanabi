@@ -5,9 +5,11 @@
     <Platforms>x64</Platforms>
     <Platforms>x64</Platforms>
     <ImplicitUsings>enable</ImplicitUsings>
+
   </PropertyGroup>
 
   <ItemGroup> 
+    <PackageReference Include="F23.StringSimilarity" Version="6.0.0" /> 
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.3.3" />
@@ -18,7 +20,34 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="Anilist\Queries\ById.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\ByIdFullDetail.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\ByName.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\GetTags.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\SearchQuery.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\Seasonal.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Anilist\Queries\SeasonalFullDetail.graphql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Clean.ps1" CopyToOutputDirectory="Always" />
     <None Update="nlog.config" CopyToOutputDirectory="Always" />
     <None Update="update.ps1" CopyToOutputDirectory="Always" />
   </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy RemoteSigned -file &quot;$(ProjectDir)Clean.ps1&quot;" />
+  </Target>
+  
 </Project>

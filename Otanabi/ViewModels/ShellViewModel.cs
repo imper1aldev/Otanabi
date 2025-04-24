@@ -1,11 +1,10 @@
 ﻿using System.Windows.Input;
-using Otanabi.Contracts.Services;
-using Otanabi.Core.Services;
-using Otanabi.Views;
-
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using Otanabi.Contracts.Services;
+using Otanabi.Core.Services;
+using Otanabi.Views;
 
 namespace Otanabi.ViewModels;
 

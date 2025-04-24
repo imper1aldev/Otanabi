@@ -1,14 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
-using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace Otanabi.Extensions.Extractors;
 
@@ -33,6 +30,7 @@ public class JkanimeExtractor : IExtractor
             Url = originUrl,
             Type = Type,
             Persistent = Persistent,
+            Active = false,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)

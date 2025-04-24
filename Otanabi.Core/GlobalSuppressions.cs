@@ -5,5 +5,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>", Scope = "member", Target = "~M:Otanabi.Core.Services.LoggerService.LogFatal(System.String,System.Object[])")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
 [assembly: SuppressMessage("Compiler", "CS8620", Justification = "Reason for suppression")]
+[assembly: SuppressMessage("Compiler", "CS8625", Justification = "Reason for suppression")]
+[assembly: SuppressMessage("Compiler", "CS8602", Justification = "Reason for suppression")]
+[assembly: SuppressMessage("Compiler", "CS8618", Justification = "Reason for suppression")]
+[assembly: SuppressMessage("Compiler", "CS8622", Justification = "Reason for suppression")]
+[assembly: SuppressMessage("Compiler", "CS8632", Justification = "Reason for suppression")]

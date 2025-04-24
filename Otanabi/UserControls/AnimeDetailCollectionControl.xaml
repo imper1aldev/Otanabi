@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Otanabi.UserControls.AnimeDetailCollectionControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
+    xmlns:behaviors="using:CommunityToolkit.WinUI.Behaviors"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:converteres="using:Otanabi.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:local="using:Otanabi.UserControls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Otanabi.Core.Anilist.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI.Controls"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <converteres:TruncateConverter x:Key="truncateConverter" />
+        <CornerRadius x:Key="TokenItemCornerRadius">6,6,6,6</CornerRadius>
+        <Thickness x:Key="TokenItemPadding">6,2,6,2</Thickness>
+    </UserControl.Resources>
+    <Grid>
+
+        <ScrollViewer x:Name="MainScrollViewer">
+            <ItemsRepeater x:Name="MainItemRepeater" ItemsSource="{x:Bind ItemsSource, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <UniformGridLayout
+                        ItemsJustification="Start"
+                        MinColumnSpacing="60"
+                        MinRowSpacing="20" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:Media">
+                        <Grid
+                            Width="450"
+                            Height="250"
+                            AllowFocusOnInteraction="True"
+                            DataContext="{x:Bind}">
+                            <Border
+                                x:Name="Card"
+                                Width="450"
+                                Height="auto"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                DataContext="{x:Bind}"
+                                PointerPressed="Card_PointerPressed">
+                                <StackPanel Height="auto" Orientation="Horizontal">
+                                    <Border Background="Aqua">
+                                        <Image
+                                            Width="180"
+                                            Source="{x:Bind CoverImage.ExtraLarge}"
+                                            Stretch="Fill" />
+                                    </Border>
+
+                                    <Border
+                                        Width="270"
+                                        Height="auto"
+                                        Padding="20,0,0,0"
+                                        Background="#272728">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="auto" />
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="250" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                                Grid.Row="0"
+                                                Margin="0,10,2,0"
+                                                FontSize="16"
+                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                Text="{x:Bind Title.Romaji}"
+                                                TextWrapping="Wrap" />
+
+                                            <TextBlock
+                                                Grid.Row="1"
+                                                Margin="0,15,15,0"
+                                                Text="{x:Bind Description, Converter={StaticResource truncateConverter}, ConverterParameter=230}"
+                                                TextWrapping="Wrap" />
+
+                                            <ItemsRepeater
+                                                Grid.Row="2"
+                                                Width="240"
+                                                ItemsSource="{x:Bind Genres}">
+                                                <ItemsRepeater.Layout>
+                                                    <ui:StaggeredLayout
+                                                        ColumnSpacing="5"
+                                                        DesiredColumnWidth="50"
+                                                        ItemsStretch="None"
+                                                        RowSpacing="5" />
+                                                </ItemsRepeater.Layout>
+                                                <ItemsRepeater.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <Border>
+                                                            <Button
+                                                                Content="{Binding}"
+                                                                FontSize="10"
+                                                                Style="{StaticResource ButtonRevealStyle}" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsRepeater.ItemTemplate>
+                                            </ItemsRepeater>
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+
+    </Grid>
+
+</UserControl>

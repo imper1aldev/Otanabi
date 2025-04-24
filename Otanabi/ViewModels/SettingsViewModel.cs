@@ -1,17 +1,19 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Newtonsoft.Json.Linq;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
+using Otanabi.Core.Database;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.Helpers;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Newtonsoft.Json.Linq;
 using Windows.ApplicationModel;
 
 namespace Otanabi.ViewModels;
@@ -22,6 +24,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly ILocalSettingsService _localSettingsService;
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly AppUpdateService _appUpdateService = new();
+    private readonly DatabaseService _databaseService = new();
+    private readonly DispatcherQueue _dispatcherQueue;
 
     [ObservableProperty]
     private ElementTheme _elementTheme;
@@ -41,6 +45,15 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private int selectedThemeIndex;
 
+    [ObservableProperty]
+    private string messageTitle = "";
+
+    [ObservableProperty]
+    private string messageSubTitle = "";
+
+    [ObservableProperty]
+    private bool isMessageVisible = false;
+
     private bool updateAvailable = false;
 
     public ICommand SwitchThemeCommand { get; }
@@ -49,18 +62,15 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private Provider selectedProvider;
     public ObservableCollection<Provider> Providers { get; } = new ObservableCollection<Provider>();
 
-    public SettingsViewModel(
-        IThemeSelectorService themeSelectorService,
-        ILocalSettingsService localSettingsService
-    )
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, ILocalSettingsService localSettingsService)
     {
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
         _localSettingsService = localSettingsService;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _versionDescription = GetVersionDescription();
         _appName = GetAppName();
         GetExtensionVersion();
-
         SwitchThemeCommand = new RelayCommand<ComboBox>(
             async (cb) =>
             {
@@ -96,12 +106,7 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         {
             var packageVersion = Package.Current.Id.Version;
 
-            version = new(
-                packageVersion.Major,
-                packageVersion.Minor,
-                packageVersion.Build,
-                packageVersion.Revision
-            );
+            version = new(packageVersion.Major, packageVersion.Minor, packageVersion.Build, packageVersion.Revision);
         }
         else
         {
@@ -113,9 +118,6 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-
-
-
         await GetProviders();
         var provdef = await _localSettingsService.ReadSettingAsync<int>("ProviderId");
 
@@ -179,14 +181,12 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
             var version = result.Item2;
             if (verEval > 0)
             {
-                VersionMessage =
-                    "The running version is higher than the main version; it is not recommended to update in debug mode.";
+                VersionMessage = "The running version is higher than the main version; it is not recommended to update in debug mode.";
                 OnPatchNotes(
                     this,
                     (
                         "This action will break the application, be aware \n"
-                        + "The running version is higher than the main version; it is not recommended to update in debug mode."
-                        ,
+                            + "The running version is higher than the main version; it is not recommended to update in debug mode.",
                         version.ToString(),
                         true
                     )
@@ -226,6 +226,36 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         var tmpNotes = await _appUpdateService.GetReleaseNotes(version);
         var patchNotes = (string)JObject.Parse(tmpNotes)["body"];
         OnPatchNotes(this, (patchNotes, version.ToString(), false));
+    }
+
+    [RelayCommand]
+    private async Task DeleteDBData()
+    {
+        ShowMessage("Wait", "Deleting data, please wait");
+        await DatabaseHandler.GetInstance().DeleteDataAndRestructure();
+        ShowMessage("Task Done", "Database cleared");
+    }
+
+    [RelayCommand]
+    private async Task DeleteAutoComplete()
+    {
+        await _databaseService.ClearAutoComplete();
+        ShowMessage("Task Done", "AutoComplete cleared");
+    }
+
+    private void ShowMessage(string title, string subtitle)
+    {
+        MessageTitle = title;
+        MessageSubTitle = subtitle;
+        IsMessageVisible = true;
+    }
+
+    public void ToggleMessageVisibility(bool state)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            IsMessageVisible = state;
+        });
     }
 
     public event EventHandler<(string Notes, string version, bool IsAvaible)> OnPatchNotes;

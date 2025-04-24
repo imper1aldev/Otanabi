@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using System.Text;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 public static class StringExtensions
 {
@@ -8,7 +8,7 @@ public static class StringExtensions
         var startIndex = str.IndexOf(start);
         if (startIndex == -1)
             return "";
-        
+
         startIndex += start.Length;
 
         var endIndex = str.IndexOf(end, startIndex);
@@ -17,6 +17,7 @@ public static class StringExtensions
 
         return str.Substring(startIndex, endIndex - startIndex);
     }
+
     public static int? ToIntOrNull(this string? value) => int.TryParse(value, out var i) ? i : null;
 
     public static int? ToIntOrNull(this string? value, int radix)
@@ -37,6 +38,7 @@ public static class StringExtensions
         Array.Reverse(charArray);
         return new string(charArray);
     }
+
     public static string SubstringAfter(this string value, string a)
     {
         var start = value.IndexOf(a);
@@ -64,19 +66,16 @@ public static class StringExtensions
         return string.Empty;
     }
 
-    public static string DecodeBase64(this string value) =>
-        Encoding.UTF8.GetString(Convert.FromBase64String(value));
+    public static string DecodeBase64(this string value) => Encoding.UTF8.GetString(Convert.FromBase64String(value));
 
     public static byte[] DecodeBase64ToBytes(this string value) => Convert.FromBase64String(value);
 
     private static readonly Regex _whitespace = new(@"\s+");
 
-    public static string ReplaceWhitespaces(this string input, string replacement) =>
-        _whitespace.Replace(input, replacement);
+    public static string ReplaceWhitespaces(this string input, string replacement) => _whitespace.Replace(input, replacement);
 
-    public static string RemoveWhitespaces(this string input) =>
-        input.ReplaceWhitespaces(string.Empty);
-     
+    public static string RemoveWhitespaces(this string input) => input.ReplaceWhitespaces(string.Empty);
+
     public static string RemovePrefix(this string input, string prefix)
     {
         if (input.StartsWith(prefix))
@@ -91,5 +90,15 @@ public static class StringExtensions
             return string.Empty;
 
         return input.Remove(0, prefixLen);
+    }
+
+    public static string NormalizeSTR(this string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return input;
+
+        // Remove special characters (keep letters, numbers, and spaces)
+        var cleaned = Regex.Replace(input, @"[^\w\s]", ""); // \w = [a-zA-Z0-9_], \s = whitespace
+        return cleaned.ToLowerInvariant();
     }
 }
