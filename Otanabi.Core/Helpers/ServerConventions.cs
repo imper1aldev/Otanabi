@@ -9,7 +9,7 @@ public class ServerConventions
             new Convention
             {
                 Name = "Okru",
-                PossibleNames = ["ok-ru", "okru", "OKRU"]
+                PossibleNames = ["ok-ru", "okru", "OKRU", "ok"]
             },
             new Convention
             {
