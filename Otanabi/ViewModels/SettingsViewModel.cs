@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Newtonsoft.Json.Linq;
@@ -23,6 +24,8 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private readonly ILocalSettingsService _localSettingsService;
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly AppUpdateService _appUpdateService = new();
+    private readonly DatabaseService _databaseService = new();
+    private readonly DispatcherQueue _dispatcherQueue;
 
     [ObservableProperty]
     private ElementTheme _elementTheme;
@@ -43,7 +46,13 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     private int selectedThemeIndex;
 
     [ObservableProperty]
-    private bool deletingDB = false;
+    private string messageTitle = "";
+
+    [ObservableProperty]
+    private string messageSubTitle = "";
+
+    [ObservableProperty]
+    private bool isMessageVisible = false;
 
     private bool updateAvailable = false;
 
@@ -58,10 +67,10 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
         _themeSelectorService = themeSelectorService;
         _elementTheme = _themeSelectorService.Theme;
         _localSettingsService = localSettingsService;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _versionDescription = GetVersionDescription();
         _appName = GetAppName();
         GetExtensionVersion();
-
         SwitchThemeCommand = new RelayCommand<ComboBox>(
             async (cb) =>
             {
@@ -222,9 +231,31 @@ public partial class SettingsViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     private async Task DeleteDBData()
     {
-        DeletingDB = true;
+        ShowMessage("Wait", "Deleting data, please wait");
         await DatabaseHandler.GetInstance().DeleteDataAndRestructure();
-        DeletingDB = false;
+        ShowMessage("Task Done", "Database cleared");
+    }
+
+    [RelayCommand]
+    private async Task DeleteAutoComplete()
+    {
+        await _databaseService.ClearAutoComplete();
+        ShowMessage("Task Done", "AutoComplete cleared");
+    }
+
+    private void ShowMessage(string title, string subtitle)
+    {
+        MessageTitle = title;
+        MessageSubTitle = subtitle;
+        IsMessageVisible = true;
+    }
+
+    public void ToggleMessageVisibility(bool state)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            IsMessageVisible = state;
+        });
     }
 
     public event EventHandler<(string Notes, string version, bool IsAvaible)> OnPatchNotes;

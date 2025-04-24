@@ -3,6 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using F23.StringSimilarity;
 using Newtonsoft.Json.Linq;
 using Otanabi.Core.Anilist;
 using Otanabi.Core.Anilist.Enums;
@@ -14,6 +15,7 @@ namespace Otanabi.Core.Services;
 public class AnilistService
 {
     private AnilistClient _client = AnilistClient.Instance;
+    private Levenshtein _levenshtein = new();
 
     public AnilistService() { }
 
@@ -57,7 +59,7 @@ public class AnilistService
         var query = _client.GetQuery(QueryType.Seasonal);
         var variables = new Dictionary<string, object>
         {
-            { "perPage", 10 },
+            { "perPage", 100 },
             { "page", 1 },
             { "year", seasonYear },
             { "season", season.ToString().ToUpper() },
@@ -328,11 +330,11 @@ public class AnilistService
         return anime;
     }
 
-    public async Task<Media> SearchByName(string titleName, bool isAdult)
+    public async Task<Media> SearchByName(string titleName, bool isAdult, List<string> alternateTitles)
     {
         var variables = new Dictionary<string, object>
         {
-            { "search", titleName },
+            { "search", titleName.NormalizeSTR() },
             { "type", "ANIME" },
             { "page", 1 },
             { "perpage", 20 },
@@ -376,11 +378,20 @@ public class AnilistService
                 throw;
             }
         }
+        //_levenshtein.Distance(y.NormalizeSTR(), anime.Title.NormalizeSTR()) < 3)
 
+        //var selectedMedia = medias.FirstOrDefault(x =>
+        //    string.Equals(x.Title.Romaji, titleName, StringComparison.OrdinalIgnoreCase)
+        //    || string.Equals(x.Title.Native, titleName, StringComparison.OrdinalIgnoreCase)
+        //    || string.Equals(x.Title.English, titleName, StringComparison.OrdinalIgnoreCase)
+        //);
         var selectedMedia = medias.FirstOrDefault(x =>
-            string.Equals(x.Title.Romaji, titleName, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(x.Title.Native, titleName, StringComparison.OrdinalIgnoreCase)
-            || string.Equals(x.Title.English, titleName, StringComparison.OrdinalIgnoreCase)
+            _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+            || _levenshtein.Distance(x.Title.Native.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+            || _levenshtein.Distance(x.Title.English.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), y.NormalizeSTR()) < 3)
+            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Native.NormalizeSTR(), y.NormalizeSTR()) < 3)
+            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.English.NormalizeSTR(), y.NormalizeSTR()) < 3)
         );
 
         return selectedMedia;

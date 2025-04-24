@@ -66,7 +66,8 @@ public sealed class DatabaseHandler
             typeof(AnimexFavorite),
             typeof(Chapter),
             typeof(History),
-            typeof(Provider)
+            typeof(Provider),
+            typeof(Autocomplete)
         );
 
         await ProvidersSetUp();

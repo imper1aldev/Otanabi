@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -14,9 +15,12 @@ namespace Otanabi.UserControls;
 
 public sealed partial class EpisodeCollectionControl : UserControl
 {
+    private readonly DispatcherQueue _dispatcherQueue;
+
     public EpisodeCollectionControl()
     {
         this.InitializeComponent();
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     public static DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
@@ -109,22 +113,36 @@ public sealed partial class EpisodeCollectionControl : UserControl
 
     private void Grid_PointerEntered(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        if (sender is Grid grid)
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            var bg = (Border)this.Resources["HoverBg"];
-            grid.BorderBrush = bg.Background;
-            //createAnimation(grid, 1.01);
-        }
+            try
+            {
+                if (sender is Grid grid)
+                {
+                    var bg = (Border)this.Resources["HoverBg"];
+                    grid.BorderBrush = bg.Background;
+                    //createAnimation(grid, 1.01);
+                }
+            }
+            catch (Exception) { }
+        });
     }
 
     private void Grid_PointerExited(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
     {
-        if (sender is Grid grid)
+        _dispatcherQueue.TryEnqueue(() =>
         {
-            var bg = (Border)this.Resources["NormalBg"];
-            grid.BorderBrush = bg.Background;
-            //createAnimation(grid, 1.0);
-        }
+            try
+            {
+                if (sender is Grid grid)
+                {
+                    var bg = (Border)this.Resources["NormalBg"];
+                    grid.BorderBrush = bg.Background;
+                    //createAnimation(grid, 1.0);
+                }
+            }
+            catch (Exception) { }
+        });
     }
 
     private void createAnimation(Grid element, double to)

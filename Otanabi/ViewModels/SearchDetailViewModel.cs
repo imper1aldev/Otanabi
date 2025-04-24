@@ -101,10 +101,11 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         if (provAnime != null)
         {
             SelectedAnime = provAnime;
-            Chapters = provAnime.Chapters.ToArray();
+            Chapters = provAnime.Chapters.OrderByDescending(x => x.ChapterNumber).ToArray();
             var tmpAnime = await _Db.GetOrCreateAnime(SelectedAnime.Provider, SelectedAnime);
             SelectedAnime.Id = tmpAnime.Id;
             SelectedAnime.IdAnilist = tmpAnime.IdAnilist;
+            OnPropertyChanged(nameof(SelectedAnime));
             foreach (var chapter in Chapters)
             {
                 ChapterList.Add(chapter);

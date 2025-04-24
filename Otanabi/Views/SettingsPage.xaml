@@ -120,14 +120,21 @@
                 <Run Foreground="Red">Danger Zone</Run>
             </TextBlock>
             <controls:SettingsCard
-                x:Name="DeleteDB"
+                x:Name="DeleteAuto"
                 Margin="0,10,0,0"
-                Header="Delete Database data"
+                Header="Delete Autocomplete data"
                 HeaderIcon="{ui:FontIcon Glyph=&#xF6FA;}">
                 <StackPanel Orientation="Horizontal">
-                    <ProgressRing IsActive="True" Visibility="{x:Bind ViewModel.DeletingDB, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />
-
-                    <Button Content="Delete">
+                    <Button Command="{x:Bind ViewModel.DeleteAutoCompleteCommand}" Content="Clear Autocomplete data" />
+                </StackPanel>
+            </controls:SettingsCard>
+            <controls:SettingsCard
+                x:Name="DeleteDB"
+                Margin="0,10,0,0"
+                Header="Clear Database data"
+                HeaderIcon="{ui:FontIcon Glyph=&#xF6FA;}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Clear Database Data">
                         <Button.Flyout>
                             <Flyout x:Name="deletedbfly">
                                 <StackPanel Spacing="20">
@@ -147,11 +154,17 @@
                         </Button.Flyout>
                     </Button>
                 </StackPanel>
-
             </controls:SettingsCard>
+
 
         </StackPanel>
         <ContentDialog x:Name="PatchNotesDialog" />
+        <TeachingTip
+            Title="{x:Bind ViewModel.MessageTitle, Mode=OneWay}"
+            CloseButtonClick="TeachingTip_CloseButtonClick"
+            CloseButtonContent="Got it!"
+            IsOpen="{x:Bind ViewModel.IsMessageVisible, Mode=OneWay}"
+            Subtitle="{x:Bind ViewModel.MessageSubTitle, Mode=OneWay}" />
         <Image
             x:Name="logoImage"
             Height="100"

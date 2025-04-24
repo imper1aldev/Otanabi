@@ -107,4 +107,9 @@ public sealed partial class SettingsPage : Page
     {
         deletedbfly.Hide();
     }
+
+    private void TeachingTip_CloseButtonClick(TeachingTip sender, object args)
+    {
+        ViewModel.ToggleMessageVisibility(false);
+    }
 }

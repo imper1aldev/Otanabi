@@ -46,7 +46,7 @@ public class DatabaseService
         var anime = await DB._db.Table<Anime>().Where(a => a.ProviderId == provider.Id && a.RemoteID == providerAnime.RemoteID).FirstOrDefaultAsync();
         if (anime == null)
         {
-            var anilistData = await _anilistService.SearchByName(providerAnime.Title, provider.IsAdult);
+            var anilistData = await _anilistService.SearchByName(providerAnime.Title, provider.IsAdult, providerAnime.AlternativeTitles);
             if (anilistData != null)
             {
                 string coverImage = anilistData.CoverImage.ExtraLarge ?? anilistData.CoverImage.Large ?? anilistData.CoverImage.Medium;
@@ -58,6 +58,7 @@ public class DatabaseService
                     RemoteID = providerAnime.RemoteID,
                     Cover = coverImage,
                     Title = anilistData.Title.Romaji,
+                    AlternativeTitlesStr = providerAnime.AlternativeTitlesStr,
                 };
                 await DB._db.InsertAsync(anime);
                 anime = await DB
@@ -80,6 +81,7 @@ public class DatabaseService
                     RemoteID = providerAnime.RemoteID,
                     Cover = providerAnime.Cover,
                     Title = providerAnime.Title,
+                    AlternativeTitlesStr = providerAnime.AlternativeTitlesStr,
                 };
                 await DB._db.InsertAsync(anime);
                 anime = await DB
@@ -243,6 +245,42 @@ public class DatabaseService
     public async Task DeleteAllHistory()
     {
         await DB._db.ExecuteAsync("delete from History");
+    }
+    #endregion
+
+    #region AutoComplete
+
+    public async Task<List<string>> GetListAutoComplete(string query)
+    {
+        //var autocomplete = await DB._db.Table<Autocomplete>().Where(a => a.Term.Contains(query, StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
+        var autocomplete = await DB._db.QueryAsync<Autocomplete>(
+            "select * from Autocomplete where lower(Term) like ? limit 25",
+            $"%{query.ToLower()}%"
+        );
+
+        return autocomplete.Select(a => a.Term).ToList();
+    }
+
+    public async Task AddToAutocomplete(string query)
+    {
+        var exist = await DB._db.Table<Autocomplete>().Where(a => a.Term.ToLower() == query.ToLower()).FirstOrDefaultAsync();
+        if (exist == null)
+        {
+            await DB._db.InsertAsync(new Autocomplete() { Term = query });
+        }
+    }
+
+    public async Task<List<string>> LastListAutoComplete()
+    {
+        var autocomplete = await DB._db.Table<Autocomplete>().OrderByDescending(x => x.Id).Take(25).ToListAsync();
+
+        return autocomplete.Select(a => a.Term).ToList();
+    }
+
+    public async Task ClearAutoComplete()
+    {
+        await DB._db.ExecuteAsync("delete from Autocomplete");
     }
     #endregion
 

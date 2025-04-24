@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Dispatching;
@@ -16,6 +17,7 @@ namespace Otanabi.ViewModels;
 public partial class SearchViewModel : ObservableRecipient, INavigationAware
 {
     private readonly AnilistService _anilistService = new();
+    private readonly DatabaseService databaseService = new();
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly INavigationService _navigationService;
 
@@ -24,10 +26,11 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     public MediaFormat[] Formats { get; } = Enum.GetValues<MediaFormat>().ToArray();
     public MediaStatus[] Statuses { get; } = Enum.GetValues<MediaStatus>().ToArray();
 
-    public ObservableCollection<string> Genres { get; } = new ObservableCollection<string>();
-    public ObservableCollection<string> FilteredGenres { get; } = new ObservableCollection<string>();
+    public ObservableCollection<string> Genres { get; } = new();
+    public ObservableCollection<string> FilteredGenres { get; } = new();
+    public ObservableCollection<Media> SourceMedia { get; } = new();
 
-    public ObservableCollection<Media> SourceMedia { get; } = new ObservableCollection<Media>();
+    public ObservableCollection<string> AutoSugestions { get; } = new();
 
     public int[] Years
     {
@@ -102,6 +105,7 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     public async void OnNavigatedTo(object parameter)
     {
         await GetTags();
+        await LoadRecentSugestions();
     }
 
     private async Task GetTags()
@@ -172,14 +176,28 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
     {
         if (clickedItem != null)
         {
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(DetailViewModel).FullName!, clickedItem));
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                await Task.Delay(500);
+                _navigationService.NavigateTo(typeof(DetailViewModel).FullName!, clickedItem);
+            });
         }
     }
 
     public async void OnSearch(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
     {
-        //
-        SearchQuery = args.QueryText.ToString();
+        await Search(args.QueryText.ToString());
+    }
+
+    private async Task Search(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return;
+        }
+
+        SearchQuery = query;
+        await databaseService.AddToAutocomplete(query);
         await LoadDataAsync();
     }
 
@@ -225,5 +243,49 @@ public partial class SearchViewModel : ObservableRecipient, INavigationAware
         {
             SourceMedia.Add(item);
         }
+    }
+
+    private async Task LoadRecentSugestions()
+    {
+        AutoSugestions.Clear();
+        var data = await databaseService.LastListAutoComplete();
+
+        foreach (var item in data)
+        {
+            AutoSugestions.Add(item);
+        }
+    }
+
+    public async Task OnAutoCompleteChanges(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        var query = sender.Text;
+        if (query.Length > 3 && !string.IsNullOrWhiteSpace(query))
+        {
+            var data = await databaseService.GetListAutoComplete(query);
+
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                AutoSugestions.Clear();
+                foreach (var item in data)
+                {
+                    AutoSugestions.Add(item);
+                }
+            });
+        }
+    }
+
+    public async Task OnSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+    {
+        _dispatcherQueue.TryEnqueue(async () =>
+        {
+            var selectedItem = args.SelectedItem.ToString();
+            await Search(selectedItem);
+        });
+    }
+
+    [RelayCommand]
+    public void OpenSuggestions()
+    {
+        Debug.WriteLine("clicked");
     }
 }

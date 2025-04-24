@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using System.Diagnostics;
+using Microsoft.UI.Xaml.Controls;
 using Otanabi.ViewModels;
 
 namespace Otanabi.Views;

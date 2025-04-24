@@ -20,6 +20,8 @@ public class Provider : IProvider
 
     public bool IsAdult { get; set; } = false;
 
+    public bool AllowNativeSearch { get; set; } = false;
+
     [Ignore]
     public Anime[]? Animes { get; set; }
 }

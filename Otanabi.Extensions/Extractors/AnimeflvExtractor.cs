@@ -19,6 +19,7 @@ public class AnimeflvExtractor : IExtractor
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
     internal readonly bool IsTrackeable = true;
+    internal readonly bool AllowNativeSearch = true;
 
     public string GetSourceName()
     {
@@ -39,6 +40,7 @@ public class AnimeflvExtractor : IExtractor
             Type = Type,
             Persistent = Persistent,
             IsTrackeable = IsTrackeable,
+            AllowNativeSearch = AllowNativeSearch,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -117,6 +119,13 @@ public class AnimeflvExtractor : IExtractor
 
         var genres = node.CssSelect(".Nvgnrs a").Select(x => WebUtility.HtmlDecode(x.InnerText)).ToList();
         anime.GenreStr = string.Join(",", genres);
+        var alterTitles = node.CssSelect("div.Wrapper > div > div > div.Ficha.fchlt > div.Container >div")
+            .First()
+            .Descendants()
+            .Where(n => n.Name == "span")
+            .Select(n => WebUtility.HtmlDecode(n.InnerText))
+            .ToList();
+        anime.AlternativeTitlesStr = string.Join("!-!", alterTitles);
 
         var identifier = GetUriIdentify(node.InnerHtml, anime.Status);
         anime.Chapters = GetChaptersByregex(node.InnerHtml, identifier);
