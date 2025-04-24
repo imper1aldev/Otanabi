@@ -1,32 +1,27 @@
-﻿using Otanabi.Core.Models;
+﻿using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.ViewModels;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace Otanabi.Views;
 
-public sealed partial class SearchDetailPage : Page
+public sealed partial class ProviderDetailPage : Page
 {
     private int AnimeId;
     private List<FavoriteList> favoriteLists;
     private List<FavoriteList> selectedFList = new List<FavoriteList>();
     DatabaseService dbService = new();
-    public SearchDetailViewModel ViewModel
-    {
-        get;
-    }
+    public ProviderDetailViewModel ViewModel { get; }
 
-    public SearchDetailPage()
+    public ProviderDetailPage()
     {
-        ViewModel = App.GetService<SearchDetailViewModel>();
+        ViewModel = App.GetService<ProviderDetailViewModel>();
         InitializeComponent();
     }
 
-
-    protected async override void OnNavigatedTo(NavigationEventArgs e)
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
-
         if (e.Parameter is Anime anime)
         {
             AnimeId = anime.Id;
@@ -34,9 +29,9 @@ public sealed partial class SearchDetailPage : Page
         }
         base.OnNavigatedTo(e);
     }
+
     private async Task LoadAnimeFavList()
     {
-
         var sFList1 = await dbService.GetFavoriteListByAnime(AnimeId);
         var tmpLit = new List<FavoriteList>();
 
@@ -52,24 +47,18 @@ public sealed partial class SearchDetailPage : Page
         }
     }
 
-
-
-
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
-        if (e.NavigationMode == NavigationMode.Back)
-        {
-
-        }
+        if (e.NavigationMode == NavigationMode.Back) { }
     }
+
     private void ListView_ItemClick(object sender, ItemClickEventArgs e)
     {
         if (e.ClickedItem != null)
         {
             ViewModel.OpenPlayer((Chapter)e.ClickedItem);
         }
-
     }
 
     private async void FavoriteCombo_IsEnabledChanged(object sender, Microsoft.UI.Xaml.DependencyPropertyChangedEventArgs e)

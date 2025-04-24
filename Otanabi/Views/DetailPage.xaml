@@ -1,0 +1,238 @@
+﻿<Page
+    x:Class="Otanabi.Views.DetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:anilistModels="using:Otanabi.Core.Anilist.Models"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:customControls="using:Otanabi.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:developerTools="using:CommunityToolkit.WinUI.DeveloperTools"
+    xmlns:interactions="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Loaded="Page_Loaded"
+    NavigationCacheMode="Enabled"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <SolidColorBrush x:Key="BackgroundDf" Color="#402c2d2f" />
+        <converters:StringFormatConverter x:Key="StringFormatConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+    <Grid
+        x:Name="ContentArea"
+        CornerRadius="0,0,0,0"
+        RowSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Padding="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.Background>
+                <ImageBrush
+                    ImageSource="{x:Bind ViewModel.BannerImage, Mode=OneWay}"
+                    Opacity="0.3"
+                    Stretch="UniformToFill" />
+            </Grid.Background>
+            <!--#region Portrait-->
+            <Image Width="250" Source="{x:Bind ViewModel.SelectedMedia.CoverImage.ExtraLarge, Mode=OneWay}" />
+            <!--#endregion-->
+
+            <!--#region Info-->
+            <StackPanel
+                Grid.Column="1"
+                Margin="20,0,0,0"
+                Padding="15,15,15,0"
+                Background="{StaticResource BackgroundDf}"
+                CornerRadius="10"
+                Spacing="10">
+                <TextBlock
+                    Margin="{StaticResource XXSmallTopMargin}"
+                    AllowFocusOnInteraction="True"
+                    IsTextSelectionEnabled="True"
+                    Style="{ThemeResource TitleTextBlockStyle}"
+                    Text="{x:Bind ViewModel.SelectedMedia.Title.Romaji, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.English, Mode=OneWay}" />
+                    <TextBlock Text="-   -" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.Native, Mode=OneWay}" />
+                    <TextBlock Text="-   -" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Title.Romaji, Mode=OneWay}" />
+                </StackPanel>
+
+                <ItemsRepeater ItemsSource="{x:Bind ViewModel.SelectedMedia.Genres, Mode=OneWay}">
+                    <ItemsRepeater.Layout>
+                        <controls:WrapLayout HorizontalSpacing="10" VerticalSpacing="10" />
+                    </ItemsRepeater.Layout>
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Border>
+                                <Button
+                                    Content="{Binding}"
+                                    FontSize="10"
+                                    Style="{StaticResource ButtonRevealStyle}" />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+                <TextBlock Text="{x:Bind ViewModel.SelectedMedia.Description, Mode=OneWay}" TextWrapping="Wrap" />
+            </StackPanel>
+            <!--#endregion-->
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Margin="0,0,10,10"
+            ColumnSpacing="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!--#region SidePanel-->
+            <StackPanel
+                Grid.Column="0"
+                Width="250"
+                Padding="15,15,0,0"
+                Background="#175d6262"
+                CornerRadius="8,8,8,8"
+                Orientation="Vertical"
+                Spacing="15">
+
+                <ComboBox
+                    AllowFocusOnInteraction="True"
+                    DisplayMemberPath="Name"
+                    ItemsSource="{x:Bind ViewModel.Providers, Mode=OneWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedProvider, Mode=TwoWay}"
+                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                    <interactivity:Interaction.Behaviors>
+                        <interactions:EventTriggerBehavior EventName="SelectionChanged">
+                            <interactions:InvokeCommandAction Command="{x:Bind ViewModel.ProviderChangedCommand}" />
+                        </interactions:EventTriggerBehavior>
+                    </interactivity:Interaction.Behaviors>
+                </ComboBox>
+
+                <Button
+                    Width="Auto"
+                    Command="{x:Bind ViewModel.OpenLinkCommand}"
+                    Content="Open in Anilist" />
+                <TextBlock
+                    AllowFocusOnInteraction="True"
+                    FontSize="15"
+                    IsTextSelectionEnabled="True">
+                    <Run FontWeight="Bold" Text="Anilist ID :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Id, Mode=OneWay}" />
+                </TextBlock>
+
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Format :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Format, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Status :" />
+                    <Run Text="{x:Bind ViewModel.StatusString, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Start Date :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Year, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Month, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.StartDate.Day, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="End Date :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Year, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Month, Mode=OneWay}" />
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.EndDate.Day, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Episodes :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Episodes, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Season:" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Season, Mode=OneWay}" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.SeasonYear, Mode=OneWay}" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Average Score :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.AverageScore, Mode=OneWay}" />
+                    <Run Text="%" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Mean Score :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.MeanScore, Mode=OneWay}" />
+                    <Run Text="%" />
+                </TextBlock>
+                <TextBlock FontSize="15">
+                    <Run FontWeight="Bold" Text="Popularity :" />
+                    <Run Text="{x:Bind ViewModel.SelectedMedia.Popularity, Mode=OneWay}" />
+                </TextBlock>
+            </StackPanel>
+            <!--#endregion-->
+            <!--#region Details-->
+            <!--<StackPanel Grid.Column="1">-->
+            <StackPanel
+                x:Name="LoadingVideo"
+                Grid.Column="1"
+                Width="Auto"
+                HorizontalAlignment="Center"
+                Orientation="Horizontal"
+                Visibility="{x:Bind ViewModel.IsLoadedMerge, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=True}">
+                <TextBlock
+                    Margin="0,0,15,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Mergin chapters, please wait ..." />
+                <ProgressRing
+                    Margin="0,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="LightGray"
+                    IsActive="True" />
+            </StackPanel>
+
+            <StackPanel
+                x:Name="NoResoults"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="{x:Bind ViewModel.IsNotResults, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                <TextBlock
+                    Margin="0,0,15,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="No Chapters links found for this provider" />
+            </StackPanel>
+
+            <customControls:EpisodeCollectionControl
+                x:Name="ECcontrol"
+                Grid.Column="1"
+                Margin="0,0,0,10"
+                ItemsSource="{x:Bind ViewModel.EpisodeList, Mode=OneWay}"
+                NextAiring="{x:Bind ViewModel.SelectedMedia.NextAiringEpisode, Mode=OneWay}"
+                Visibility="{x:Bind ViewModel.IsLoadedEpisodes, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}">
+                <interactivity:Interaction.Behaviors>
+                    <interactions:EventTriggerBehavior EventName="EpisodeSelected">
+                        <interactions:InvokeCommandAction Command="{x:Bind ViewModel.LoadEpisodeCommand}" />
+                    </interactions:EventTriggerBehavior>
+                </interactivity:Interaction.Behaviors>
+            </customControls:EpisodeCollectionControl>
+
+
+            <!--</StackPanel>-->
+            <!--#endregion-->
+        </Grid>
+
+    </Grid>
+</Page>

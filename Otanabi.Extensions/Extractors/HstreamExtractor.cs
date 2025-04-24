@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Newtonsoft.Json.Linq;
@@ -18,6 +19,7 @@ public class HstreamExtractor : IExtractor
     internal readonly string originUrl = "https://hstream.moe";
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
+    internal readonly bool IsAdult = true;
 
     //internal readonly HttpService HService =  new ();
     private static readonly HttpClient client = new();
@@ -34,6 +36,7 @@ public class HstreamExtractor : IExtractor
             Url = originUrl,
             Type = Type,
             Persistent = Persistent,
+            IsAdult = IsAdult,
         };
 
     public async Task<IAnime[]> MainPageAsync(int page = 1, Tag[]? tags = null)
@@ -151,8 +154,9 @@ public class HstreamExtractor : IExtractor
         var cookies = response.Headers.GetValues("Set-Cookie");
         var token = cookies.First(cookie => cookie.Contains("XSRF-TOKEN")).Split('=')[1];
         token = token.Replace("; expires", "");
+        token = token.Replace(" SameSite", "");
         var episodeId = doc.DocumentNode.SelectSingleNode("//input[@id='e_id']").GetAttributeValue("value", "");
-
+        var strCookie = string.Join("; ", cookies);
         var newHeaders = new HttpRequestMessage
         {
             Method = HttpMethod.Post,
@@ -163,6 +167,7 @@ public class HstreamExtractor : IExtractor
                 { "Origin", originUrl },
                 { "X-Requested-With", "XMLHttpRequest" },
                 { "X-XSRF-TOKEN", Uri.UnescapeDataString(token) },
+                { "Cookie", strCookie },
             },
             Content = new StringContent($"{{\"episode_id\": \"{episodeId}\"}}", Encoding.UTF8, "application/json"),
         };

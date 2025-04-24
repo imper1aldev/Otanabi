@@ -1,6 +1,7 @@
 ﻿
 
 using Windows.Foundation;
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 
 namespace Otanabi.Helpers;
 public static class AsyncExtensions

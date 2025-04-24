@@ -1,10 +1,8 @@
-﻿using Otanabi.Contracts.Services;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Controls;
+using Otanabi.Contracts.Services;
 using Otanabi.ViewModels;
 using Otanabi.Views;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-
-using Microsoft.UI.Xaml.Controls;
 
 namespace Otanabi.Services;
 
@@ -15,11 +13,15 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<SettingsViewModel, SettingsPage>();
-        Configure<SearchViewModel, SearchPage>();
-        Configure<SearchDetailViewModel, SearchDetailPage>();
+        Configure<ProviderSearchViewModel, ProviderSearchPage>();
+        Configure<ProviderDetailViewModel, ProviderDetailPage>();
         Configure<VideoPlayerViewModel, VideoPlayerPage>();
         Configure<FavoritesViewModel, FavoritesPage>();
         Configure<HistoryViewModel, HistoryPage>();
+        Configure<SeasonalViewModel, SeasonalPage>();
+        Configure<DetailViewModel, DetailPage>();
+        Configure<SearchViewModel, SearchPage>();
+        Configure<ScheduleViewModel, SchedulePage>();
     }
 
     public Type GetPageType(string key)

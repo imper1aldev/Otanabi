@@ -30,6 +30,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     private Chapter selectedChapter;
     private History selectedHistory;
     private Provider selectedProvider;
+    private Anime selectedAnime;
 
     private static System.Timers.Timer? MainTimerForSave;
     private static System.Timers.Timer? RewindTimer;
@@ -155,8 +156,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                     if (MPE != null && MPE.MediaPlayer != null)
                     {
                         var seconds = (long)MPE.MediaPlayer.PlaybackSession.Position.TotalSeconds;
-                        await dbService.UpdateProgress(selectedHistory.Id, seconds);
-                        //Debug.WriteLine($"Progres ssaved seconds {seconds}  transformed: {TimeSpan.FromSeconds(seconds).ToString(@"\.hh\:mm\:ss")}");
+                        var total = (long)MPE.MediaPlayer.PlaybackSession.NaturalDuration.TotalSeconds;
+                        await dbService.UpdateProgress(selectedHistory.Id, seconds, total);
                     }
                 });
             }
@@ -188,15 +189,19 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             && param.Chapter is Chapter ch
             && param.Provider is Provider prov
             && param.ChapterList is List<Chapter> chapters
+            && param.Anime is Anime anime
+            && param.IsIncognito is bool incognito
         )
         {
-            if (hs.Id != 0)
+            if (!incognito && hs != null)
             {
                 selectedHistory = hs;
             }
-
+            selectedAnime = anime;
             selectedProvider = prov;
             selectedChapter = ch;
+            ChapterName = selectedChapter.Name;
+            ChapterList.Clear();
             foreach (Chapter chapter in chapters)
             {
                 ChapterList.Add(chapter);
@@ -261,7 +266,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         }
         else
         {
-            selectedHistory = await dbService.GetOrCreateHistoryByCap(chapter.Id);
+            selectedHistory = await dbService.GetOrCreateHistoryByCap(selectedAnime, chapter.ChapterNumber);
         }
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;
@@ -341,6 +346,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     LoadingVideo = false;
                                 });
                             };
+                            BufferAwareMediaPlayer(MPE);
                             MPE.MediaPlayer.Play();
                         }
                     }
@@ -458,7 +464,7 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
 
     [RelayCommand]
-    private async void onClickChap(ItemClickEventArgs args)
+    private async Task onClickChap(ItemClickEventArgs args)
     {
         if (args.ClickedItem is Chapter ct && ct.ChapterNumber != selectedChapter.ChapterNumber)
         {
@@ -480,11 +486,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         {
             MPE.MediaPlayer.Play();
             IsPaused = false;
+            bufferDetectionTimer.Start();
+            bufferTimeoutTimer.Start();
         }
         else
         {
             MPE.MediaPlayer.Pause();
             IsPaused = true;
+            bufferDetectionTimer.Stop();
+            bufferTimeoutTimer.Stop();
         }
     }
 
@@ -618,16 +628,169 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowPresenterService.WindowPresenterChanged -= OnWindowPresenterChanged;
         _dispatcherQueue.TryEnqueue(() =>
         {
-            MainTimerForSave.Stop();
-            MainTimerForSave.Dispose();
-            MPE.Source = null;
-            if (MPE.MediaPlayer != null)
+            try
             {
-                MPE.MediaPlayer.Pause();
-                MPE.MediaPlayer.Source = null;
+                if (MainTimerForSave != null)
+                {
+                    MainTimerForSave.Stop();
+                    MainTimerForSave.Dispose();
+                }
+
+                if (bufferDetectionTimer != null)
+                {
+                    bufferDetectionTimer.Stop();
+                    bufferDetectionTimer.Dispose();
+                }
+                if (bufferTimeoutTimer != null)
+                {
+                    bufferTimeoutTimer.Stop();
+                    bufferTimeoutTimer.Dispose();
+                }
+
+                if (MPE != null)
+                {
+                    MPE.Source = null;
+                    if (MPE.MediaPlayer != null)
+                    {
+                        MPE.MediaPlayer.Pause();
+                        MPE.MediaPlayer.Source = null;
+                    }
+                }
             }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
             //cant dispose the media player because it will crash the app
             GC.Collect();
         });
+    }
+
+    /*Buffering Hack*/
+
+    private static System.Timers.Timer? bufferDetectionTimer;
+    private static System.Timers.Timer? bufferTimeoutTimer;
+    private bool isBuffering = false;
+    private double lastPosition = 0;
+    private const int BUFFERING_TIMEOUT_SECONDS = 8000;
+    private const double POSITION_ADVANCE_SECONDS = 1.0;
+    private MediaPlaybackState playbackState = MediaPlaybackState.None;
+    private const int TIMEOUT_BEFORE_BUFFER = 10000;
+    private DateTime last_timeout_buffer;
+    private int MAX_BUFFERING_INTENT = 0;
+
+    private void BufferAwareMediaPlayer(MediaPlayerElement player)
+    {
+        //bufferDetectionTimer = new DispatcherTimer();
+        //bufferDetectionTimer.Interval = TimeSpan.FromMilliseconds(500);
+        //bufferDetectionTimer.Tick += BufferDetectionTimer_Tick;
+        bufferDetectionTimer = new System.Timers.Timer(1000);
+        bufferDetectionTimer.AutoReset = true;
+        bufferDetectionTimer.Enabled = true;
+        bufferDetectionTimer.Elapsed += BufferDetectionTimer_Tick;
+        bufferDetectionTimer.Start();
+
+        bufferTimeoutTimer = new System.Timers.Timer(BUFFERING_TIMEOUT_SECONDS);
+        bufferTimeoutTimer.AutoReset = false;
+        bufferTimeoutTimer.Enabled = true;
+        bufferTimeoutTimer.Elapsed += BufferTimeoutTimer_Tick;
+        bufferTimeoutTimer.Stop();
+
+        //// Set up buffer timeout timer - counts 5 seconds when buffering is detected
+        //bufferTimeoutTimer = new DispatcherTimer();
+        //bufferTimeoutTimer.Interval = TimeSpan.FromSeconds(BUFFERING_TIMEOUT_SECONDS);
+        //bufferTimeoutTimer.Tick += BufferTimeoutTimer_Tick;
+        //bufferTimeoutTimer.Stop();
+
+        //player.MediaPlayer.MediaOpened += MediaPlayer_MediaOpened;
+        player.MediaPlayer.MediaFailed += MediaPlayer_MediaFailed;
+        player.MediaPlayer.MediaEnded += MediaPlayer_MediaEnded;
+        player.MediaPlayer.PlaybackSession.PlaybackStateChanged += PlaybackSession_PlaybackStateChanged;
+    }
+
+    private void PlaybackSession_PlaybackStateChanged(MediaPlaybackSession sender, object args)
+    {
+        try
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                var playbacksession = MPE.MediaPlayer.PlaybackSession;
+                var state = playbacksession.PlaybackState;
+                isBuffering = (state == MediaPlaybackState.Buffering) ? true : false;
+            });
+        }
+        catch (Exception) { }
+    }
+
+    private void skipseconds()
+    {
+        var mediaplayer = MPE.MediaPlayer;
+        mediaplayer.PlaybackSession.Position += TimeSpan.FromSeconds(POSITION_ADVANCE_SECONDS);
+    }
+
+    private void BufferTimeoutTimer_Tick(object? sender, object e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (MPE == null)
+            {
+                return;
+            }
+            if (MPE.MediaPlayer == null)
+            {
+                return;
+            }
+            var mediaplayer = MPE.MediaPlayer;
+            bufferTimeoutTimer.Stop();
+            if (isBuffering)
+            {
+                var newPosition = mediaplayer.PlaybackSession.Position.Add(TimeSpan.FromSeconds(POSITION_ADVANCE_SECONDS));
+                if (newPosition < mediaplayer.NaturalDuration)
+                {
+                    skipseconds();
+                }
+            }
+        });
+    }
+
+    private void BufferDetectionTimer_Tick(object? sender, object e)
+    {
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (MPE == null)
+            {
+                return;
+            }
+            if (MPE.MediaPlayer == null)
+            {
+                return;
+            }
+            var mediaplayer = MPE.MediaPlayer;
+            var currentPosition = mediaplayer.Position.TotalSeconds;
+
+            if (isBuffering)
+            {
+                bufferTimeoutTimer.Start();
+            }
+            else
+            {
+                bufferTimeoutTimer.Stop();
+            }
+
+            lastPosition = currentPosition;
+        });
+    }
+
+    private void MediaPlayer_MediaEnded(MediaPlayer sender, object args)
+    {
+        bufferDetectionTimer.Stop();
+        bufferTimeoutTimer.Stop();
+    }
+
+    private void MediaPlayer_MediaFailed(MediaPlayer sender, MediaPlayerFailedEventArgs args)
+    {
+        bufferDetectionTimer.Stop();
+        bufferTimeoutTimer.Stop();
     }
 }

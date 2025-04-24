@@ -1,9 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Web;
-using Otanabi.Contracts.Services;
-using Otanabi.ViewModels;
 using Microsoft.Windows.AppNotifications;
 using Microsoft.Windows.AppNotifications.Builder;
+using Otanabi.Contracts.Services;
+using Otanabi.ViewModels;
 
 namespace Otanabi.Notifications;
 
@@ -28,12 +28,9 @@ public class AppNotificationService : IAppNotificationService
         AppNotificationManager.Default.Register();
     }
 
-    public void OnNotificationInvoked(
-        AppNotificationManager sender,
-        AppNotificationActivatedEventArgs args
-    )
+    public void OnNotificationInvoked(AppNotificationManager sender, AppNotificationActivatedEventArgs args)
     {
-        // TODO: Handle notification invocations when your app is already running.
+        // TODO: Handle notification invocations when a new chapter is released (based on nextAiringEpisode.airingAt ).
 
         //// // Navigate to a specific page based on the notification arguments.
         if (ParseArguments(args.Argument)["action"] == "Settings")
@@ -66,10 +63,7 @@ public class AppNotificationService : IAppNotificationService
 
     public bool ShowByUpdate()
     {
-        var appNotification = new AppNotificationBuilder()
-            .AddText("New Update available")
-            .AddArgument("action", "Settings")
-            .BuildNotification();
+        var appNotification = new AppNotificationBuilder().AddText("New Update available").AddArgument("action", "Settings").BuildNotification();
 
         AppNotificationManager.Default.Show(appNotification);
 

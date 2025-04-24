@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Otanabi.Core.Anilist.Models;
 using Otanabi.Core.Database;
 using Otanabi.Core.Models;
 
@@ -9,8 +10,156 @@ public class DatabaseService
 {
     public readonly DatabaseHandler DB = DatabaseHandler.GetInstance();
     private readonly SearchAnimeService _searchAnimeService = new();
+    private AnilistService _anilistService = new();
 
     public DatabaseService() { }
+
+    #region Anime
+    public async Task<Anime> GetOrAddAnimeByMedia(Media media, Provider provider, Anime providerAnime)
+    {
+        var id = media.Id;
+        var anime = await DB._db.Table<Anime>().Where(a => a.IdAnilist == id && a.ProviderId == provider.Id).FirstOrDefaultAsync();
+        if (anime == null)
+        {
+            anime = new Anime
+            {
+                IdAnilist = media.Id,
+                ProviderId = provider.Id,
+                Url = providerAnime.Url,
+                RemoteID = providerAnime.RemoteID,
+                Cover = media.CoverImage.ExtraLarge,
+                Title = media.Title.Romaji,
+            };
+            await DB._db.InsertAsync(anime);
+            anime = await DB
+                ._db.Table<Anime>()
+                .Where(a =>
+                    a.IdAnilist == media.Id && a.ProviderId == provider.Id && a.Url == providerAnime.Url && a.RemoteID == providerAnime.RemoteID
+                )
+                .FirstOrDefaultAsync();
+        }
+        return anime;
+    }
+
+    public async Task<Anime> GetOrCreateAnime(Provider provider, Anime providerAnime)
+    {
+        var anime = await DB._db.Table<Anime>().Where(a => a.ProviderId == provider.Id && a.RemoteID == providerAnime.RemoteID).FirstOrDefaultAsync();
+        if (anime == null)
+        {
+            var anilistData = await _anilistService.SearchByName(providerAnime.Title, provider.IsAdult, providerAnime.AlternativeTitles);
+            if (anilistData != null)
+            {
+                string coverImage = anilistData.CoverImage.ExtraLarge ?? anilistData.CoverImage.Large ?? anilistData.CoverImage.Medium;
+                anime = new Anime
+                {
+                    IdAnilist = anilistData.Id,
+                    ProviderId = provider.Id,
+                    Url = providerAnime.Url,
+                    RemoteID = providerAnime.RemoteID,
+                    Cover = coverImage,
+                    Title = anilistData.Title.Romaji,
+                    AlternativeTitlesStr = providerAnime.AlternativeTitlesStr,
+                };
+                await DB._db.InsertAsync(anime);
+                anime = await DB
+                    ._db.Table<Anime>()
+                    .Where(a =>
+                        a.IdAnilist == anilistData.Id
+                        && a.ProviderId == provider.Id
+                        && a.Url == providerAnime.Url
+                        && a.RemoteID == providerAnime.RemoteID
+                    )
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                anime = new Anime
+                {
+                    IdAnilist = 0,
+                    ProviderId = provider.Id,
+                    Url = providerAnime.Url,
+                    RemoteID = providerAnime.RemoteID,
+                    Cover = providerAnime.Cover,
+                    Title = providerAnime.Title,
+                    AlternativeTitlesStr = providerAnime.AlternativeTitlesStr,
+                };
+                await DB._db.InsertAsync(anime);
+                anime = await DB
+                    ._db.Table<Anime>()
+                    .Where(a => a.IdAnilist == 0 && a.ProviderId == provider.Id && a.Url == providerAnime.Url && a.RemoteID == providerAnime.RemoteID)
+                    .FirstOrDefaultAsync();
+            }
+        }
+
+        return anime;
+    }
+
+    public async Task<Anime> GetAnimeById(int mediaId, Provider provider)
+    {
+        var anime = await DB._db.Table<Anime>().Where(a => a.IdAnilist == mediaId && a.ProviderId == provider.Id).FirstOrDefaultAsync();
+        return anime;
+    }
+
+    public async Task<Chapter> GetOrAddChapter(int animeId, int chapterNumber)
+    {
+        var chapter = await DB._db.Table<Chapter>().Where(a => a.AnimeId == animeId && a.ChapterNumber == chapterNumber).FirstOrDefaultAsync();
+        if (chapter == null)
+        {
+            chapter = new Chapter { AnimeId = animeId, ChapterNumber = chapterNumber };
+            await DB._db.InsertAsync(chapter);
+            chapter = await DB._db.Table<Chapter>().Where(a => a.AnimeId == animeId && a.ChapterNumber == chapterNumber).FirstOrDefaultAsync();
+        }
+        return chapter;
+    }
+    #endregion
+
+    #region Favorites
+    public async Task<FavoriteList[]> GetFavoriteLists()
+    {
+        var FavLists = await DB._db.Table<FavoriteList>().ToListAsync();
+
+        return FavLists.ToArray();
+    }
+
+    public async Task<Anime[]> GetFavAnimeByList(int favId)
+    {
+        var data = await DB._db.QueryAsync<Anime>(
+            "select a.* from AnimexFavorite as af inner join Anime as a on af.AnimeId=a.Id  where af.FavoriteListId=?",
+            favId
+        );
+
+        foreach (var item in data)
+        {
+            var prov = await DB._db.Table<Provider>().Where(p => p.Id == item.ProviderId).FirstOrDefaultAsync();
+            item.Provider = prov;
+        }
+        return data.ToArray();
+    }
+
+    public async Task<bool> IsFavorite(int animeId)
+    {
+        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == animeId).FirstOrDefaultAsync();
+
+        return el != null;
+    }
+
+    public async Task<List<FavoriteList>> GetFavoriteListByUrl(string url, int providerId)
+    {
+        var data = await DB._db.QueryAsync<FavoriteList>(
+            """
+            select fl.* from AnimexFavorite as af inner join FavoriteList as fl
+            on af.FavoriteListId=fl.Id inner join Anime a on af.AnimeId=a.Id
+             where a.Url=? and a.ProviderId=?
+            """,
+            url,
+            providerId
+        );
+        if (data.Count > 0)
+        {
+            return data;
+        }
+        return null;
+    }
 
     public async Task CreateFavorite(string fav)
     {
@@ -30,18 +179,20 @@ public class DatabaseService
         await DB._db.DeleteAsync(favorite);
     }
 
-    public async Task<FavoriteList[]> GetFavoriteLists()
+    public async Task<string> UpsertAnimeFavorite(Anime anime, int favId)
     {
-        var FavLists = await DB._db.Table<FavoriteList>().ToListAsync();
-
-        return FavLists.ToArray();
-    }
-
-    public async Task<bool> IsFavorite(int animeId)
-    {
-        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == animeId).FirstOrDefaultAsync();
-
-        return el != null;
+        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == anime.Id && af.FavoriteListId == favId).FirstOrDefaultAsync();
+        if (el == null)
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favId };
+            await DB._db.InsertAsync(favxanime);
+            return "added";
+        }
+        else
+        {
+            await DB._db.DeleteAsync(el);
+            return "deleted";
+        }
     }
 
     public async Task<string> AddToFavorites(Anime anime, string action, int favList = 1)
@@ -68,254 +219,14 @@ public class DatabaseService
         }
     }
 
-    public async Task<string> UpsertAnimeFavorite(Anime anime, int favId)
+    public async Task UpdateAnimeList(int animeId, List<int> lists)
     {
-        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == anime.Id && af.FavoriteListId == favId).FirstOrDefaultAsync();
-        if (el == null)
+        await DB._db.ExecuteAsync("delete from AnimexFavorite " + "where AnimeId=?", animeId);
+        foreach (var item in lists)
         {
-            var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favId };
+            var favxanime = new AnimexFavorite() { AnimeId = animeId, FavoriteListId = item };
             await DB._db.InsertAsync(favxanime);
-            return "added";
         }
-        else
-        {
-            await DB._db.DeleteAsync(el);
-            return "deleted";
-        }
-    }
-
-    public async Task<Anime> GetAnimeOnDB(Anime request)
-    {
-        if (request.Url == null)
-        {
-            return null;
-        }
-
-        var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-        var chapters = new List<Chapter>();
-        if (animeDB != null)
-        {
-            chapters = await GetChaptersByAnime(animeDB.Id);
-        }
-
-        if (chapters.Count > 0)
-        {
-            animeDB.Chapters = chapters.ToArray();
-        }
-
-        return animeDB;
-    }
-
-    public async Task<Anime> SaveAnime(Anime request)
-    {
-        request.LastUpdate = DateTime.Now;
-        await DB._db.InsertAsync(request);
-        var anime = await GetAnimeByProv(request.Url, request.ProviderId);
-        return anime;
-    }
-
-    public async Task<Anime> UpsertAnime(Anime request, bool forceUpdate = false)
-    {
-        //
-        var persistency = request.Provider.Persistent;
-
-        if (persistency)
-        {
-            var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-            if (animeDB != null && forceUpdate == false && persistency)
-            {
-                var lastUpdate = animeDB.LastUpdate;
-
-                var diffOfDates = DateTime.Now - lastUpdate;
-
-                if (diffOfDates.Days < 2)
-                {
-                    return null;
-                }
-            }
-
-            var animeSource = await _searchAnimeService.GetAnimeDetailsAsync(request);
-            if (animeDB == null)
-            {
-                animeDB = await SaveAnime(animeSource);
-                animeSource.Id = animeDB.Id;
-            }
-            // update animedata
-            else
-            {
-                animeSource.Id = animeDB.Id;
-                animeSource.LastUpdate = DateTime.Now;
-                await DB._db.UpdateAsync(animeSource);
-                animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
-            }
-
-            var chapsSource = new List<Chapter>();
-            foreach (var chap in animeSource.Chapters.ToList())
-            {
-                chap.AnimeId = animeDB.Id;
-                chapsSource.Add(chap);
-            }
-
-            var chapsDB = await GetChaptersByAnime(animeDB.Id);
-            if (chapsDB.Count == 0)
-            {
-                await DB._db.InsertAllAsync(chapsSource);
-                chapsDB = await GetChaptersByAnime(animeDB.Id);
-            }
-            else
-            {
-                var chapstoadd = chapsSource.Where(c1 => !chapsDB.Any(c2 => c1.ChapterNumber == c2.ChapterNumber));
-                await DB._db.InsertAllAsync(chapstoadd);
-
-                if (forceUpdate)
-                {
-                    // update all chapters url 
-                    foreach(var chap in chapsDB)
-                    {
-                        var updatechapData= chapsSource.FirstOrDefault(c => c.ChapterNumber == chap.ChapterNumber);
-                        if(updatechapData != null)
-                        {
-                            chap.Url= updatechapData.Url;
-                            await DB._db.UpdateAsync(chap);
-                        }
-
-                    }
-
-                }
-
-                chapsDB = await GetChaptersByAnime(animeDB.Id);
-            }
-            /**/
-            animeDB.Chapters = chapsDB.ToArray();
-            return animeDB;
-        }
-        else
-        {
-            var animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-            if (animeDB != null && forceUpdate == false)
-            {
-                var lastUpdate = animeDB.LastUpdate;
-                var diffOfDates = DateTime.Now - lastUpdate;
-                if (diffOfDates.Days < 1)
-                {
-                    return null;
-                }
-            }
-            var animeSourceList = await _searchAnimeService.SearchAnimeAsync(request.Title, 1, request.Provider);
-            var animeSource = animeSourceList.Where(a => a.Title == request.Title).FirstOrDefault();
-
-            if (animeSource != null)
-            {
-                if (animeDB == null)
-                {
-                    animeDB = await SaveAnime(animeSource);
-                    animeDB = await GetAnimeByProv(request.Url, request.ProviderId);
-                }
-                var animeSourceDet = await _searchAnimeService.GetAnimeDetailsAsync(animeSource);
-
-                animeSource.Id = animeDB.Id;
-                animeSource.LastUpdate = DateTime.Now;
-                animeSourceDet.Id = animeDB.Id;
-                animeSourceDet.LastUpdate = DateTime.Now;
-
-                await DB._db.UpdateAsync(animeSourceDet);
-                animeDB = await GetAnimeByProv(animeSource.Url, animeSource.ProviderId);
-
-                animeSource.Chapters = animeSourceDet.Chapters;
-            }
-
-            var chapsSource = new List<Chapter>();
-            foreach (var chap in animeSource.Chapters.ToList())
-            {
-                chap.AnimeId = animeDB.Id;
-                chapsSource.Add(chap);
-            }
-            var chapsDB = await GetChaptersByAnime(animeDB.Id);
-            if (chapsDB.Count == 0)
-            {
-                await DB._db.InsertAllAsync(chapsSource);
-                chapsDB = await GetChaptersByAnime(animeDB.Id);
-            }
-            else
-            {
-                var toInsert = new List<Chapter>();
-                var toUpdate = new List<Chapter>();
-                foreach (var chap in chapsSource)
-                {
-                    var chpDB = chapsDB.Where(c => c.Name == chap.Name).FirstOrDefault();
-                    if (chpDB == null)
-                    {
-                        toInsert.Add(chap);
-                    }
-                    else
-                    {
-                        chap.Id = chpDB.Id;
-                        toUpdate.Add(chap);
-                    }
-                }
-                if (toInsert.Count > 0)
-                {
-                    await DB._db.InsertAllAsync(toInsert);
-                }
-                if (toUpdate.Count > 0)
-                {
-                    await DB._db.UpdateAllAsync(toUpdate);
-                }
-                chapsDB = await GetChaptersByAnime(animeDB.Id);
-            }
-            animeDB.Chapters = chapsDB.ToArray();
-
-            return animeDB;
-        }
-    }
-
-    public async Task<List<Chapter>> GetChaptersByAnime(int animeId)
-    {
-        var chapOnDb = await DB._db.Table<Chapter>().Where(c => c.AnimeId == animeId).ToListAsync();
-        var chapIds = chapOnDb.Select(c => c.Id).Distinct().ToList();
-        var histories = await GetHistoriesByCapIds(chapIds);
-        foreach (var c in chapOnDb)
-        {
-            var history = histories.FirstOrDefault(h => h.ChapterId == c.Id);
-            if (history != null)
-            {
-                c.History = history;
-            }
-        }
-
-        return chapOnDb;
-    }
-
-    private async Task<Anime> GetAnimeByProv(string Url, int ProviderId)
-    {
-        if (Url == null)
-        {
-            return null;
-        }
-
-        var exist = await DB._db.Table<Anime>().Where(a => a.Url == Url && a.ProviderId == ProviderId).FirstOrDefaultAsync();
-
-        if (exist != null)
-        {
-            exist.Provider = await DB._db.Table<Provider>().Where(p => p.Id == ProviderId).FirstOrDefaultAsync();
-            exist.ProviderId = exist.Provider.Id;
-        }
-        return exist;
-    }
-
-    public async Task<Anime[]> GetFavAnimeByList(int favId)
-    {
-        var data = await DB._db.QueryAsync<Anime>(
-            "select a.* from AnimexFavorite as af inner join Anime as a on af.AnimeId=a.Id  where af.FavoriteListId=?",
-            favId
-        );
-
-        foreach (var item in data)
-        {
-            var prov = await DB._db.Table<Provider>().Where(p => p.Id == item.ProviderId).FirstOrDefaultAsync();
-            item.Provider = prov;
-        }
-        return data.ToArray();
     }
 
     public async Task<List<FavoriteList>> GetFavoriteListByAnime(int animeId = 0)
@@ -334,136 +245,61 @@ public class DatabaseService
         }
         return null;
     }
+    #endregion
 
-    public async Task<List<FavoriteList>> GetFavoriteListByUrl(string url, int providerId)
+    #region History
+
+    public async Task<History> GetOrCreateHistoryByCap(Anime anime, int chapterNumber)
     {
-        var data = await DB._db.QueryAsync<FavoriteList>(
-            """
-            select fl.* from AnimexFavorite as af inner join FavoriteList as fl
-            on af.FavoriteListId=fl.Id inner join Anime a on af.AnimeId=a.Id
-             where a.Url=? and a.ProviderId=?
-            """,
-            url,
-            providerId
-        );
-        if (data.Count > 0)
-        {
-            return data;
-        }
-        return null;
-    }
-
-    public async Task UpdateAnimeList(int animeId, List<int> lists)
-    {
-        await DB._db.ExecuteAsync("delete from AnimexFavorite " + "where AnimeId=?", animeId);
-        foreach (var item in lists)
-        {
-            var favxanime = new AnimexFavorite() { AnimeId = animeId, FavoriteListId = item };
-            await DB._db.InsertAsync(favxanime);
-        }
-    }
-
-    private async Task<List<History>> GetHistoriesByCapIds(List<int> chapterIds)
-    {
-        var query = $"select * from History where ChapterId in ({string.Join(",", chapterIds.ToArray())})";
-        var histories = await DB._db.QueryAsync<History>(query);
-
-        //var history = await DB._db.Table<History>()
-        //        .Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
-        return histories;
-    }
-
-    private async Task<History> GetHistoryByCap(int chapterId)
-    {
-        var history = await DB._db.Table<History>().Where(h => h.ChapterId == chapterId).FirstOrDefaultAsync();
-        return history;
-    }
-
-    public async Task<History> GetOrCreateHistoryByCap(int chapterId)
-    {
-        var history = await GetHistoryByCap(chapterId);
+        var history = await GetHistoryByCap(anime, chapterNumber);
         if (history != null)
         {
             await DB._db.ExecuteAsync("update History set WatchedDate=? where Id=?", DateTime.Now, history.Id);
-            history = await GetHistoryByCap(chapterId);
+            history = await GetHistoryByCap(anime, chapterNumber);
             return history;
         }
         var hisCl = new History()
         {
-            ChapterId = chapterId,
+            ChapterNumber = chapterNumber,
             WatchedDate = DateTime.Now,
+            AnimeId = anime.Id,
             SecondsWatched = 0,
         };
         await DB._db.InsertAsync(hisCl);
 
-        history = await GetHistoryByCap(chapterId);
+        history = await GetHistoryByCap(anime, chapterNumber);
 
         return history;
     }
 
-    public async Task UpdateProgress(int historyId, long progress)
+    private async Task<History> GetHistoryByCap(Anime anime, int chapterNumber)
     {
-        await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?", progress, historyId);
+        var history = await DB._db.Table<History>().Where(h => h.ChapterNumber == chapterNumber && h.AnimeId == anime.Id).FirstOrDefaultAsync();
+        return history;
     }
 
-    public async Task<List<History>> GetAllHistoriesAsync()
+    public async Task<History[]> GetAllHistories()
     {
-        var history = await DB._db.Table<History>().OrderByDescending(h => h.WatchedDate).ToListAsync();
-
-        var chaptersId = history.Select(h => h.ChapterId).ToList().Distinct();
-        var queryC = $"select Chapter.* from Chapter where Chapter.Id in ({string.Join(",", chaptersId.ToArray())})";
-
-        var chapters = await DB._db.QueryAsync<Chapter>(queryC);
-        var animeIds = chapters.Select(c => c.AnimeId).ToList().Distinct();
-        var queryA = $"select Anime.* from Anime where Anime.Id in ({string.Join(",", animeIds.ToArray())})";
-
-        var animes = await DB._db.QueryAsync<Anime>(queryA);
-        var providersId = animes.Select(a => a.ProviderId).ToList().Distinct();
-        var queryProv = $"select * from Provider where Id in ({string.Join(",", providersId.ToArray())})";
-
-        var providers = await DB._db.QueryAsync<Provider>(queryProv);
-
-        foreach (var h in history)
+        var histories = await DB._db.Table<History>().ToListAsync();
+        var providers = await DB._db.Table<Provider>().ToListAsync();
+        foreach (var item in histories)
         {
-            var chSel = chapters.FirstOrDefault(c => c.Id == h.ChapterId);
-            chSel.Anime = animes.FirstOrDefault(a => a.Id == chSel.AnimeId);
-            chSel.Anime.Provider = providers.FirstOrDefault(p => p.Id == chSel.Anime.ProviderId);
-            h.Chapter = chSel;
+            var anime = await DB._db.Table<Anime>().Where(a => a.Id == item.AnimeId).FirstOrDefaultAsync();
+            anime.Provider = providers.FirstOrDefault(p => p.Id == anime.ProviderId);
+            item.Anime = anime;
         }
-        return history;
+        return histories.ToArray();
     }
 
-    public async Task<List<History>> GetHistoriesAsync(int page, int limit = 20)
+    public async Task UpdateProgress(int historyId, long progress, long totalMedia)
     {
-        var offset = (page - 1) * limit;
-        var history = await DB._db.Table<History>().OrderByDescending(h => h.WatchedDate).Take(limit).Skip(offset).ToListAsync();
-
-        var chaptersId = history.Select(h => h.ChapterId).ToList().Distinct();
-        var queryC = $"select Chapter.* from Chapter where Chapter.Id in ({string.Join(",", chaptersId.ToArray())})";
-
-        var chapters = await DB._db.QueryAsync<Chapter>(queryC);
-        var animeIds = chapters.Select(c => c.AnimeId).ToList().Distinct();
-        var queryA = $"select Anime.* from Anime where Anime.Id in ({string.Join(",", animeIds.ToArray())})";
-
-        var animes = await DB._db.QueryAsync<Anime>(queryA);
-        var providersId = animes.Select(a => a.ProviderId).ToList().Distinct();
-        var queryProv = $"select * from Provider where Id in ({string.Join(",", providersId.ToArray())})";
-
-        var providers = await DB._db.QueryAsync<Provider>(queryProv);
-
-        foreach (var h in history)
-        {
-            var chSel = chapters.FirstOrDefault(c => c.Id == h.ChapterId);
-            chSel.Anime = animes.FirstOrDefault(a => a.Id == chSel.AnimeId);
-            chSel.Anime.Provider = providers.FirstOrDefault(p => p.Id == chSel.Anime.ProviderId);
-            h.Chapter = chSel;
-        }
-        return history;
-    }
-
-    public async Task Vacuum()
-    {
-        await DB._db.ExecuteAsync("vacuum");
+        await DB._db.ExecuteAsync(
+            "update History set SecondsWatched=? ,TotalMedia=? , WatchedDate=?  where Id=?",
+            progress,
+            totalMedia,
+            DateTime.Now,
+            historyId
+        );
     }
 
     public async Task DeleteFromHistory(int Id)
@@ -472,4 +308,53 @@ public class DatabaseService
 
         await DB._db.DeleteAsync(history);
     }
+
+    public async Task DeleteAllHistory()
+    {
+        await DB._db.ExecuteAsync("delete from History");
+    }
+    #endregion
+
+    #region AutoComplete
+
+    public async Task<List<string>> GetListAutoComplete(string query)
+    {
+        //var autocomplete = await DB._db.Table<Autocomplete>().Where(a => a.Term.Contains(query, StringComparison.OrdinalIgnoreCase)).ToListAsync();
+
+        var autocomplete = await DB._db.QueryAsync<Autocomplete>(
+            "select * from Autocomplete where lower(Term) like ? limit 25",
+            $"%{query.ToLower()}%"
+        );
+
+        return autocomplete.Select(a => a.Term).ToList();
+    }
+
+    public async Task AddToAutocomplete(string query)
+    {
+        var exist = await DB._db.Table<Autocomplete>().Where(a => a.Term.ToLower() == query.ToLower()).FirstOrDefaultAsync();
+        if (exist == null)
+        {
+            await DB._db.InsertAsync(new Autocomplete() { Term = query });
+        }
+    }
+
+    public async Task<List<string>> LastListAutoComplete()
+    {
+        var autocomplete = await DB._db.Table<Autocomplete>().OrderByDescending(x => x.Id).Take(25).ToListAsync();
+
+        return autocomplete.Select(a => a.Term).ToList();
+    }
+
+    public async Task ClearAutoComplete()
+    {
+        await DB._db.ExecuteAsync("delete from Autocomplete");
+    }
+    #endregion
+
+    #region Maintenance
+    public async Task Vacuum()
+    {
+        await DB._db.ExecuteAsync("vacuum");
+    }
+    #endregion
 }

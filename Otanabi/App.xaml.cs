@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Otanabi.Activation;
 using Otanabi.Contracts.Services;
 using Otanabi.Core.Contracts.Services;
-using Otanabi.Core.Database;
 using Otanabi.Core.Services;
 using Otanabi.Models;
 using Otanabi.Notifications;
@@ -42,16 +41,11 @@ public partial class App : Application
     public static WindowEx MainWindow { get; } = new MainWindow();
     public static Dictionary<string, object> AppState = new() { { "Incognito", false }, { "Volume", 0.5 } };
 
-    //private WindowEx m_window;
-    //public WindowEx MainWindow => m_window;
-
-
     public static UIElement? AppTitlebar { get; set; }
 
     public App()
     {
         InitializeComponent();
-
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         Host = Microsoft
             .Extensions.Hosting.Host.CreateDefaultBuilder()
@@ -86,15 +80,22 @@ public partial class App : Application
                     services.AddTransient<FavoritesPage>();
                     services.AddTransient<VideoPlayerViewModel>();
                     services.AddTransient<VideoPlayerPage>();
-                    services.AddTransient<SearchDetailViewModel>();
-                    services.AddTransient<SearchDetailPage>();
-                    services.AddTransient<SearchViewModel>();
-                    services.AddTransient<SearchPage>();
+                    services.AddTransient<ProviderDetailViewModel>();
+                    services.AddTransient<ProviderDetailPage>();
+                    services.AddTransient<ProviderSearchViewModel>();
+                    services.AddTransient<ProviderSearchPage>();
                     services.AddTransient<SettingsViewModel>();
                     services.AddTransient<SettingsPage>();
                     services.AddTransient<ShellPage>();
                     services.AddTransient<ShellViewModel>();
-
+                    services.AddTransient<SeasonalViewModel>();
+                    services.AddTransient<SeasonalPage>();
+                    services.AddTransient<DetailViewModel>();
+                    services.AddTransient<DetailPage>();
+                    services.AddTransient<SearchViewModel>();
+                    services.AddTransient<SearchPage>();
+                    services.AddTransient<ScheduleViewModel>();
+                    services.AddTransient<SchedulePage>();
                     // Configuration
                     services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
                 }

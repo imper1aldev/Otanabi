@@ -13,7 +13,7 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Otanabi.ViewModels;
 
-public partial class SearchDetailViewModel : ObservableRecipient, INavigationAware
+public partial class ProviderDetailViewModel : ObservableRecipient, INavigationAware
 {
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly DatabaseService _Db = new();
@@ -65,7 +65,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty]
     public string errorMessage = "";
 
-    public SearchDetailViewModel(INavigationService navigationService)
+    public ProviderDetailViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
@@ -73,106 +73,57 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
 
     public async void OnNavigatedTo(object parameter)
     {
-        GC.Collect();
-        IsLoadingFav = true;
-        IsLoading = true;
-        var favoriteLists = await _Db.GetFavoriteLists();
-        foreach (var fav in favoriteLists)
+        if (parameter is Anime animeParam)
         {
-            FavLists.Add(fav);
-        }
-        if (parameter is Anime anime)
-        {
-            if (anime.Url != null)
+            if (SelectedAnime != null && animeParam.Url == SelectedAnime.Url)
             {
-                await GetAnimeFromDB(anime);
-                var bw = new BackgroundWorker();
-                bw.DoWork += (sender, args) =>
-                    _dispatcherQueue.TryEnqueue(async () =>
-                    {
-                        IsLoading = true;
-                        await UpsertAnime(anime);
-                        IsLoading = false;
-                    });
-                bw.RunWorkerAsync();
+                return;
             }
 
+            GC.Collect();
+            IsLoadingFav = true;
+            IsLoading = true;
+            var favoriteLists = await _Db.GetFavoriteLists();
+            FavLists.Clear();
+            foreach (var fav in favoriteLists)
+            {
+                FavLists.Add(fav);
+            }
+            await GetAnimeData(animeParam);
             IsLoadingFav = false;
             IsLoading = false;
+        }
+    }
+
+    private async Task GetAnimeData(Anime request)
+    {
+        var provAnime = await _searchAnimeService.GetAnimeDetailsAsync(request);
+        ChapterList.Clear();
+        SetInitialFavoriteStatus();
+        if (provAnime != null)
+        {
+            SelectedAnime = provAnime;
+            Chapters = provAnime.Chapters.OrderByDescending(x => x.ChapterNumber).ToArray();
+            var tmpAnime = await _Db.GetOrCreateAnime(SelectedAnime.Provider, SelectedAnime);
+            SelectedAnime.Id = tmpAnime.Id;
+            await checkFavorite();
+            SelectedAnime.IdAnilist = tmpAnime.IdAnilist;
+            OnPropertyChanged(nameof(SelectedAnime));
+            foreach (var chapter in Chapters)
+            {
+                ChapterList.Add(chapter);
+            }
+        }
+        else
+        {
+            ErrorMessage = "Error loading anime data";
+            ErrorActive = true;
         }
     }
 
     private void setLoader(bool value)
     {
         IsLoading = value;
-    }
-
-    private async Task GetAnimeFromDB(Anime request)
-    {
-        var anime = await _Db.GetAnimeOnDB(request);
-        if (anime != null)
-        {
-            SelectedAnime = anime;
-            await checkFavorite();
-
-            if (SelectedAnime.Chapters == null)
-            {
-                return;
-            }
-
-            foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
-            {
-                ChapterList.Add(chapter);
-            }
-        }
-    }
-
-    private async Task UpsertAnime(Anime request, bool force = false)
-    {
-        ForceLoad = false;
-        try
-        {
-            var anime = await _Db.UpsertAnime(request, force);
-            if (anime != null)
-            {
-                SelectedAnime = anime;
-
-                await checkFavorite();
-                ChapterList.Clear();
-                if (SelectedAnime.Chapters == null)
-                {
-                    return;
-                }
-
-                foreach (var chapter in SelectedAnime.Chapters.OrderByDescending((a) => a.ChapterNumber))
-                {
-                    ChapterList.Add(chapter);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            ErrorMessage = e.Message.ToString();
-            ErrorActive = true;
-        }
-        finally
-        {
-            ForceLoad = true;
-        }
-    }
-
-    [RelayCommand]
-    private void ForceUpsert()
-    {
-        var bw = new BackgroundWorker();
-        bw.DoWork += (sender, args) =>
-            _dispatcherQueue.TryEnqueue(async () =>
-            {
-                IsLoading = true;
-                await UpsertAnime(SelectedAnime, true);
-                IsLoading = false;
-            });
-        bw.RunWorkerAsync();
     }
 
     public void OnNavigatedFrom() { }
@@ -182,21 +133,15 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         IsLoadingVideo = true;
         try
         {
-            //var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, SelectedAnime.Provider);
-            //var videoUrl = await _selectSourceService.SelectSourceAsync(videoSources);
             App.AppState.TryGetValue("Incognito", out var incognito); // Incognito mode
             dynamic data = new ExpandoObject();
-            data.History = (bool)incognito ? new History() { Id = 0 } : await _Db.GetOrCreateHistoryByCap(chapter.Id);
-            //data.Url = videoUrl;
+            data.History = (bool)incognito ? null : await _Db.GetOrCreateHistoryByCap(SelectedAnime, chapter.ChapterNumber);
+            data.IsIncognito = (bool)incognito;
             data.Chapter = chapter;
-            //data.ChapterName = $"{SelectedAnime.Title}  Ep# {chapter.ChapterNumber}";
             data.AnimeTitle = SelectedAnime.Title;
+            data.Anime = SelectedAnime;
             data.ChapterList = SelectedAnime.Chapters.ToList();
             data.Provider = SelectedAnime.Provider;
-            //if (string.IsNullOrEmpty(videoUrl))
-            //{
-            //    throw new Exception(ErrorMessage = "Can't extract the video URL");
-            //}
             _navigationService.NavigateTo(typeof(VideoPlayerViewModel).FullName!, data);
             IsLoadingVideo = false;
         }
@@ -254,6 +199,13 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
         FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
     }
 
+    private void SetInitialFavoriteStatus()
+    {
+        IsFavorite = false;
+        FavStatus = "\uE728";
+        FavText = "Add to Favorites";
+    }
+
     [RelayCommand]
     private async Task ChangeFavLists(object param)
     {
@@ -286,7 +238,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
                 { "Provider", SelectedAnime.Provider },
                 { "Method", SearchMethods.SearchByTag },
             };
-            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(SearchViewModel).FullName!, data));
+            _dispatcherQueue.TryEnqueue(() => _navigationService.NavigateTo(typeof(ProviderSearchViewModel).FullName!, data));
         }
     }
 }

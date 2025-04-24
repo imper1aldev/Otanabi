@@ -1,14 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-
+using CommunityToolkit.WinUI.Animations;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using Otanabi.Contracts.Services;
 using Otanabi.Contracts.ViewModels;
 using Otanabi.Core.Services;
 using Otanabi.Helpers;
-
-using CommunityToolkit.WinUI.Animations;
-
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace Otanabi.Services;
 
@@ -34,7 +31,6 @@ public class NavigationService : INavigationService
 
             return _frame;
         }
-
         set
         {
             UnregisterFrameEvents();
@@ -128,7 +124,6 @@ public class NavigationService : INavigationService
             Navigated?.Invoke(sender, e);
         }
     }
-     
 
     private void OnNavigationError(object sender, NavigationFailedEventArgs e)
     {
