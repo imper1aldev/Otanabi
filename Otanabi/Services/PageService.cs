@@ -1,7 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-
 using Microsoft.UI.Xaml.Controls;
-
 using Otanabi.Contracts.Services;
 using Otanabi.ViewModels;
 using Otanabi.Views;
@@ -16,7 +14,7 @@ public class PageService : IPageService
     {
         Configure<SettingsViewModel, SettingsPage>();
         Configure<ProviderSearchViewModel, ProviderSearchPage>();
-        Configure<SearchDetailViewModel, SearchDetailPage>();
+        Configure<ProviderDetailViewModel, ProviderDetailPage>();
         Configure<VideoPlayerViewModel, VideoPlayerPage>();
         Configure<FavoritesViewModel, FavoritesPage>();
         Configure<HistoryViewModel, HistoryPage>();

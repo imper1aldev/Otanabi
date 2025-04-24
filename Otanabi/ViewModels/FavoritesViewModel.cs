@@ -94,7 +94,7 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
     {
         if (param != null && param is Anime anime)
         {
-            _navigationService.NavigateTo(typeof(SearchDetailViewModel).FullName!, anime);
+            _navigationService.NavigateTo(typeof(ProviderDetailViewModel).FullName!, anime);
         }
     }
 
@@ -107,13 +107,12 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
         foreach (var f in fList)
         {
             counter++;
-            SelectorBarItem newItem =
-                new()
-                {
-                    Text = $"{f.Name}",
-                    IsSelected = counter == 1 ? true : false,
-                    Tag = f.Id,
-                };
+            SelectorBarItem newItem = new()
+            {
+                Text = $"{f.Name}",
+                IsSelected = counter == 1 ? true : false,
+                Tag = f.Id,
+            };
             FavBarItems.Add(newItem);
             FavoriteList.Add(f);
         }

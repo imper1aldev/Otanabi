@@ -80,8 +80,8 @@ public partial class App : Application
                     services.AddTransient<FavoritesPage>();
                     services.AddTransient<VideoPlayerViewModel>();
                     services.AddTransient<VideoPlayerPage>();
-                    services.AddTransient<SearchDetailViewModel>();
-                    services.AddTransient<SearchDetailPage>();
+                    services.AddTransient<ProviderDetailViewModel>();
+                    services.AddTransient<ProviderDetailPage>();
                     services.AddTransient<ProviderSearchViewModel>();
                     services.AddTransient<ProviderSearchPage>();
                     services.AddTransient<SettingsViewModel>();

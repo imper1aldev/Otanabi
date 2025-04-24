@@ -55,6 +55,11 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private bool isLoadedMerge = false;
 
+    [ObservableProperty]
+    private bool isLoadedEpisodes = false;
+
+    [ObservableProperty]
+    private bool isNotResults = false;
     public string StatusString
     {
         get
@@ -182,6 +187,8 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
     private async Task ProviderChanged()
     {
         IsLoadedMerge = false;
+        IsNotResults = false;
+        IsLoadedEpisodes = false;
         await SearchReferences();
     }
 
@@ -236,10 +243,27 @@ public partial class DetailViewModel : ObservableRecipient, INavigationAware
                 };
                 EpisodeList.Add(episode);
             }
+            if (EpisodeList.Count == 0)
+            {
+                IsNotResults = true;
+                IsLoadedEpisodes = false;
+            }
+            else
+            {
+                IsNotResults = false;
+                EpisodesLoaded();
+                IsLoadedEpisodes = true;
+            }
+            IsLoadedMerge = true;
 
             var savedAnime = await db.GetOrAddAnimeByMedia(SelectedMedia, selectedProvider, _localAnime);
-            EpisodesLoaded();
+
             _localAnime.Id = savedAnime.Id;
+        }
+        else
+        {
+            IsNotResults = true;
+            IsLoadedEpisodes = false;
             IsLoadedMerge = true;
         }
     }

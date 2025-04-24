@@ -6,17 +6,17 @@ using Otanabi.ViewModels;
 
 namespace Otanabi.Views;
 
-public sealed partial class SearchDetailPage : Page
+public sealed partial class ProviderDetailPage : Page
 {
     private int AnimeId;
     private List<FavoriteList> favoriteLists;
     private List<FavoriteList> selectedFList = new List<FavoriteList>();
     DatabaseService dbService = new();
-    public SearchDetailViewModel ViewModel { get; }
+    public ProviderDetailViewModel ViewModel { get; }
 
-    public SearchDetailPage()
+    public ProviderDetailPage()
     {
-        ViewModel = App.GetService<SearchDetailViewModel>();
+        ViewModel = App.GetService<ProviderDetailViewModel>();
         InitializeComponent();
     }
 

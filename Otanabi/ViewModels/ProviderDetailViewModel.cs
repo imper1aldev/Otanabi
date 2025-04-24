@@ -13,7 +13,7 @@ using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 
 namespace Otanabi.ViewModels;
 
-public partial class SearchDetailViewModel : ObservableRecipient, INavigationAware
+public partial class ProviderDetailViewModel : ObservableRecipient, INavigationAware
 {
     private readonly SearchAnimeService _searchAnimeService = new();
     private readonly DatabaseService _Db = new();
@@ -65,7 +65,7 @@ public partial class SearchDetailViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty]
     public string errorMessage = "";
 
-    public SearchDetailViewModel(INavigationService navigationService)
+    public ProviderDetailViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
