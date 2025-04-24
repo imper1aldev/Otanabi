@@ -118,11 +118,6 @@
                         </interactions:EventTriggerBehavior>
                     </interactivity:Interaction.Behaviors>
                 </ComboBox>
-                <!--<Button
-                    Width="Auto"
-                    Command="{x:Bind ViewModel.SearchReferencesCommand}"
-                    Content="Search in provider"
-                    Visibility="{x:Bind ViewModel.IsPlayeable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=False}" />-->
 
                 <Button
                     Width="Auto"

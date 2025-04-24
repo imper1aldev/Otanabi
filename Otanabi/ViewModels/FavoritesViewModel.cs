@@ -41,7 +41,10 @@ public partial class FavoritesViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        await LoadFavoriteList(true);
+        if (FavBarItems.Count == 0)
+        {
+            await LoadFavoriteList(true);
+        }
     }
 
     public event EventHandler FavoreListChanged;

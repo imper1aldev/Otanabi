@@ -385,14 +385,26 @@ public class AnilistService
         //    || string.Equals(x.Title.Native, titleName, StringComparison.OrdinalIgnoreCase)
         //    || string.Equals(x.Title.English, titleName, StringComparison.OrdinalIgnoreCase)
         //);
-        var selectedMedia = medias.FirstOrDefault(x =>
-            _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), titleName.NormalizeSTR()) < 3
-            || _levenshtein.Distance(x.Title.Native.NormalizeSTR(), titleName.NormalizeSTR()) < 3
-            || _levenshtein.Distance(x.Title.English.NormalizeSTR(), titleName.NormalizeSTR()) < 3
-            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), y.NormalizeSTR()) < 3)
-            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Native.NormalizeSTR(), y.NormalizeSTR()) < 3)
-            || alternateTitles.Any(y => _levenshtein.Distance(x.Title.English.NormalizeSTR(), y.NormalizeSTR()) < 3)
-        );
+        var selectedMedia = new Media();
+        if (alternateTitles.Count > 0)
+        {
+            selectedMedia = medias.FirstOrDefault(x =>
+                _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+                || _levenshtein.Distance(x.Title.Native.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+                || _levenshtein.Distance(x.Title.English.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+                || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), y.NormalizeSTR()) < 3)
+                || alternateTitles.Any(y => _levenshtein.Distance(x.Title.Native.NormalizeSTR(), y.NormalizeSTR()) < 3)
+                || alternateTitles.Any(y => _levenshtein.Distance(x.Title.English.NormalizeSTR(), y.NormalizeSTR()) < 3)
+            );
+        }
+        else
+        {
+            selectedMedia = medias.FirstOrDefault(x =>
+                _levenshtein.Distance(x.Title.Romaji.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+                || _levenshtein.Distance(x.Title.Native.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+                || _levenshtein.Distance(x.Title.English.NormalizeSTR(), titleName.NormalizeSTR()) < 3
+            );
+        }
 
         return selectedMedia;
     }

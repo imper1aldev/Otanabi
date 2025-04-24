@@ -84,6 +84,7 @@ public partial class ProviderDetailViewModel : ObservableRecipient, INavigationA
             IsLoadingFav = true;
             IsLoading = true;
             var favoriteLists = await _Db.GetFavoriteLists();
+            FavLists.Clear();
             foreach (var fav in favoriteLists)
             {
                 FavLists.Add(fav);
@@ -98,12 +99,14 @@ public partial class ProviderDetailViewModel : ObservableRecipient, INavigationA
     {
         var provAnime = await _searchAnimeService.GetAnimeDetailsAsync(request);
         ChapterList.Clear();
+        SetInitialFavoriteStatus();
         if (provAnime != null)
         {
             SelectedAnime = provAnime;
             Chapters = provAnime.Chapters.OrderByDescending(x => x.ChapterNumber).ToArray();
             var tmpAnime = await _Db.GetOrCreateAnime(SelectedAnime.Provider, SelectedAnime);
             SelectedAnime.Id = tmpAnime.Id;
+            await checkFavorite();
             SelectedAnime.IdAnilist = tmpAnime.IdAnilist;
             OnPropertyChanged(nameof(SelectedAnime));
             foreach (var chapter in Chapters)
@@ -177,14 +180,14 @@ public partial class ProviderDetailViewModel : ObservableRecipient, INavigationA
     [RelayCommand]
     private async Task FavoriteFun()
     {
-        //IsLoadingFav = true;
-        //var action = IsFavorite ? "remove" : "add";
-        //var res = await _Db.AddToFavorites(SelectedAnime, action);
+        IsLoadingFav = true;
+        var action = IsFavorite ? "remove" : "add";
+        var res = await _Db.AddToFavorites(SelectedAnime, action);
 
-        //IsFavorite = res == "added" ? true : false;
-        //FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
-        //FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
-        //IsLoadingFav = false;
+        IsFavorite = res == "added" ? true : false;
+        FavStatus = IsFavorite ? "\uE8D9" : "\uE728";
+        FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
+        IsLoadingFav = false;
     }
 
     private async Task checkFavorite()
@@ -196,24 +199,31 @@ public partial class ProviderDetailViewModel : ObservableRecipient, INavigationA
         FavText = IsFavorite ? "Remove from Favorites" : "Add to Favorites";
     }
 
+    private void SetInitialFavoriteStatus()
+    {
+        IsFavorite = false;
+        FavStatus = "\uE728";
+        FavText = "Add to Favorites";
+    }
+
     [RelayCommand]
     private async Task ChangeFavLists(object param)
     {
-        //var idList = new List<int>();
-        //if (param is ListBox box)
-        //{
-        //    foreach (var item in box.SelectedItems)
-        //    {
-        //        if (item is FavoriteList lt)
-        //        {
-        //            idList.Add(lt.Id);
-        //        }
-        //    }
-        //}
-        //if (idList.Count > 0)
-        //{
-        //    await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
-        //}
+        var idList = new List<int>();
+        if (param is ListBox box)
+        {
+            foreach (var item in box.SelectedItems)
+            {
+                if (item is FavoriteList lt)
+                {
+                    idList.Add(lt.Id);
+                }
+            }
+        }
+        if (idList.Count > 0)
+        {
+            await _Db.UpdateAnimeList(SelectedAnime.Id, idList);
+        }
     }
 
     [RelayCommand]

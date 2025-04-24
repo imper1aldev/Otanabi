@@ -178,6 +178,73 @@ public class DatabaseService
         await DB._db.ExecuteAsync("delete from AnimexFavorite where FavoriteListId=? and Id>1", favorite.Id);
         await DB._db.DeleteAsync(favorite);
     }
+
+    public async Task<string> UpsertAnimeFavorite(Anime anime, int favId)
+    {
+        var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == anime.Id && af.FavoriteListId == favId).FirstOrDefaultAsync();
+        if (el == null)
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favId };
+            await DB._db.InsertAsync(favxanime);
+            return "added";
+        }
+        else
+        {
+            await DB._db.DeleteAsync(el);
+            return "deleted";
+        }
+    }
+
+    public async Task<string> AddToFavorites(Anime anime, string action, int favList = 1)
+    {
+        if (action == "add")
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = anime.Id, FavoriteListId = favList };
+            await DB._db.InsertAsync(favxanime);
+            return "added";
+        }
+        else
+        {
+            var el = await DB._db.Table<AnimexFavorite>().Where(af => af.AnimeId == anime.Id).ToListAsync();
+
+            if (el.Count > 0)
+            {
+                foreach (var item in el)
+                {
+                    await DB._db.ExecuteAsync("delete from AnimexFavorite where Id=?", item.Id);
+                }
+                return "deleted";
+            }
+            return "deleted";
+        }
+    }
+
+    public async Task UpdateAnimeList(int animeId, List<int> lists)
+    {
+        await DB._db.ExecuteAsync("delete from AnimexFavorite " + "where AnimeId=?", animeId);
+        foreach (var item in lists)
+        {
+            var favxanime = new AnimexFavorite() { AnimeId = animeId, FavoriteListId = item };
+            await DB._db.InsertAsync(favxanime);
+        }
+    }
+
+    public async Task<List<FavoriteList>> GetFavoriteListByAnime(int animeId = 0)
+    {
+        if (animeId == 0)
+        {
+            return null;
+        }
+        var data = await DB._db.QueryAsync<FavoriteList>(
+            "select fl.* from AnimexFavorite as af inner join FavoriteList as fl" + " on af.FavoriteListId=fl.Id  where af.AnimeId=?",
+            animeId
+        );
+        if (data.Count > 0)
+        {
+            return data;
+        }
+        return null;
+    }
     #endregion
 
     #region History

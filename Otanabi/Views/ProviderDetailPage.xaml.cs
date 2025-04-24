@@ -32,19 +32,19 @@ public sealed partial class ProviderDetailPage : Page
 
     private async Task LoadAnimeFavList()
     {
-        //var sFList1 = await dbService.GetFavoriteListByAnime(AnimeId);
-        //var tmpLit = new List<FavoriteList>();
+        var sFList1 = await dbService.GetFavoriteListByAnime(AnimeId);
+        var tmpLit = new List<FavoriteList>();
 
-        //foreach (var item in sFList1)
-        //{
-        //    foreach (var item1 in favListbox.Items)
-        //    {
-        //        if (item1 is FavoriteList ls && ls.Id == item.Id)
-        //        {
-        //            favListbox.SelectedItems.Add(item1);
-        //        }
-        //    }
-        //}
+        foreach (var item in sFList1)
+        {
+            foreach (var item1 in favListbox.Items)
+            {
+                if (item1 is FavoriteList ls && ls.Id == item.Id)
+                {
+                    favListbox.SelectedItems.Add(item1);
+                }
+            }
+        }
     }
 
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
