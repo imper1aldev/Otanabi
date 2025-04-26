@@ -99,9 +99,7 @@ public static class StringExtensions
             return string.Empty;
         }
 
-        var cleaned = input.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
-        cleaned = Regex.Replace(cleaned, @"\s{2,}", " ");
-        return cleaned.Trim();
+        return Regex.Replace(input, @"[\s\u200B\u200C\u200D\uFEFF]+", " ").Trim();
     }
 
     public static string GetParameter(this string url, string key)

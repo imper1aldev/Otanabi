@@ -193,23 +193,45 @@ public class CuevanaeuExtractor : IExtractor
             data = responseJson.Props?.PageProps?.ThisMovie?.Videos;
         }
 
-        var serverLists = new List<IEnumerable<Server>>
+        var serverLists = new List<(string language, IEnumerable<Server> servers)>
         {
-            data.Latino,
-            data.Spanish,
-            data.English,
-            data.Japanese
+            ("[LAT]", data.Latino),
+            ("[CAST]", data.Spanish),
+            ("[ENG]", data.English),
+            ("[JAP]", data.Japanese)
         };
 
-        var activeServers = serverLists.FirstOrDefault(servers => servers != null && servers.Any());
+        var activeServers = serverLists.Where(servers => servers.servers != null && servers.servers.Any());
         if (activeServers != null)
         {
-            foreach (var server in activeServers)
+            var serverFlatList = activeServers
+                .SelectMany(group => group.servers.Select(server => new
+                {
+                    group.language,
+                    server.Result,
+                    server.Cyberlocker
+                }));
+            foreach (var server in serverFlatList)
             {
                 try
                 {
-                    var video = await GetVideoInfo(server.Result, server.Cyberlocker);
-                    sources.Add(video);
+                    var serverName = _serverConventions.GetServerName(server.Cyberlocker);
+                    if (string.IsNullOrEmpty(serverName))
+                    {
+                        continue;
+                    }
+
+                    var serverDoc = await _client.OpenAsync(server.Result);
+                    var urls = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))?.TextContent;
+                    var url = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))
+                                        ?.TextContent?.SubstringAfter("var url = '")?.SubstringBefore("'") ?? "";
+
+                    sources.Add(new VideoSource()
+                    {
+                        Server = serverName,
+                        Title = $"{server.language} {serverName}",
+                        Url = url,
+                    });
                 }
                 catch (Exception)
                 {
@@ -219,22 +241,6 @@ public class CuevanaeuExtractor : IExtractor
         }
 
         return sources.OrderByDescending(s => s.Server).ToArray();
-    }
-
-    private async Task<VideoSource> GetVideoInfo(string requestUrl, string cyberlocker)
-    {
-        var serverDoc = await _client.OpenAsync(requestUrl);
-        var urls = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))?.TextContent;
-        var url = serverDoc.Scripts.FirstOrDefault(s => s.TextContent.Contains("var message"))
-                            ?.TextContent?.SubstringAfter("var url = '")?.SubstringBefore("'") ?? "";
-        var serverName = _serverConventions.GetServerName(cyberlocker);
-
-        return new VideoSource()
-        {
-            Server = serverName,
-            Title = serverName,
-            Url = url,
-        };
     }
 
     public static string GenerateTagString(Tag[] tags)

@@ -16,14 +16,13 @@ public class SelectSourceService
         return newList;
     }
 
-    public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefault = "")
+    public async Task<SelectedSource> SelectSourceAsync(VideoSource[] videoSources, string byDefaultId = "")
     {
         var headers = new HttpClient().DefaultRequestHeaders;
-        var (streamUrl, serverName, useVlc, subtitles) = (string.Empty, string.Empty, false, new List<Track>());
-
+        var (id, streamUrl, serverName, useVlc, subtitles) = (string.Empty, string.Empty, string.Empty, false, new List<Track>());
         try
         {
-            var preferredSource = videoSources.FirstOrDefault(e => e.Server == byDefault) ?? videoSources[0];
+            var preferredSource = videoSources.FirstOrDefault(e => e.Id == byDefaultId) ?? videoSources[0];
             var orderedSources = MoveToFirst([.. videoSources], preferredSource);
 
             foreach (var source in orderedSources)
@@ -33,13 +32,15 @@ public class SelectSourceService
                 {
                     selected = new(source.Url ?? source.Code, source.Subtitles, null)
                     {
-                        Server = source.Server
+                        Server = source.Server,
+                        Id = source.Id,
                     };
                 }
                 else
                 {
                     var (method, instance) = _classReflectionHelper.GetMethodFromVideoSource(source);
                     selected = await (Task<SelectedSource>)method.Invoke(instance, [source.CheckedUrl]);
+                    selected.Id = source.Id;
                 }
 
                 if (string.IsNullOrEmpty(selected.StreamUrl))
@@ -50,7 +51,7 @@ public class SelectSourceService
                 serverName = source.Server;
                 selected.Subtitles ??= [];
                 selected.Subtitles.AddRange(source.Subtitles);
-                (streamUrl, subtitles, useVlc) = (selected.StreamUrl, selected.Subtitles, selected.UseVlcProxy);
+                (id, streamUrl, subtitles, useVlc) = (selected.Id, selected.StreamUrl, selected.Subtitles, selected.UseVlcProxy);
                 headers = selected.Headers ?? headers;
                 break;
             }
@@ -63,6 +64,7 @@ public class SelectSourceService
 
         return new SelectedSource(streamUrl, subtitles, headers)
         {
+            Id = id,
             Server = serverName,
             UseVlcProxy = useVlc
         };

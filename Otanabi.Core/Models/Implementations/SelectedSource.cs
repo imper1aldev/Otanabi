@@ -27,7 +27,11 @@ public class SelectedSource
         Audios = audios;
         Headers = headers;
     }
-
+    public string Id
+    {
+        get;
+        set;
+    }
     public string Server
     {
         get; set;

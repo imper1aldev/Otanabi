@@ -182,9 +182,14 @@ public class HentailaExtractor : IExtractor
         foreach (var it in videoServerList)
         {
             var server = it.Split(',').Select(a => a.Replace("\"", "")).ToList();
-            var urlServer = server[1].Replace("\\/", "/");
             var name = server[0];
             var serverName = _serverConventions.GetServerName(name);
+            if (string.IsNullOrEmpty(serverName))
+            {
+                continue;
+            }
+
+            var urlServer = server[1].Replace("\\/", "/");
             sources.Add(new()
             {
                 Server = serverName,

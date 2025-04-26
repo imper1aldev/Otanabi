@@ -127,11 +127,16 @@ public class PelisplustoExtractor : IExtractor
         var regIsUrl = new Regex(@"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)");
         foreach (var li in doc.QuerySelectorAll(".bg-tabs ul li"))
         {
+            var server = li.QuerySelector("span").TextContent?.SubstringBefore("-").Trim();
+            var serverName = _serverConventions.GetServerName(server);
+            if (string.IsNullOrEmpty(serverName))
+            {
+                continue;
+            }
+
             var parentDiv = li.ParentElement?.ParentElement;
             var buttonText = parentDiv?.QuerySelector("button")?.TextContent?.Trim().ToLower();
             var prefix = GetLang(buttonText);
-            var server = li.QuerySelector("span").TextContent?.SubstringBefore("-").Trim();
-
             var encoded = li.GetAttribute("data-server");
             var decodedBytes = Convert.FromBase64String(encoded);
             var decoded = Encoding.UTF8.GetString(decodedBytes);
@@ -164,7 +169,6 @@ public class PelisplustoExtractor : IExtractor
             videoUrl = videoUrl.Replace("https://sblanh.com", "https://lvturbo.com");
             videoUrl = Regex.Replace(videoUrl, @"([a-zA-Z0-9]{0,8}[a-zA-Z0-9_-]+)=https:\/\/ww3\.pelisplus\.to.*", "");
 
-            var serverName = _serverConventions.GetServerName(server);
             sources.Add(new VideoSource()
             {
                 Server = serverName,

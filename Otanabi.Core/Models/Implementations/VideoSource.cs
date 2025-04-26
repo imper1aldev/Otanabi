@@ -1,8 +1,12 @@
-﻿
+﻿using System.Security.Cryptography;
+using System.Text;
+
 namespace Otanabi.Core.Models;
 
 public class VideoSource : IVideoSource
 {
+    public string Id => new Guid([.. SHA1.HashData(Encoding.UTF8.GetBytes(Title ?? Url)).Take(16)]).ToString("N");
+
     public string Server
     {
         get; set;

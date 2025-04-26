@@ -328,7 +328,7 @@ public class DoramasflixExtractor : IExtractor
 
                 var link = obj["link"]?.ToString();
                 var server = obj["server"]?.ToString();
-                var lang = obj["lang"]?.ToString() ?? "";
+                var lang = GetLang(obj["lang"]?.ToString() ?? "");
 
                 if (!string.IsNullOrEmpty(link))
                 {
@@ -337,7 +337,7 @@ public class DoramasflixExtractor : IExtractor
                     sources.Add(new()
                     {
                         Server = serverName,
-                        Title = serverName,
+                        Title = $"{lang} {serverName}".Trim(),
                         Url = realLink,
                     });
                 }
@@ -370,7 +370,7 @@ public class DoramasflixExtractor : IExtractor
                 sources.Add(new()
                 {
                     Server = serverName,
-                    Title = serverName,
+                    Title = $"{problemLink.Lang} {serverName}".Trim(),
                     Url = realLink,
                 });
             }

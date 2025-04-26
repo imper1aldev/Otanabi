@@ -1,10 +1,12 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text;
+using System.Text.Json;
+using AngleSharp;
 using HtmlAgilityPack;
-using Newtonsoft.Json.Linq;
 using Otanabi.Core.Helpers;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.Extractors;
+using Otanabi.Extensions.Models.Hstream;
 using ScrapySharp.Extensions;
 using ScrapySharp.Network;
 
@@ -18,8 +20,6 @@ public class HstreamExtractor : IExtractor
     internal readonly string originUrl = "https://hstream.moe";
     internal readonly bool Persistent = true;
     internal readonly string Type = "ANIME";
-
-    private static readonly HttpClient client = new();
 
     public IProvider GenProvider() =>
         new Provider
@@ -99,20 +99,16 @@ public class HstreamExtractor : IExtractor
         var img = doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[1]/img");
 
         var geners = doc.CssSelect("ul.list-none > li > a")
-            .Select(x => Regex.Replace(x.InnerText, @"\t|\n|\r", ""))
+            .Select(x => x.InnerText.TrimAll())
             .ToList();
         var anime = new Anime
         {
             Url = requestUrl,
-            Title = Regex.Replace(
-                doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[2]/h1").InnerText,
-                @"\t|\n|\r",
-                ""
-            ),
+            Title = doc.SelectSingleNode(".//div/main/div/div/div[1]/div[1]/div[2]/h1").InnerText?.TrimAll(),
             Cover = string.Concat(originUrl, img.Attributes["src"].Value),
             Description = doc.SelectSingleNode(
                 ".//div/main/div/div/div[1]/div[1]/div[2]/p[2]"
-            ).InnerText,
+            ).InnerText.Trim(),
             Type = AnimeType.OVA,
             Status = "",
             GenreStr = string.Join(",", geners),
@@ -133,8 +129,8 @@ public class HstreamExtractor : IExtractor
             {
                 Url = node.CssSelect("a").First().GetAttributeValue("href"),
                 ChapterNumber = i,
-                Name = node.CssSelect("a div p").First().InnerText,
-                Extraval = node.CssSelect("a").First().GetAttributeValue("href")
+                Name = node.CssSelect("a div p").First().InnerText.TrimAll(),
+                Extraval = node.CssSelect("p.absolute")?.FirstOrDefault()?.InnerText?.TrimAll()
             };
             chapters.Add(chapter);
             i++;
@@ -150,72 +146,94 @@ public class HstreamExtractor : IExtractor
     {
         var videoSources = new List<VideoSource>();
 
-        var response = await client.GetAsync(requestUrl);
-        var responseBody = await response.Content.ReadAsStringAsync();
-
-        var doc = new HtmlDocument();
-        doc.LoadHtml(responseBody);
-
-        var cookies = response.Headers.GetValues("Set-Cookie");
-        var token = cookies.First(cookie => cookie.Contains("XSRF-TOKEN")).Split('=')[1];
-        token = token.Replace("; expires", "");
-        var episodeId = doc
-            .DocumentNode.SelectSingleNode("//input[@id='e_id']")
-            .GetAttributeValue("value", "");
-
-        var newHeaders = new HttpRequestMessage
+        var handler = new HttpClientHandler
         {
-            Method = HttpMethod.Post,
-            RequestUri = new Uri($"{originUrl}/player/api"),
-            Headers =
-            {
-                { "Referer", response.RequestMessage.RequestUri.ToString() },
-                { "Origin", originUrl },
-                { "X-Requested-With", "XMLHttpRequest" },
-                { "X-XSRF-TOKEN", Uri.UnescapeDataString(token) }
-            },
+            CookieContainer = new CookieContainer()
+        };
+
+        using var httpClient = new HttpClient(handler);
+        var getResponse = await httpClient.GetAsync(requestUrl);
+        var html = await getResponse.Content.ReadAsStringAsync();
+
+        var context = BrowsingContext.New(Configuration.Default);
+        var document = await context.OpenAsync(req => req.Content(html));
+
+        var episodeInput = document.QuerySelector("input#e_id");
+        var episodeId = episodeInput?.GetAttribute("value");
+
+        if (string.IsNullOrEmpty(episodeId))
+            throw new Exception("No se encontró el input#e_id");
+
+        var cookies = handler.CookieContainer.GetCookies(new Uri(requestUrl));
+        var token = cookies["XSRF-TOKEN"]?.Value;
+
+        if (string.IsNullOrEmpty(token))
+            throw new Exception("No se encontró el token XSRF-TOKEN");
+
+        var postRequest = new HttpRequestMessage(HttpMethod.Post, $"{originUrl}/player/api")
+        {
             Content = new StringContent(
-                $"{{\"episode_id\": \"{episodeId}\"}}",
+                JsonSerializer.Serialize(new
+                {
+                    episode_id = episodeId
+                }),
                 Encoding.UTF8,
                 "application/json"
             )
         };
 
-        var apiResponse = await client.SendAsync(newHeaders);
-        var apiResponseBody = await apiResponse.Content.ReadAsStringAsync();
-        var data = JObject.Parse(apiResponseBody);
+        postRequest.Headers.Referrer = new Uri(requestUrl);
+        postRequest.Headers.Add("Origin", originUrl);
+        postRequest.Headers.Add("X-Requested-With", "XMLHttpRequest");
+        postRequest.Headers.Add("X-XSRF-TOKEN", WebUtility.UrlDecode(token));
 
-        var sD = (JArray)data["stream_domains"];
-        var streamDomains = sD.ToObject<List<string>>();
+        var postResponse = await httpClient.SendAsync(postRequest);
+        postResponse.EnsureSuccessStatusCode();
+        var json = await postResponse.Content.ReadAsStringAsync();
+
+        var data = JsonSerializer.Deserialize<PlayerApiResponse>(json);
+
+        var urlBase = $"{data.StreamDomains[new Random().Next(data.StreamDomains.Count)]}/{data.StreamUrl}";
+
+        var subtitleList = new List<Track>
+        {
+            new ($"{urlBase}/eng.ass", "English")
+        };
 
         var resolutions = new List<string> { "720", "1080" };
-
-        var urlBase =
-            streamDomains[new Random().Next(streamDomains.Count)]
-            + "/"
-            + (string)data["stream_url"];
+        if (data.Resolution == "4k")
+        {
+            resolutions.Add("2160");
+        }
 
         foreach (var resolution in resolutions)
         {
-            var dest = string.Concat(urlBase, "/", resolution, "/manifest.mpd");
-            var vsouce = new VideoSource
+            var url = urlBase + GetVideoUrlPath(data.Legacy != 0, resolution);
+            var name = $"{resolution}p";
+            videoSources.Add(new VideoSource()
             {
-                Server = "Juro",
-                Title = "Juro",
-                Code = dest,
-                Url = dest,
                 IsLocalSource = true,
-                Subtitles = [
-                    new() {
-                        File = $"{urlBase}/eng.ass",
-                        Label = "English"
-                    }
-                ]
-            };
-            videoSources.Add(vsouce);
+                Server = name,
+                Title = name,
+                Url = url,
+                Subtitles = subtitleList
+            });
         }
 
         return videoSources.ToArray();
+    }
+
+    private static string GetVideoUrlPath(bool isLegacy, string resolution)
+    {
+        return isLegacy switch
+        {
+            true => resolution switch
+            {
+                "720" => "/x264.720p.mp4",
+                _ => $"/av1.{resolution}.webm"
+            },
+            false => $"/{resolution}/manifest.mpd"
+        };
     }
 
     public static string GenerateTagString(Tag[] tags)

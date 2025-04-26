@@ -166,7 +166,7 @@ public class PelisplushdExtractor : IExtractor
                     var videoLang = embed.Value<string>("video_language");
                     var sortedEmbeds = embed["sortedEmbeds"] as JArray ?? [];
                     return sortedEmbeds.Select(x => (
-                        Lang: GetLang(videoLang),
+                        Lang: videoLang,
                         OnClick: AESDecryptor.DecryptLink(x.Value<string>("link"), key, decryptUtf8),
                         Server: x.Value<string>("servername")
                     ));
@@ -182,11 +182,17 @@ public class PelisplushdExtractor : IExtractor
                     )).ToList() ?? [];
             }
 
-            foreach (var item in encryptedList)
+            foreach (var (Lang, OnClick, Server) in encryptedList)
             {
                 try
                 {
-                    var extractedUrl = item.OnClick
+                    var serverName = _serverConventions.GetServerName(Server);
+                    if (string.IsNullOrEmpty(serverName))
+                    {
+                        continue;
+                    }
+
+                    var extractedUrl = OnClick
                         .SubstringAfter("go_to_player('")
                         .SubstringAfter("go_to_playerVast('")
                         .SubstringBefore("?cover_url=")
@@ -214,11 +220,10 @@ public class PelisplushdExtractor : IExtractor
                         finalUrl = extractedUrl;
                     }
 
-                    var serverName = _serverConventions.GetServerName(item.Server);
                     sources.Add(new VideoSource()
                     {
                         Server = serverName,
-                        Title = $"{item.Lang} {serverName}",
+                        Title = $"{Lang} {serverName}",
                         Url = finalUrl
                     });
                 }

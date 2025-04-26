@@ -236,6 +236,10 @@ public class MonoschinosExtractor : IExtractor
             var url = server.GetAttribute("data-player").DecodeBase64();
             var name = server.TextContent.Trim();
             var serverName = _serverConventions.GetServerName(name);
+            if (string.IsNullOrEmpty(serverName))
+            {
+                continue;
+            }
 
             sources.Add(new()
             {

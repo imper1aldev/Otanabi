@@ -60,10 +60,10 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     public ObservableCollection<Chapter> ChapterList { get; } = [];
 
     [ObservableProperty]
-    public ObservableCollection<string> servers = [];
+    public ObservableCollection<VideoSource> servers = [];
 
     [ObservableProperty]
-    private string selectedServer;
+    private VideoSource selectedServer;
 
     [ObservableProperty]
     private bool isChapPanelOpen = false;
@@ -276,12 +276,12 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
         SelectedIndex = selectedChapter.ChapterNumber - 1;
         var videoSources = await _searchAnimeService.GetVideoSources(chapter.Url, selectedProvider);
-        if (videoSources != null && (videoSources.FirstOrDefault(e => e.Server == SelectedServer) ?? videoSources[0]) is VideoSource item)
+        if (videoSources != null && (videoSources.FirstOrDefault(e => e.Id == SelectedServer?.Id) ?? videoSources[0]) is VideoSource item)
         {
-            SelectedServer = item.Server;
+            SelectedServer = item;
         }
-        //(streamUrl, subUrl, headers)
-        var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer);
+
+        var data = await _selectSourceService.SelectSourceAsync(videoSources, SelectedServer?.Id);
 
         if (data != null && data.UseVlcProxy)
         {
@@ -289,9 +289,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             data.StreamUrl = newServer;
         }
 
-        if (data != null && data.Server != SelectedServer)
+        if (data != null && data.Id != SelectedServer?.Id)
         {
-            SelectedServer = data.Server;
+            SelectedServer = videoSources.FirstOrDefault(x => x.Id == data.Id);
         }
 
         activeCc = data.Subtitles.Count != 0;
@@ -434,9 +434,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             Servers.Clear();
             foreach (var source in videoSources)
             {
-                if (!string.IsNullOrEmpty(source.Server))
+                if (source != null)
                 {
-                    Servers.Add(source.Server);
+                    Servers.Add(source);
                 }
             }
 
@@ -457,9 +457,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
     }
 
     [RelayCommand]
-    private async Task SelectServer(string server)
+    private async Task SelectServer(VideoSource server)
     {
-        if (string.IsNullOrEmpty(server))
+        if (server == null)
         {
             return;
         }

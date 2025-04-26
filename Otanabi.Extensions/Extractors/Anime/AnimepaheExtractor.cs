@@ -109,7 +109,6 @@ public class AnimepaheExtractor : IExtractor
     {
         var videoSources = new List<VideoSource>();
         var provider = new AnimePahe();
-
         var videoServers = await provider.GetVideoServersAsync(requestUrl);
         var selected = videoServers.Where(vc => vc.Name.Contains("1080") || vc.Name.Contains("720")).FirstOrDefault();
         if (selected != null)

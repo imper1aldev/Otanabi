@@ -200,7 +200,6 @@ public class JkanimeExtractor : IExtractor
             foreach (JObject vsource in prefJson.Children<JObject>())
             {
                 var serverName = _serverConventions.GetServerName((string)vsource["server"]);
-
                 if (string.IsNullOrEmpty(serverName))
                 {
                     continue;

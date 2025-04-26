@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Otanabi.Core.Models;
 using Otanabi.ViewModels;
 
 namespace Otanabi.UserControls;
@@ -138,9 +139,9 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         new PropertyMetadata(null, OnServersChanged)
     );
 
-    public IEnumerable<string> Servers
+    public IEnumerable<VideoSource> Servers
     {
-        get => (IEnumerable<string>)GetValue(ServersProperty);
+        get => (IEnumerable<VideoSource>)GetValue(ServersProperty);
         set => SetValue(ServersProperty, value);
     }
 
@@ -265,14 +266,15 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
 
     private void ServerFlyoutItem_Click(object sender, RoutedEventArgs e)
     {
-        var selectedServer = (sender as MenuFlyoutItem).Text;
+        var selectedServerId = (sender as MenuFlyoutItem).Name;
+        var selectedServer = Servers.FirstOrDefault(x => x.Id == selectedServerId);
         if (DataContext is VideoPlayerViewModel viewModel)
         {
             viewModel.SelectServerCommand.Execute(selectedServer);
         }
     }
 
-    public void UpdateServers(IEnumerable<string> servers, string selectedServer)
+    public void UpdateServers(IEnumerable<VideoSource> servers, VideoSource selectedServer)
     {
         if (_serversButton != null)
         {
@@ -280,7 +282,7 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         }
     }
 
-    private void UpdateFlyout(IEnumerable<string> servers, string selectedServer)
+    private void UpdateFlyout(IEnumerable<VideoSource> servers, VideoSource selectedServer)
     {
         foreach (var item in _serverFlyout.Items.OfType<MenuFlyoutItem>())
         {
@@ -300,8 +302,9 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
             _serversButton.Visibility = Visibility.Visible;
             foreach (var server in serverList)
             {
-                var flyoutItem = new MenuFlyoutItem { Text = server };
-                if (server == selectedServer)
+                var title = !string.IsNullOrWhiteSpace(server.Title) ? server.Title : server.Server;
+                var flyoutItem = new MenuFlyoutItem { Text = title, Name = server.Id };
+                if (server?.Id == selectedServer?.Id)
                 {
                     flyoutItem.IsEnabled = false;
                     flyoutItem.Icon = new SymbolIcon(Symbol.Accept);
