@@ -118,12 +118,17 @@ public class AnimepaheExtractor : IExtractor
 
             foreach (var video in videos)
             {
-                var vSouce = new VideoSource();
-                vSouce.Server = "Juro";
-                vSouce.Title = "Juro";
-                vSouce.Code = video.VideoUrl;
-                vSouce.Url = video.VideoUrl;
+                var vSouce = new VideoSource
+                {
+                    Server = "Juro",
+                    Title = "Juro",
+                    Code = video.VideoUrl,
+                    Url = video.VideoUrl,
+                    IsLocalSource = true
+                };
                 videoSources.Add(vSouce);
+
+                Juro.Providers.Aniskip.AniskipClient aniskipClient = new Juro.Providers.Aniskip.AniskipClient();
             }
         }
         await Task.CompletedTask;
