@@ -1,19 +1,13 @@
-﻿using System.Diagnostics;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Otanabi.Core.Models;
-using Otanabi.ViewModels;
 
 namespace Otanabi.UserControls;
 
 public sealed partial class AnimeMediaTransportControls : MediaTransportControls
 {
-    private AppBarButton _serversButton;
-
-    private readonly MenuFlyout _serverFlyout = new() { Placement = FlyoutPlacementMode.Top };
-
     public AnimeMediaTransportControls()
     {
         DefaultStyleKey = typeof(AnimeMediaTransportControls);
@@ -134,15 +128,52 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
     );
     public static readonly DependencyProperty ServersProperty = DependencyProperty.Register(
         nameof(Servers),
-        typeof(IEnumerable<string>),
+        typeof(IEnumerable<VideoSource>),
         typeof(AnimeMediaTransportControls),
-        new PropertyMetadata(null, OnServersChanged)
+        new PropertyMetadata(null)
+    );
+    public static readonly DependencyProperty ServerSelectedIndexProperty = DependencyProperty.Register(
+        nameof(ServerSelectedIndex),
+        typeof(int),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
     );
 
     public IEnumerable<VideoSource> Servers
     {
         get => (IEnumerable<VideoSource>)GetValue(ServersProperty);
         set => SetValue(ServersProperty, value);
+    }
+
+    public static readonly DependencyProperty SelectedServerProperty =
+    DependencyProperty.Register(
+        nameof(SelectedServer),
+        typeof(VideoSource),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null));
+
+    public static readonly DependencyProperty SelectServerCommandProperty = DependencyProperty.Register(
+        nameof(SelectServerCommand),
+        typeof(ICommand),
+        typeof(AnimeMediaTransportControls),
+        new PropertyMetadata(null)
+    );
+    public VideoSource SelectedServer
+    {
+        get => (VideoSource)GetValue(SelectedServerProperty);
+        set => SetValue(SelectedServerProperty, value);
+    }
+
+    public ICommand SelectServerCommand
+    {
+        get => (ICommand)GetValue(SelectServerCommandProperty);
+        set => SetValue(SelectServerCommandProperty, value);
+    }
+
+    public int ServerSelectedIndex
+    {
+        get => (int)GetValue(ServerSelectedIndexProperty);
+        set => SetValue(ServerSelectedIndexProperty, value);
     }
 
     public bool IsNextEnabled
@@ -214,104 +245,10 @@ public sealed partial class AnimeMediaTransportControls : MediaTransportControls
         {
             skipIntroButton.Click += (s, e) => SkipIntroCommand?.Execute(null);
         }
-        _serversButton = GetTemplateChild("ServersButton") as AppBarButton;
-        if (_serversButton != null)
-        {
-            _serversButton.Flyout = _serverFlyout;
-        }
-    }
-
-    private static void OnServersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-    {
-        Debug.WriteLine("OnServersChanged ejecutado.");
-
-        var mtc = d as AnimeMediaTransportControls;
-        var flyout = mtc._serverFlyout;
-
-        if (mtc._serversButton is null)
-        {
-            Debug.WriteLine("QualitiesButton es null.");
-            return;
-        }
-
-        Debug.WriteLine($"Número de servidores: {(e.NewValue as IEnumerable<string>)?.Count()}");
-
-        foreach (var item in flyout.Items.OfType<MenuFlyoutItem>())
-        {
-            item.Click -= mtc.ServerFlyoutItem_Click;
-        }
-
-        flyout.Items.Clear();
-
-        if (e.NewValue is IEnumerable<string> servers)
-        {
-            var serverList = servers.ToList();
-            if (serverList.Count == 1)
-            {
-                mtc._serversButton.Visibility = Visibility.Collapsed;
-            }
-            else if (serverList.Count > 1)
-            {
-                mtc._serversButton.IsEnabled = true;
-                mtc._serversButton.Visibility = Visibility.Visible;
-                foreach (var server in serverList)
-                {
-                    var flyoutItem = new MenuFlyoutItem { Text = server };
-                    flyoutItem.Click += mtc.ServerFlyoutItem_Click;
-                    flyout.Items.Add(flyoutItem);
-                }
-            }
-        }
-    }
-
-    private void ServerFlyoutItem_Click(object sender, RoutedEventArgs e)
-    {
-        var selectedServerId = (sender as MenuFlyoutItem).Name;
-        var selectedServer = Servers.FirstOrDefault(x => x.Id == selectedServerId);
-        if (DataContext is VideoPlayerViewModel viewModel)
-        {
-            viewModel.SelectServerCommand.Execute(selectedServer);
-        }
-    }
-
-    public void UpdateServers(IEnumerable<VideoSource> servers, VideoSource selectedServer)
-    {
-        if (_serversButton != null)
-        {
-            UpdateFlyout(servers, selectedServer);
-        }
-    }
-
-    private void UpdateFlyout(IEnumerable<VideoSource> servers, VideoSource selectedServer)
-    {
-        foreach (var item in _serverFlyout.Items.OfType<MenuFlyoutItem>())
-        {
-            item.Click -= ServerFlyoutItem_Click;
-        }
-
-        _serverFlyout.Items.Clear();
-
-        var serverList = servers.ToList();
-        if (serverList.Count == 1)
-        {
-            _serversButton.Visibility = Visibility.Collapsed;
-        }
-        else if (serverList.Count > 1)
-        {
-            _serversButton.IsEnabled = true;
-            _serversButton.Visibility = Visibility.Visible;
-            foreach (var server in serverList)
-            {
-                var title = !string.IsNullOrWhiteSpace(server.Title) ? server.Title : server.Server;
-                var flyoutItem = new MenuFlyoutItem { Text = title, Name = server.Id };
-                if (server?.Id == selectedServer?.Id)
-                {
-                    flyoutItem.IsEnabled = false;
-                    flyoutItem.Icon = new SymbolIcon(Symbol.Accept);
-                }
-                flyoutItem.Click += ServerFlyoutItem_Click;
-                _serverFlyout.Items.Add(flyoutItem);
-            }
-        }
+        //_serversButton = GetTemplateChild("ServersButton") as AppBarButton;
+        //if (_serversButton != null)
+        //{
+        //    _serversButton.Flyout = _serverFlyout;
+        //}
     }
 }

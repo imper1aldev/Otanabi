@@ -273,7 +273,10 @@
                             OpenPanelCommand="{x:Bind ViewModel.ToggleChapPanelCommand}"
                             PreviusCommand="{x:Bind ViewModel.PrevChapterCommand}"
                             SkipIntroCommand="{x:Bind ViewModel.SkipIntroCommand}" 
-                            Servers="{x:Bind ViewModel.Servers, Mode=OneWay}" />
+                            Servers="{x:Bind ViewModel.Servers, Mode=TwoWay}"
+                            SelectedServer="{x:Bind ViewModel.SelectedServer, Mode=TwoWay}"
+                            SelectServerCommand="{x:Bind ViewModel.SelectServerCommand}"
+                            ServerSelectedIndex="{x:Bind ViewModel.ServerSelectedIndex, Mode=OneWay}"/>
                     </MediaPlayerElement.TransportControls>
                 </MediaPlayerElement>
             </Grid>

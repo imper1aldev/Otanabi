@@ -3,7 +3,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:local="using:Otanabi"
-    xmlns:local2="using:Otanabi.UserControls">
+    xmlns:local2="using:Otanabi.UserControls"
+    xmlns:i="using:Microsoft.Xaml.Interactivity" 
+    xmlns:core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:models="using:Otanabi.Core.Models">
 
 
     <Style TargetType="local2:AnimeMediaTransportControls">
@@ -643,6 +646,24 @@
                                                     <FontIcon Glyph="&#xE927;" />
                                                 </AppBarButton.Icon>
                                             </AppBarButton>
+                                            <!--<AppBarButton
+                                                x:Name="ServersButton"
+                                                Style="{StaticResource SpecialAppBarButtonStyle}"
+                                                ToolTipService.ToolTip="Choose Server">
+                                                <AppBarButton.Icon>
+                                                    <FontIcon Glyph="&#xE774;" />
+                                                </AppBarButton.Icon>
+                                            </AppBarButton>-->
+                                            <!--<AppBarButton
+                                                ToolTipService.ToolTip="{Binding SelectedServer.Server, 
+                                                                          RelativeSource={RelativeSource TemplatedParent},
+                                                                          FallbackValue='BindingFallback',
+                                                                          TargetNullValue='SelectedServerEsNull'}">
+                                            </AppBarButton>-->
+                                            <!--<AppBarButton Content="{Binding SelectedServer.Server, 
+                                                                          RelativeSource={RelativeSource TemplatedParent},
+                                                                          FallbackValue='BindingFallback',
+                                                                          TargetNullValue='SelectedServerEsNull'}" />-->
                                             <AppBarButton
                                                 x:Name="ServersButton"
                                                 Style="{StaticResource SpecialAppBarButtonStyle}"
@@ -650,6 +671,52 @@
                                                 <AppBarButton.Icon>
                                                     <FontIcon Glyph="&#xE774;" />
                                                 </AppBarButton.Icon>
+                                                <AppBarButton.Flyout>
+                                                    <Flyout x:Name="ServersFlyout">
+                                                        <StackPanel>
+                                                            <!--<StackPanel.Resources>
+                                                                <customConverters:BindingProxy
+                                                                    x:Key="Proxy"
+                                                                    Data="{Binding SelectedServer, RelativeSource={RelativeSource Mode=TemplatedParent}, UpdateSourceTrigger=PropertyChanged}"/>
+                                                            </StackPanel.Resources>-->
+                                                            <ListView
+                                                                x:Name="ServersListView"
+                                                                ItemsSource="{Binding Servers, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                                                SelectedItem="{Binding SelectedServer, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                                SelectedIndex="{Binding ServerSelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=OneWay}"
+                                                                SelectionMode="Single">
+                                                                <i:Interaction.Behaviors>
+                                                                    <core:EventTriggerBehavior EventName="SelectionChanged">
+                                                                        <core:InvokeCommandAction 
+                                                                            Command="{Binding SelectServerCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                                                            CommandParameter="{Binding SelectedItem, ElementName=ServersListView}"/>
+                                                                    </core:EventTriggerBehavior>
+                                                                </i:Interaction.Behaviors>
+                                                                <ListView.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="*" />
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock 
+                                                                                Grid.Column="0"
+                                                                                Text="{Binding Title}"
+                                                                                HorizontalAlignment="Left" />
+                                                                            <!--<FontIcon
+                                                                                Grid.Column="1"
+                                                                                Glyph="&#xE001;"
+                                                                                Foreground="Green"
+                                                                                Visibility="{Binding 
+                                                                                    Converter={StaticResource VideoSourceToVisibilityConverter},
+                                                                                    ConverterParameter={Binding Data, Source={StaticResource Proxy}}}"/>-->
+                                                                        </Grid>
+                                                                    </DataTemplate>
+                                                                </ListView.ItemTemplate>
+                                                            </ListView>
+                                                        </StackPanel>
+                                                    </Flyout>
+                                                </AppBarButton.Flyout>
                                             </AppBarButton>
                                             <AppBarButton
                                                 x:Name="CCSelectionButton"

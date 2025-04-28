@@ -11,7 +11,6 @@ using Otanabi.Converters;
 using Otanabi.Core.Models;
 using Otanabi.Core.Services;
 using Otanabi.Models.Enums;
-using Otanabi.UserControls;
 using Windows.Media.Core;
 using Windows.Media.Playback;
 using Windows.System;
@@ -76,6 +75,9 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
 
     [ObservableProperty]
     private int selectedIndex = 0;
+
+    [ObservableProperty]
+    private int serverSelectedIndex = 0;
 
     [ObservableProperty]
     private string chapterName = "";
@@ -294,6 +296,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             SelectedServer = videoSources.FirstOrDefault(x => x.Id == data.Id);
         }
 
+        if (!string.IsNullOrEmpty(SelectedServer?.Id))
+        {
+            ServerSelectedIndex = videoSources.ToList().FindIndex(x => x.Id == SelectedServer.Id);
+        }
+
         activeCc = data.Subtitles.Count != 0;
 
         ChapterName = $"{animeTitle}  Ep# {chapter.ChapterNumber}";
@@ -370,15 +377,15 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                     LoadingVideo = false;
                                 });
                             };
-                            MPE.MediaPlayer.MediaFailed += (sender, args) =>
-                            {
-                                _dispatcherQueue.TryEnqueue(() =>
-                                {
-                                    IsErrorVideo = true;
-                                    IsPaused = true;
-                                    LoadingVideo = false;
-                                });
-                            };
+                            //MPE.MediaPlayer.MediaFailed += (sender, args) =>
+                            //{
+                            //    _dispatcherQueue.TryEnqueue(() =>
+                            //    {
+                            //        IsErrorVideo = true;
+                            //        IsPaused = true;
+                            //        LoadingVideo = false;
+                            //    });
+                            //};
                             MPE.MediaPlayer.PlaybackSession.PlaybackStateChanged += (sender, args) =>
                             {
                                 try
@@ -431,23 +438,26 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         try
         {
             var videoSources = await _searchAnimeService.GetVideoSources(selectedChapter.Url, selectedProvider);
-            Servers.Clear();
-            foreach (var source in videoSources)
+            if (videoSources == null || videoSources.Length == 0)
             {
-                if (source != null)
+                return;
+            }
+
+            var newIds = videoSources.Where(x => x != null).Select(x => x.Id).ToHashSet();
+            var currentIds = Servers.Select(x => x.Id).ToHashSet();
+
+            if (!newIds.SetEquals(currentIds)) // Solo si hay cambios
+            {
+                Servers.Clear();
+                foreach (var source in videoSources.Where(x => x != null))
                 {
                     Servers.Add(source);
                 }
             }
-
-            if (MPE?.TransportControls is AnimeMediaTransportControls controls)
-            {
-                controls.UpdateServers(Servers, SelectedServer);
-            }
         }
         catch (Exception e)
         {
-            logger.LogError("Could not load servers ", e.Message.ToString());
+            logger.LogError($"Error loading servers: {e.Message}");
         }
     }
 
@@ -464,7 +474,6 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
             return;
         }
 
-        SelectedServer = server;
         await LoadVideo(selectedChapter);
     }
 
