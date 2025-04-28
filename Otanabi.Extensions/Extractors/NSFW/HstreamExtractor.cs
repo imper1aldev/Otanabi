@@ -200,16 +200,16 @@ public class HstreamExtractor : IExtractor
             new ($"{urlBase}/eng.ass", "English")
         };
 
-        var resolutions = new List<string> { "720", "1080" };
+        var resolutions = new List<string> { "1080i", "1080", "720" };
         if (data.Resolution == "4k")
         {
-            resolutions.Add("2160");
+            resolutions.Insert(0, "2160");
         }
 
         foreach (var resolution in resolutions)
         {
             var url = urlBase + GetVideoUrlPath(data.Legacy != 0, resolution);
-            var name = $"{resolution}p";
+            var name = resolution.EndsWith("i") ? resolution : $"{resolution}p";
             videoSources.Add(new VideoSource()
             {
                 IsLocalSource = true,
