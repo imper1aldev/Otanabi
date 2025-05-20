@@ -79,8 +79,34 @@ public sealed class DatabaseHandler
             typeof(Provider)
         );
 
+        await ApplyMigrations();
         await ProvidersSetUp();
         await InitData();
+    }
+
+    private async Task ApplyMigrations()
+    {
+        var tables = new Type[]
+        {
+            typeof(Anime),
+            typeof(FavoriteList),
+            typeof(AnimexFavorite),
+            typeof(Chapter),
+            typeof(History),
+            typeof(Provider)
+        };
+
+        foreach (var table in tables)
+        {
+            try
+            {
+                await AutoMigrateTable(table);
+            }
+            catch (Exception)
+            {
+                continue;
+            }
+        }
     }
 
     public async Task InitData()
@@ -111,7 +137,6 @@ public sealed class DatabaseHandler
         }
 
         //Fix current providers
-
         foreach (var prop in provDB)
         {
             var prDll = provDLL.FirstOrDefault(c1 => c1.Id == prop.Id);
@@ -124,4 +149,41 @@ public sealed class DatabaseHandler
             }
         }
     }
+
+    private async Task AutoMigrateTable(Type modelType)
+    {
+        var tableName = modelType.Name;
+        var tableInfo = await _db.GetTableInfoAsync(tableName);
+        var existingColumns = tableInfo.Select(c => c.Name).ToHashSet();
+
+        var props = modelType.GetProperties().Where(p => p.CanWrite && !p.IsDefined(typeof(IgnoreAttribute), true));
+
+        foreach (var prop in props)
+        {
+            if (!existingColumns.Contains(prop.Name))
+            {
+                var sqliteType = GetSQLiteType(prop.PropertyType);
+                var defaultValue = GetDefaultValue(prop.PropertyType);
+
+                var alterSql = $"ALTER TABLE {tableName} ADD COLUMN {prop.Name} {sqliteType} DEFAULT {defaultValue}";
+                await _db.ExecuteAsync(alterSql);
+            }
+        }
+    }
+
+    private static string GetSQLiteType(Type type) => type switch
+    {
+        _ when type == typeof(int) || type == typeof(long) || type == typeof(bool) => "INTEGER",
+        _ when type == typeof(double) || type == typeof(float) => "REAL",
+        _ when type == typeof(string) || type == typeof(DateTime) => "TEXT",
+        _ => "TEXT"
+    };
+
+    private static string GetDefaultValue(Type type) => type switch
+    {
+        _ when type == typeof(int) || type == typeof(long) || type == typeof(bool) => "0",
+        _ when type == typeof(double) || type == typeof(float) => "0.0",
+        _ when type == typeof(DateTime) => $"'{DateTime.MinValue:yyyy-MM-dd HH:mm:ss}'",
+        _ => "''"
+    };
 }

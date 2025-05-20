@@ -9,12 +9,12 @@ public class ServerConventions
             new Convention
             {
                 Name = "Okru",
-                PossibleNames = ["ok-ru", "okru", "OKRU", "ok"]
+                PossibleNames = ["ok-ru", "okru", "ok"]
             },
             new Convention
             {
                 Name = "Streamwish",
-                PossibleNames = ["sw", "SW", "Streamwish", "streamwish", "wish"]
+                PossibleNames = ["sw", "streamwish", "wish"]
             },
             //new Convention
             //{
@@ -29,10 +29,10 @@ public class ServerConventions
                 Name = "Mp4Upload",
                 PossibleNames = ["mp4", "mp4upload"]
             },
-            new Convention {
-                Name = "StreamHideVid",
-                PossibleNames = ["vidhide", "VidHidePro", "luluvdo", "vidhideplus", "Earnvids", "streamvid", "guccihide", "streamhide"]
-            },
+            //new Convention {
+            //    Name = "StreamHideVid",
+            //    PossibleNames = ["vidhide", "VidHidePro", "luluvdo", "vidhideplus", "Earnvids", "streamvid", "guccihide", "streamhide"]
+            //},
             new Convention {
                 Name = "Filemoon",
                 PossibleNames = ["filemoon", "fmoon", "moon", "moonplayer"]
@@ -43,11 +43,11 @@ public class ServerConventions
             },
             new Convention {
                 Name = "SendVid",
-                PossibleNames = ["SendVid", "Send", "sendvid"]
+                PossibleNames = ["send", "sendvid"]
             },
             new Convention {
                 Name = "VidHide",
-                PossibleNames = ["vidhide", "filelions.top", "vid.", "nika", "niikaplayerr"]
+                PossibleNames = ["vidhide", "filelions.top", "vid.", "nika", "niikaplayerr", "earnvids", "luluvdo", "streamvid", "guccihide", "streamhide"]
             },
             //new Convention {
             //    Name = "Voe",
@@ -55,7 +55,7 @@ public class ServerConventions
             //},
             new Convention {
                 Name = "VidGuard",
-                PossibleNames = ["listeamed", "VidGuard", "vidg", "vembed", "guard", "bembed", "vgfplay"]
+                PossibleNames = ["listeamed", "vidg", "vembed", "guard", "bembed", "vgfplay"]
             },
             //new Convention {
             //    Name = "YourUpload",
@@ -69,7 +69,7 @@ public class ServerConventions
         try
         {
             var lowerServerName = serverName.ToLowerInvariant();
-            convention = Conventions.First(e => e.PossibleNames.Any(name => name.Equals(lowerServerName, StringComparison.OrdinalIgnoreCase))).Name;
+            convention = Conventions.First(e => e.PossibleNames.Any(name => name.Contains(lowerServerName, StringComparison.OrdinalIgnoreCase))).Name;
         }
         catch (Exception) { }
         return convention;

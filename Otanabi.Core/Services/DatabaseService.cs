@@ -406,6 +406,11 @@ public class DatabaseService
         await DB._db.ExecuteAsync("update History set SecondsWatched=? where Id=?", progress, historyId);
     }
 
+    public async Task UpdateTotalSeconds(int historyId, long totalSeconds)
+    {
+        await DB._db.ExecuteAsync("update History set TotalSeconds=? where Id=?", totalSeconds, historyId);
+    }
+
     public async Task<List<History>> GetAllHistoriesAsync()
     {
         var history = await DB._db.Table<History>().OrderByDescending(h => h.WatchedDate).ToListAsync();

@@ -17,7 +17,21 @@ public class History
     {
         get; set;
     }
+    public long TotalSeconds
+    {
+        get; set;
+    }
     public int ChapterId
+    {
+        get; set;
+    }
+    public bool IsManuallyCompleted
+    {
+        get; set;
+    }
+
+    [Ignore]
+    public Chapter Chapter
     {
         get; set;
     }
@@ -26,8 +40,8 @@ public class History
     public string TimeString => TimeSpan.FromSeconds(SecondsWatched).ToString(@"hh\:mm\:ss");
 
     [Ignore]
-    public Chapter Chapter
-    {
-        get; set;
-    }
+    public bool IsWatchedCompleted => IsManuallyCompleted || (TotalSeconds > 0 && (double)SecondsWatched / TotalSeconds >= 0.85);
+
+    [Ignore]
+    public string TotalTimeString => TimeSpan.FromSeconds(TotalSeconds).ToString(@"hh\:mm\:ss");
 }

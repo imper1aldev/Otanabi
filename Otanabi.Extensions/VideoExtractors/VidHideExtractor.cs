@@ -1,9 +1,11 @@
 ﻿using System.Text.RegularExpressions;
+using Acornima.Ast;
 using HtmlAgilityPack;
 using JsUnpacker;
 using Newtonsoft.Json;
 using Otanabi.Core.Models;
 using Otanabi.Extensions.Contracts.VideoExtractors;
+using Windows.Devices.Power;
 
 namespace Otanabi.Extensions.VideoExtractors;
 
@@ -26,18 +28,14 @@ public class VidHideExtractor : IVideoExtractor
             if (scriptNode != null)
             {
                 var unpacked = Unpacker.UnpackAndCombine(scriptNode.InnerText);
+                var videoUrl = Regex.Matches(unpacked, @":\s*""([^""]*?m3u8[^""]*?)""")
+                                .Cast<Match>()
+                                .Select(m => m.Groups[1].Value)
+                                .Distinct(StringComparer.OrdinalIgnoreCase) // elimina duplicados si hay
+                                .OrderBy(url => url.StartsWith("/") ? 1 : 0) // prioriza las absolutas
+                                .FirstOrDefault();
 
-                if (!string.IsNullOrWhiteSpace(unpacked))
-                {
-                    var match = Regex.Match(unpacked, @"sources:\[\{file:""(.*?)""");
-
-                    if (match.Success)
-                    {
-                        var videoUrl = match.Groups[1].Value;
-                        Console.WriteLine($"Video URL: {videoUrl}");
-                        return new(videoUrl, null, null);
-                    }
-                }
+                return new(videoUrl, null, null);
             }
         }
         catch (Exception ex)

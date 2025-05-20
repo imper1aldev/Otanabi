@@ -169,10 +169,14 @@ public class PelisplustoExtractor : IExtractor
             videoUrl = videoUrl.Replace("https://sblanh.com", "https://lvturbo.com");
             videoUrl = Regex.Replace(videoUrl, @"([a-zA-Z0-9]{0,8}[a-zA-Z0-9_-]+)=https:\/\/ww3\.pelisplus\.to.*", "");
 
+            var title = $"{prefix} {serverName}";
+            var dups = sources.Where(x => x.Title == title);
+            title = dups.Any() ? title + " Opt #" + (dups.Count() + 1) : title;
+
             sources.Add(new VideoSource()
             {
                 Server = serverName,
-                Title = $"{prefix} {serverName}",
+                Title = title,
                 Url = videoUrl,
             });
         }

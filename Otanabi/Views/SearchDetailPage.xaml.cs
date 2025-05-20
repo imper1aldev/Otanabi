@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Diagnostics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
@@ -93,5 +94,69 @@ public sealed partial class SearchDetailPage : Page
     private void ClosePopup_Click(object sender, RoutedEventArgs e)
     {
         ImagePopup.IsOpen = false;
+    }
+
+    private void ListView_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {// Obtén la posición del clic en el ListView
+        var position = e.GetPosition(sender as UIElement);
+
+        // Obtén el elemento que fue tocado (en este caso un FrameworkElement)
+        var originalSource = e.OriginalSource as FrameworkElement;
+
+        // Obtén el objeto 'Chapter' asociado al elemento
+        if (originalSource?.DataContext is Chapter chapter)
+        {
+            // Crear el MenuFlyout
+            var menuFlyout = new MenuFlyout();
+
+            menuFlyout.Opening += MenuFlyout_Opening;
+
+            // Agregar elementos al menú contextual
+            //var viewDetailsItem = new MenuFlyoutItem { Text = "View Details" };
+            //viewDetailsItem.Click += (s, args) => ViewDetails_Click(chapter);
+            //menuFlyout.Items.Add(viewDetailsItem);
+
+            var markAsWatchedItem = new MenuFlyoutItem { Text = "Mark as Watched" };
+            markAsWatchedItem.Click += (s, args) => MarkAsWatched_Click(chapter);
+            menuFlyout.Items.Add(markAsWatchedItem);
+
+            //var addToFavoritesItem = new MenuFlyoutItem { Text = "Add to Favorites" };
+            //addToFavoritesItem.Click += (s, args) => AddToFavorites_Click(chapter);
+            //menuFlyout.Items.Add(addToFavoritesItem);
+
+            // Mostrar el menú contextual en la posición donde se hizo clic
+            menuFlyout.ShowAt(sender as UIElement, position);
+        }
+    }
+
+    private void MenuFlyout_Opening(object sender, object e)
+    {
+        // Asegúrate de que el código se ejecute en el hilo correcto y que la ventana esté disponible
+        var coreWindow = Window.Current?.CoreWindow;
+
+        if (coreWindow != null)
+        {
+            // Restablecer el cursor al valor predeterminado
+            coreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(Windows.UI.Core.CoreCursorType.Arrow, 0);
+        }
+    }
+
+    private void ViewDetails_Click(Chapter chapter)
+    {
+        // Lógica para ver detalles del capítulo
+        // Por ejemplo, navegar a una nueva página con más información
+        Debug.WriteLine($"Ver detalles del capítulo: {chapter.ChapterNumber}");
+    }
+
+    private void MarkAsWatched_Click(Chapter chapter)
+    {
+        // Lógica para marcar el capítulo como visto
+        Debug.WriteLine($"Marcar el capítulo {chapter.ChapterNumber} como visto");
+    }
+
+    private void AddToFavorites_Click(Chapter chapter)
+    {
+        // Lógica para agregar el capítulo a los favoritos
+        Debug.WriteLine($"Agregar el capítulo {chapter.ChapterNumber} a favoritos");
     }
 }

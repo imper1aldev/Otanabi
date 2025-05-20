@@ -112,9 +112,11 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
         _windowEx = App.MainWindow;
         AppCurTitle = _windowEx.Title;
         //each 4 seconds it will save the current play time
-        MainTimerForSave = new System.Timers.Timer(4000);
-        MainTimerForSave.AutoReset = true;
-        MainTimerForSave.Enabled = true;
+        MainTimerForSave = new System.Timers.Timer(4000)
+        {
+            AutoReset = true,
+            Enabled = true
+        };
         MainTimerForSave.Elapsed += SaveProgressByTime;
 
         /* rewind and fastforward timer definitions*/
@@ -368,6 +370,8 @@ public partial class VideoPlayerViewModel : ObservableRecipient, INavigationAwar
                                 {
                                     SetStateForNexAndPrev();
                                     LoadingVideo = false;
+                                    var videoDuration = (long)MPE.MediaPlayer.NaturalDuration.TotalSeconds;
+                                    _ = dbService.UpdateTotalSeconds(selectedHistory.Id, videoDuration);
                                 });
                             };
                             MPE.MediaPlayer.MediaFailed += (sender, args) =>

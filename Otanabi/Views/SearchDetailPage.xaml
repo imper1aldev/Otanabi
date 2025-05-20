@@ -16,6 +16,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <converters:BoolNegationConverter x:Key="BoolNegationConverter" />
         <customConverters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <customConverters:BooleanToOpacityConverter  x:Key="BooleanToOpacityConverter" />
         <converters:EmptyObjectToObjectConverter
             x:Key="EmptyObjectToObjectConverter"
             EmptyValue="Collapsed"
@@ -258,11 +259,13 @@
             </Grid.ColumnDefinitions>
 
             <ListView
+                x:Name="ChapterListView"
                 Grid.Column="0"
                 MinWidth="550"
                 Margin="0,0,0,0"
                 IsItemClickEnabled="True"
                 ItemClick="ListView_ItemClick"
+                RightTapped="ListView_RightTapped"
                 ItemsSource="{x:Bind ViewModel.ChapterList, Mode=OneWay}">
 
                 <ListView.ItemTemplate>
@@ -280,9 +283,10 @@
                                 HorizontalAlignment="Center"
                                 TextAlignment="Center"
                                 FontWeight="Bold"
+                                Opacity="{x:Bind History.IsWatchedCompleted, Converter={StaticResource BooleanToOpacityConverter}}"
                                 FontSize="15" />
 
-                            <StackPanel Grid.Column="1">
+                            <StackPanel Grid.Column="1" Opacity="{x:Bind History.IsWatchedCompleted, Converter={StaticResource BooleanToOpacityConverter}}">
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     Text="{x:Bind Name, Mode=OneWay}">
@@ -295,12 +299,15 @@
                                     <TextBlock FontSize="12" Opacity="0.7" Text="{Binding Path=History.WatchedDate}" />
                                     <TextBlock FontSize="12" Opacity="0.7" Margin="10,0,10,0" Text="Time watched :" />
                                     <TextBlock FontSize="12" Opacity="0.7" Text="{Binding Path=History.TimeString}" />
+                                    <TextBlock FontSize="12" Opacity="0.7" Margin="10,0,10,0" Text="Duration :" />
+                                    <TextBlock FontSize="12" Opacity="0.7" Text="{Binding Path=History.TotalTimeString}" />
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel 
                                 Grid.Column="3"
                                 Orientation="Horizontal"
-                                HorizontalAlignment="Right">
+                                HorizontalAlignment="Right"
+                                Opacity="{x:Bind History.IsWatchedCompleted, Converter={StaticResource BooleanToOpacityConverter}}">
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     FontSize="12"
